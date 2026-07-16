@@ -1,0 +1,89 @@
+/* Identity page (Brief step 20, PNG 13, 33, 40-42, 44, 45). Reuses
+   PatternsPage.css's board-first layout (stage, meta bar, sheet, tiles)
+   wholesale since both pages share the same board-first + swipe-up-sheet
+   shape (design README sections 3/5); this file only adds what's specific
+   to the identity content itself. Colors come only from the theme token
+   variables; gold is the only interactive color, red never appears here
+   as a call to action (the pass-risk "Off-menu" label uses --text-red as
+   a STATUS color, same convention as a fit warning or a blocked lane,
+   never as a clickable control). */
+
+/* Reference team / archetype names run much longer than a pattern's short
+   code+name tile ("Barcelona 2008-12 (Guardiola)" vs "A5: Third-Man Run"),
+   long enough on a phone-width meta bar to force PatternsPage.css's
+   .patterns-meta-bar onto a second flex line (its title has no min-width:
+   0, so the nowrap+ellipsis on .patterns-meta-title never actually
+   engages inside a flex row). A wrapped second line pushes Details/Clear
+   down far enough to sit under the details panel (top: 54px on phone),
+   which then intercepts their clicks. Force a single row here and let the
+   title itself truncate (PNG 44/45: the meta bar shows a truncated name,
+   never a wrapped one), which is what PatternsPage.css already intended. */
+.identity-page .patterns-meta-bar {
+  flex-wrap: nowrap;
+}
+.identity-page .patterns-meta-title {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* Neutral Clear button (design README: red is status only, never a call
+   to action, so Clear never uses it; same convention as
+   RosterPage.css's .roster-page .ctl-ghost). */
+.identity-page .ctl-ghost {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--text-secondary);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.identity-details-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.identity-detail-row p {
+  margin: 0;
+}
+
+.identity-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.identity-tag {
+  font-family: var(--display-font);
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--accent);
+}
+
+.identity-keystone-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Pass-risk block (Bible 5.7, style archetypes only): Encouraged in gold
+   (matches the confirmed-lane / interactive convention), Off-menu in the
+   status red used elsewhere for blocked lanes and fit warnings (never a
+   clickable control, so this is not "red as a CTA"), Tempo muted italic. */
+.identity-risk-encouraged {
+  color: var(--accent);
+  font-weight: 600;
+}
+.identity-risk-discouraged {
+  color: var(--text-red, var(--red));
+  font-weight: 600;
+}
+.identity-risk-tempo {
+  color: var(--text-secondary);
+  font-style: italic;
+}

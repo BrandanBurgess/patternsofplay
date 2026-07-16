@@ -163,6 +163,43 @@ class LibraryItemOut(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Identities: reference teams, style archetypes, cult corner (doc 03
+# section 5, Bible 5, 5.7, 6; Brief step 20; T-034). Library world, same
+# no-team-scope reasoning as LibraryItemOut above.
+# ---------------------------------------------------------------------------
+
+
+class IdentityOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    kind: Literal["style_archetype", "reference_team", "cult_card"]
+    code: str
+    name: str
+    tag_line: str
+    formation_code: str | None
+    core_idea: str
+    signature_pattern_codes: list[str]
+    # keystone_roles_json shape depends on kind: reference teams carry
+    # {"role", "note"} objects (doc 03 5 example), style archetypes and cult
+    # cards carry a plain role-code list or null, so this stays a free list
+    # rather than a fixed model (mirrors LibraryItemOut.extras above).
+    keystone_roles: list | None = Field(default=None, validation_alias="keystone_roles_json")
+    youth_takeaway: str
+    block: Literal["high", "mid", "low"] | None
+    # style archetypes only (Bible 5.7): encouraged/tolerated/discouraged/tempo_rule.
+    pass_risk: dict | None = Field(default=None, validation_alias="pass_risk_json")
+    shape_render: Literal["animated", "static", "details_only"]
+    signature_animation_spec: AnimationSpec | None = Field(
+        default=None, validation_alias="signature_animation_spec_json"
+    )
+    # {"positions": [{"slot","role_hint","x","y"}, ...], "note": str}
+    # (doc 03 5 Atletico/Man City examples); a free dict for the same reason
+    # as extras above.
+    static_shape: dict | None = Field(default=None, validation_alias="static_shape_json")
+
+
+# ---------------------------------------------------------------------------
 # Roster (doc 03 section 3, Bible sections 1-2; Brief step 19; T-033).
 # ---------------------------------------------------------------------------
 

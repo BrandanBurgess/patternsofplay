@@ -8,13 +8,14 @@ import { TeamOnboarding } from "./TeamOnboarding";
 import { WhiteboardPage } from "./pages/WhiteboardPage";
 import { PatternsPage } from "./pages/PatternsPage";
 import { RosterPage } from "./pages/RosterPage";
+import { IdentityPage } from "./pages/IdentityPage";
 import ThemeSwitcher from "./theme/ThemeSwitcher";
 import "./App.css";
 
-// Nav entries live so far (T-031 Patterns, T-033 Roster alongside T-030's
-// Whiteboard); Formations/Identity join this list as their own
-// tickets land, without AppShell.tsx itself needing another edit.
-const ENABLED_NAV_KEYS: readonly NavKey[] = ["whiteboard", "patterns", "roster"];
+// Nav entries live so far (T-031 Patterns, T-033 Roster, T-034 Identity
+// alongside T-030's Whiteboard); Formations joins this list as its own
+// ticket lands, without AppShell.tsx itself needing another edit.
+const ENABLED_NAV_KEYS: readonly NavKey[] = ["whiteboard", "patterns", "roster", "identity"];
 
 // Portrait on phone-width viewports, landscape otherwise (design README: all
 // boards render portrait on phone). Derived purely from viewport width, no
@@ -121,6 +122,8 @@ export default function App() {
         <PatternsPage orientation={orientation} onOpenOnWhiteboard={() => setPage("whiteboard")} />
       ) : page === "roster" ? (
         <RosterPage role={membership.role_on_team} />
+      ) : page === "identity" ? (
+        <IdentityPage orientation={orientation} />
       ) : (
         <WhiteboardPage orientation={orientation} role={membership.role_on_team} />
       )}

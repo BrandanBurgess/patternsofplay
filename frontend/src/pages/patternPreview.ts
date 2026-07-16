@@ -21,7 +21,11 @@ import { DEFAULT_BLOCKING_THRESHOLD, DEFAULT_MARKING_THRESHOLD } from "../board/
 import type { PreviewToken } from "../board/PatternPreviewBoard";
 import type { ModelPoint } from "../board/coords";
 
-function toDeclarativeSpec(spec: AnimationSpecWire): DeclarativeSpec {
+// Exported so identityPreview.ts (T-034) can reuse this conversion for
+// identities.signature_animation_spec_json instead of re-deriving it: doc
+// 03 4.1 is the exact same declarative-spec wire shape for both a library
+// preset and a reference team's signature animation.
+export function toDeclarativeSpec(spec: AnimationSpecWire): DeclarativeSpec {
   return {
     slots: spec.slots.map((s) => ({
       slot: s.slot,
