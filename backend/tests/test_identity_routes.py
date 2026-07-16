@@ -73,6 +73,7 @@ def _seed_identities() -> None:
                 signature_pattern_codes=["A1"],
                 keystone_roles_json=[{"role": "single_pivot", "note": "The pivot."}],
                 youth_takeaway="A youth takeaway line.",
+                age_hint="U13+",
                 block="high",
                 pass_risk_json=None,
                 shape_render="animated",
@@ -93,6 +94,7 @@ def _seed_identities() -> None:
                 signature_pattern_codes=[],
                 keystone_roles_json=[{"role": "stopper_cb", "note": "The stopper."}],
                 youth_takeaway="Another youth takeaway.",
+                age_hint="U11+",
                 block="mid",
                 pass_risk_json=None,
                 shape_render="static",
@@ -113,6 +115,7 @@ def _seed_identities() -> None:
                 signature_pattern_codes=["B5"],
                 keystone_roles_json=["single_pivot", "false_9"],
                 youth_takeaway="A style youth takeaway.",
+                age_hint="U13+",
                 block="high",
                 pass_risk_json={
                     "encouraged": ["Short circulation"],
@@ -138,6 +141,7 @@ def _seed_identities() -> None:
                 signature_pattern_codes=[],
                 keystone_roles_json=None,
                 youth_takeaway="A cult corner youth takeaway.",
+                age_hint="U9+",
                 block=None,
                 pass_risk_json=None,
                 shape_render="details_only",
@@ -203,3 +207,15 @@ def test_players_can_browse_identities_too(client: TestClient) -> None:
 def test_identity_route_requires_authentication(client: TestClient) -> None:
     _seed_identities()
     assert client.get("/api/identities").status_code == 401
+
+
+def test_every_identity_carries_a_non_empty_age_hint(client: TestClient) -> None:
+    """T-012 (Bible 8.2.4 / doc 03 amendment): every identity, of every
+    kind, must serve a non-empty age_hint through the route, same rule
+    LibraryItemOut already enforces for patterns/deliveries/rotations."""
+    _seed_identities()
+    coach = _coach_with_team()
+    identities = coach.get("/api/identities").json()
+    assert len(identities) == 4
+    for item in identities:
+        assert item["age_hint"], f"{item['code']}: missing age_hint"

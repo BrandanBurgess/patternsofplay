@@ -15,6 +15,7 @@
         "single_pivot", "advanced_8", "false_9", "inside_forward", "touchline_winger"
       ],
       "youth_takeaway": "Teach the team to occupy zones and form triangles, and the free man appears from structure, not from individual talent.",
+      "age_hint": "U13+",
       "block": "high",
       "pass_risk_json": {
         "encouraged": ["Short circulation", "line-breakers into feet", "F7 slide-rule through balls", "prepared B3 switches", "F1 cutbacks"],
@@ -40,6 +41,7 @@
         "overlapping_fb", "anchor_destroyer", "classic_10", "wide_forward", "runner_in_behind"
       ],
       "youth_takeaway": "A team does not need the ball to be dangerous: know exactly who sprints and where the instant it is won back.",
+      "age_hint": "U11+",
       "block": "mid",
       "pass_risk_json": {
         "encouraged": ["First pass forward", "F8 ball over the top", "F7 slide-rule through balls", "F2 early crosses"],
@@ -65,6 +67,7 @@
         "box_to_box_8", "false_9", "inside_forward"
       ],
       "youth_takeaway": "Effort can be a system, not just a vibe: pressing has choreography, with curved runs and triggers, that can be trained like a passing drill.",
+      "age_hint": "U13+",
       "block": "high",
       "pass_risk_json": {
         "encouraged": ["Vertical ground passes", "F3 driven crosses", "quick F7 through balls after regains"],
@@ -90,6 +93,7 @@
         "anchor_destroyer", "box_to_box_8", "target_man", "runner_in_behind"
       ],
       "youth_takeaway": "Defending deep is a plan, not a surrender: never send a block out without an outlet to break with.",
+      "age_hint": "U11+",
       "block": "low",
       "pass_risk_json": {
         "encouraged": ["F13 channel outlets", "long clearances to the target", "F8 over the top when sprung"],
@@ -115,6 +119,7 @@
         "box_to_box_8", "touchline_winger", "target_man", "second_striker"
       ],
       "youth_takeaway": "Winning the loose ball after a long pass is a team job that can be organised and drilled, not left to chance.",
+      "age_hint": "U9+",
       "block": "mid",
       "pass_risk_json": {
         "encouraged": ["F13 channel balls", "long diagonals to the target", "F4 floated crosses", "forward throw-ins"],
@@ -140,6 +145,7 @@
         "anchor_destroyer", "classic_10", "second_striker", "target_man"
       ],
       "youth_takeaway": "Teams do not have to pick a single lane: the sanest identity for most youth sides is one that can do both.",
+      "age_hint": "U13+",
       "block": "mid",
       "pass_risk_json": {
         "encouraged": ["The possession menu when controlling the game", "the counter menu on transition"],
