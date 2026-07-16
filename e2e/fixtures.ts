@@ -41,12 +41,15 @@ export function uniqueEmail(prefix: string): string {
 }
 
 /** Registers a fresh coach, creates a team, and waits for the whiteboard
- * board to render. Returns the team's join code (coach-only, per the
- * README roles table) for tests that also need a player on the same team. */
+ * board to render. Returns both of the team's join codes (coach-only, per
+ * the README roles table): `joinCode` is the PLAYER code (kept as the
+ * name every pre-T-043 caller of this helper already uses, so every spec
+ * file that destructures `{ joinCode }` for a player join keeps working
+ * unchanged), `coachJoinCode` is the new one (T-043 decision 1). */
 export async function registerCoach(
   page: Page,
   opts: { displayName?: string; teamName?: string } = {}
-): Promise<{ email: string; joinCode: string }> {
+): Promise<{ email: string; joinCode: string; coachJoinCode: string }> {
   const email = uniqueEmail("coach");
   await page.goto("/");
   await page.getByLabel("Name").fill(opts.displayName ?? "Coach Test");
@@ -57,25 +60,49 @@ export async function registerCoach(
   await page.getByLabel("Team name").fill(opts.teamName ?? `Team ${Date.now()}`);
   await page.getByRole("button", { name: "Create team" }).click();
   await expect(page.getByTestId("board")).toBeVisible();
-  const joinCode = (await page.locator(".join-code strong").textContent())?.trim() ?? "";
-  return { email, joinCode };
+  const joinCode = (await page.getByTestId("join-code-player").textContent())?.trim() ?? "";
+  const coachJoinCode = (await page.getByTestId("join-code-coach").textContent())?.trim() ?? "";
+  return { email, joinCode, coachJoinCode };
 }
 
-/** Registers a fresh player and joins the given team's join code, waiting
- * for the whiteboard board to render. */
+/** Registers a fresh player and joins with the given (player) join code,
+ * waiting for the whiteboard board to render. Joining with a player code
+ * always assigns role_on_team "player" (T-043 decision 1), regardless of
+ * the account's own role, which is what this helper's callers rely on. */
 export async function registerPlayer(
   page: Page,
   joinCode: string,
   opts: { displayName?: string } = {}
 ): Promise<{ email: string }> {
-  const email = uniqueEmail("player");
+  const { email } = await registerAndJoinTeam(page, joinCode, {
+    role: "player",
+    displayName: opts.displayName ?? "Player Test",
+  });
+  return { email };
+}
+
+/** Registers a fresh account of the given account role and joins an
+ * EXISTING team with the given code. The role assigned ON THE TEAM comes
+ * entirely from which of the team's two codes is passed here (T-043
+ * decision 1), not from `opts.role` (the new account's own global role,
+ * which only decides whether this account could ALSO see a "Create your
+ * team" form, never which team role a join grants). Used by
+ * e2e/team-management.spec.ts to prove both directions: a coach-role
+ * account joining with the player code, and a player-role account joining
+ * with the coach code. */
+export async function registerAndJoinTeam(
+  page: Page,
+  code: string,
+  opts: { role: "coach" | "player"; displayName?: string } = { role: "player" }
+): Promise<{ email: string }> {
+  const email = uniqueEmail(opts.role);
   await page.goto("/");
-  await page.getByLabel("Name").fill(opts.displayName ?? "Player Test");
+  await page.getByLabel("Name").fill(opts.displayName ?? (opts.role === "coach" ? "Coach Test" : "Player Test"));
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(PASSWORD);
-  await page.getByRole("radio", { name: "Player" }).check();
+  await page.getByRole("radio", { name: opts.role === "coach" ? "Coach" : "Player" }).check();
   await page.getByRole("button", { name: "Create account" }).click();
-  await page.getByLabel("Join code").fill(joinCode);
+  await page.getByLabel("Join code").fill(code);
   await page.getByRole("button", { name: "Join team" }).click();
   await expect(page.getByTestId("board")).toBeVisible();
   return { email };

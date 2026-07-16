@@ -396,34 +396,201 @@ def test_players_are_additive_only__every_player_write_route_is_a_create(
 
 
 # ---------------------------------------------------------------------------
-# Known ambiguity (T-040 instruction: do not change current behavior, pin
-# and report it): join codes. The design README/Brief section 3 table does
-# not list join codes as coach-only, but the UI (TeamMeta.tsx) only shows
-# the join-code block to a coach. The API was never told to withhold it:
-# TeamOut.join_code is returned to any team member by both GET
-# /api/teams/current and GET /api/auth/me. docs/agent/STATE.md's open
-# founder questions list already flags this ("Confirm before T-040 locks
-# the pattern"). This test PINS the current, unchanged behavior so a
-# future change is a deliberate, visible diff here, not an accidental one.
+# Row (T-043 decision 2, resolves the ambiguity T-040 pinned above): join
+# codes are coach-only in the API, not just the UI. Both
+# GET /api/teams/current and GET /api/auth/me carry BOTH join_code (player
+# code) and coach_join_code for a coach caller, and NEITHER key at all
+# (absent, not null) for a player caller. This replaces
+# test_join_code_is_returned_to_a_player_by_the_api_ambiguity_pinned_not_enforced,
+# which pinned the OLD (unenforced) behavior; T-043 is the deliberate,
+# visible diff that test's own docstring said a future change would be.
 # ---------------------------------------------------------------------------
 
 
-def test_join_code_is_returned_to_a_player_by_the_api_ambiguity_pinned_not_enforced(
-    client: TestClient,
-) -> None:
+def test_join_codes__coach_sees_both_codes_player_sees_neither_key(client: TestClient) -> None:
     coach = _coach_with_team()
     player = _player_on_team(coach, email="player@example.com")
 
-    join_code = coach.get("/api/teams/current").json()["join_code"]
-    assert len(join_code) == 6
+    coach_team = coach.get("/api/teams/current").json()
+    assert len(coach_team["join_code"]) == 6
+    assert len(coach_team["coach_join_code"]) == 6
+    assert coach_team["join_code"] != coach_team["coach_join_code"]
 
-    # Current (unchanged) behavior: a player's own /api/teams/current
-    # response also carries join_code. The UI is the only layer that
-    # withholds it from a player today (TeamMeta.tsx renders the block
-    # only when role_on_team == "coach"). See docs/agent/STATE.md open
-    # founder question 2 and this ticket's final report.
+    coach_me = coach.get("/api/auth/me").json()
+    coach_me_team = coach_me["memberships"][0]["team"]
+    assert coach_me_team["join_code"] == coach_team["join_code"]
+    assert coach_me_team["coach_join_code"] == coach_team["coach_join_code"]
+
+    # Player: both keys entirely absent, not null, from both endpoints
+    # (CLAUDE.md rule 5, same "absent not null" contract test_roster_routes.py
+    # / test_roster.py's fit_warnings proof already establishes).
     player_team = player.get("/api/teams/current").json()
-    assert player_team["join_code"] == join_code
+    assert "join_code" not in player_team
+    assert "coach_join_code" not in player_team
 
     player_me = player.get("/api/auth/me").json()
-    assert player_me["memberships"][0]["team"]["join_code"] == join_code
+    player_me_team = player_me["memberships"][0]["team"]
+    assert "join_code" not in player_me_team
+    assert "coach_join_code" not in player_me_team
+
+
+# ---------------------------------------------------------------------------
+# Row (T-043 decision 1): role-scoped join codes. Joining with the player
+# code always assigns role_on_team "player", and joining with the coach
+# code always assigns role_on_team "coach", regardless of the joining
+# account's OWN global `role` (a coach-role account can join as a player,
+# and a player-role account can join as a coach, whichever code they use).
+# ---------------------------------------------------------------------------
+
+
+def test_join_codes_are_role_scoped__account_role_never_decides(client: TestClient) -> None:
+    coach = _coach_with_team()
+    player_code = coach.get("/api/teams/current").json()["join_code"]
+    coach_code = coach.get("/api/teams/current").json()["coach_join_code"]
+
+    # A COACH-role account joining with the PLAYER code becomes a player
+    # on this team.
+    coach_account = TestClient(app)
+    _register(coach_account, email="second-coach@example.com", role="coach", display_name="Second Coach")
+    joined_as_player = coach_account.post("/api/teams/join", json={"join_code": player_code})
+    assert joined_as_player.status_code == 200
+    assert "join_code" not in joined_as_player.json()  # player-shaped response
+    me = coach_account.get("/api/auth/me").json()
+    assert me["memberships"][0]["role_on_team"] == "player"
+
+    # A PLAYER-role account joining with the COACH code becomes a coach on
+    # this team.
+    player_account = client
+    _register(player_account, email="became-coach@example.com", role="player", display_name="Became Coach")
+    joined_as_coach = player_account.post("/api/teams/join", json={"join_code": coach_code})
+    assert joined_as_coach.status_code == 200
+    body = joined_as_coach.json()
+    assert body["join_code"] == player_code  # coach-shaped response, both codes present
+    assert body["coach_join_code"] == coach_code
+    me2 = player_account.get("/api/auth/me").json()
+    assert me2["memberships"][0]["role_on_team"] == "coach"
+
+
+# ---------------------------------------------------------------------------
+# Row (T-043 decision 3): head-coach member management. The head coach is
+# the team's CREATOR (Team.created_by), not just any coach. Remove and
+# role-change are 403 for a non-head coach AND a player; the member list
+# itself is any coach's to view (403 for a player only).
+# ---------------------------------------------------------------------------
+
+
+def test_team_member_list__coach_yes_player_403(client: TestClient) -> None:
+    coach = _coach_with_team()
+    player = _player_on_team(coach, email="player@example.com", name="Sam Player")
+
+    listed = coach.get("/api/teams/members")
+    assert listed.status_code == 200
+    names = {row["display_name"] for row in listed.json()}
+    assert names == {"Coach Test", "Sam Player"}
+    head = next(row for row in listed.json() if row["display_name"] == "Coach Test")
+    assert head["is_head_coach"] is True
+    non_head = next(row for row in listed.json() if row["display_name"] == "Sam Player")
+    assert non_head["is_head_coach"] is False
+
+    assert player.get("/api/teams/members").status_code == 403
+
+
+def test_head_coach_can_remove_a_member__non_head_coach_and_player_403(
+    client: TestClient,
+) -> None:
+    head_coach = _coach_with_team()
+    coach_code = head_coach.get("/api/teams/current").json()["coach_join_code"]
+
+    # A second coach joins the same team via the coach code (not the
+    # creator, so not the head coach).
+    other_coach = TestClient(app)
+    _register(other_coach, email="other-coach@example.com", role="coach", display_name="Other Coach")
+    other_coach.post("/api/teams/join", json={"join_code": coach_code})
+
+    player = _player_on_team(head_coach, email="player@example.com", name="Sam Player")
+    player_member_id = next(
+        row["id"]
+        for row in head_coach.get("/api/teams/members").json()
+        if row["display_name"] == "Sam Player"
+    )
+
+    # A non-head coach cannot remove anyone, even a player.
+    assert other_coach.delete(f"/api/teams/members/{player_member_id}").status_code == 403
+    # A player cannot remove anyone either.
+    assert player.delete(f"/api/teams/members/{player_member_id}").status_code == 403
+    # The row survives both rejected attempts.
+    assert any(
+        row["display_name"] == "Sam Player" for row in head_coach.get("/api/teams/members").json()
+    )
+
+    # The head coach can remove the player.
+    removed = head_coach.delete(f"/api/teams/members/{player_member_id}")
+    assert removed.status_code == 204
+    assert not any(
+        row["display_name"] == "Sam Player" for row in head_coach.get("/api/teams/members").json()
+    )
+    # The removed player no longer has a membership (they would need to
+    # rejoin with a code to come back).
+    assert player.get("/api/auth/me").json()["memberships"] == []
+
+    # The head coach cannot remove themself.
+    head_member_id = next(
+        row["id"]
+        for row in head_coach.get("/api/teams/members").json()
+        if row["display_name"] == "Coach Test"
+    )
+    assert head_coach.delete(f"/api/teams/members/{head_member_id}").status_code == 400
+
+
+def test_head_coach_can_change_a_members_role__non_head_coach_and_player_403(
+    client: TestClient,
+) -> None:
+    head_coach = _coach_with_team()
+    coach_code = head_coach.get("/api/teams/current").json()["coach_join_code"]
+
+    other_coach = TestClient(app)
+    _register(other_coach, email="other-coach@example.com", role="coach", display_name="Other Coach")
+    other_coach.post("/api/teams/join", json={"join_code": coach_code})
+
+    player = _player_on_team(head_coach, email="player@example.com", name="Sam Player")
+    player_member_id = next(
+        row["id"]
+        for row in head_coach.get("/api/teams/members").json()
+        if row["display_name"] == "Sam Player"
+    )
+
+    # Non-head coach and player attempts are both rejected; role unchanged.
+    assert (
+        other_coach.patch(
+            f"/api/teams/members/{player_member_id}/role", json={"role_on_team": "coach"}
+        ).status_code
+        == 403
+    )
+    assert (
+        player.patch(
+            f"/api/teams/members/{player_member_id}/role", json={"role_on_team": "coach"}
+        ).status_code
+        == 403
+    )
+    assert player.get("/api/auth/me").json()["memberships"][0]["role_on_team"] == "player"
+
+    # The head coach promotes the player to coach.
+    promoted = head_coach.patch(
+        f"/api/teams/members/{player_member_id}/role", json={"role_on_team": "coach"}
+    )
+    assert promoted.status_code == 200
+    assert promoted.json()["role_on_team"] == "coach"
+    assert player.get("/api/auth/me").json()["memberships"][0]["role_on_team"] == "coach"
+    # The promoted member now sees both join codes, coach-shaped.
+    assert "coach_join_code" in player.get("/api/teams/current").json()
+
+    # The head coach cannot change their own role.
+    head_member_id = next(
+        row["id"]
+        for row in head_coach.get("/api/teams/members").json()
+        if row["display_name"] == "Coach Test"
+    )
+    own_role_change = head_coach.patch(
+        f"/api/teams/members/{head_member_id}/role", json={"role_on_team": "player"}
+    )
+    assert own_role_change.status_code == 400

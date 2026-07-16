@@ -77,6 +77,12 @@ async function dragTokenTo(page: Page, id: string, m: { x: number; y: number }) 
  * them leak onto a page they were not designed for either. */
 async function assertNoCoachOnlyChrome(page: Page) {
   await expect(page.locator(".join-code")).toHaveCount(0);
+  // T-043 decision 2/3: both join codes and the head-coach member
+  // management toggle are coach-only ambient chrome, same treatment as
+  // the join-code block above.
+  await expect(page.getByTestId("join-code-player")).toHaveCount(0);
+  await expect(page.getByTestId("join-code-coach")).toHaveCount(0);
+  await expect(page.getByTestId("team-members-toggle")).toHaveCount(0);
   await expect(page.locator(".fit-warning")).toHaveCount(0);
   await expect(page.getByTestId("roster-add-player")).toHaveCount(0);
   await expect(page.getByTestId("player-edit")).toHaveCount(0);

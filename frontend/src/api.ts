@@ -19,14 +19,33 @@ export interface TeamOut {
   age_group: string | null;
   level: string | null;
   colors_json: Record<string, unknown> | null;
-  join_code: string;
   created_by: number;
   created_at: string;
+  // Both join codes are coach-only (T-043 decision 2): present only when
+  // the caller's role_on_team for this team is "coach", ABSENT (not
+  // null/empty) for a player, so these stay optional rather than
+  // `string | null`. join_code is the player code, coach_join_code is
+  // the coach code.
+  join_code?: string;
+  coach_join_code?: string;
 }
 
 export interface MembershipOut {
   team: TeamOut;
   role_on_team: Role;
+  joined_at: string;
+}
+
+export interface TeamMemberOut {
+  id: number;
+  user_id: number;
+  display_name: string;
+  role_on_team: Role;
+  // Derived server-side from Team.created_by (T-043 decision 3): drives
+  // which member row gets remove/role controls in the UI. Still
+  // re-enforced on the mutation routes themselves, not trusted as the
+  // only gate (CLAUDE.md rule 5).
+  is_head_coach: boolean;
   joined_at: string;
 }
 
@@ -108,4 +127,23 @@ export function createTeam(input: {
 
 export function joinTeam(input: { join_code: string }): Promise<TeamOut> {
   return request<TeamOut>("/teams/join", { method: "POST", body: JSON.stringify(input) });
+}
+
+// Head-coach member management (T-043 decision 3). The list itself is
+// visible to any coach; the API 403s a non-head coach or a player who
+// calls remove/updateRole regardless of what the UI renders for them.
+
+export function fetchTeamMembers(): Promise<TeamMemberOut[]> {
+  return request<TeamMemberOut[]>("/teams/members");
+}
+
+export function removeTeamMember(memberId: number): Promise<void> {
+  return request<void>(`/teams/members/${memberId}`, { method: "DELETE" });
+}
+
+export function updateTeamMemberRole(memberId: number, role: Role): Promise<TeamMemberOut> {
+  return request<TeamMemberOut>(`/teams/members/${memberId}/role`, {
+    method: "PATCH",
+    body: JSON.stringify({ role_on_team: role }),
+  });
 }

@@ -46,9 +46,11 @@ test("coach creates a team and sees a join code; player joins with it", async ({
   await page.getByLabel("Team name").fill(teamName);
   await page.getByRole("button", { name: "Create team" }).click();
 
-  // --- Coach sees the join code ---
+  // --- Coach sees the join code (T-043: the player code specifically;
+  // the coach also sees a separate coach code, asserted in
+  // e2e/team-management.spec.ts) ---
   await expect(page.getByRole("heading", { name: teamName })).toBeVisible();
-  const joinCodeLocator = page.locator(".join-code strong");
+  const joinCodeLocator = page.getByTestId("join-code-player");
   await expect(joinCodeLocator).toBeVisible();
   const joinCode = (await joinCodeLocator.textContent())?.trim() ?? "";
   expect(joinCode).toHaveLength(6);

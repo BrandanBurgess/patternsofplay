@@ -47,8 +47,16 @@ def _make_team_with_coach(db: Session, *, name: str, email: str) -> tuple[Team, 
     db.add(user)
     db.flush()
     # Join codes must be unique across teams; derive one from the user id
-    # (assigned on flush above) so team A and team B never collide.
-    team = Team(name=name, join_code=f"CODE{user.id:02d}", created_by=user.id)
+    # (assigned on flush above) so team A and team B never collide. Two
+    # codes now (T-043): player (join_code) and coach (coach_join_code),
+    # both required columns, distinct namespaces that must never overlap
+    # either (app/routers/teams.py _unique_code).
+    team = Team(
+        name=name,
+        join_code=f"CODE{user.id:02d}",
+        coach_join_code=f"COAC{user.id:02d}",
+        created_by=user.id,
+    )
     db.add(team)
     db.flush()
     db.add(TeamMember(team_id=team.id, user_id=user.id, role_on_team="coach"))

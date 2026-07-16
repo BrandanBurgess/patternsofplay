@@ -50,10 +50,21 @@ class TeamCreateRequest(BaseModel):
 
 
 class TeamJoinRequest(BaseModel):
+    """A joiner submits ONE code; which role they get on the team is
+    resolved entirely from which of the team's two join-code columns the
+    code matches (T-043 founder decision 2026-07-16), never from the
+    joiner's own account role. See app/routers/teams.py join_team."""
+
     join_code: str = Field(min_length=1, max_length=12)
 
 
 class TeamOut(BaseModel):
+    """Player-safe team shape: no join-code field at all (T-043 decision
+    2: both codes are coach-only, and must be ABSENT from a player
+    payload, not null). See CoachTeamOut below for the coach-only
+    superset, same RosterOut/CoachRosterOut split app/routers/roster.py
+    already uses for fit_warnings (CLAUDE.md rule 5)."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -61,9 +72,20 @@ class TeamOut(BaseModel):
     age_group: str | None
     level: str | None
     colors_json: dict | None
-    join_code: str
     created_by: int
     created_at: datetime
+
+
+class CoachTeamOut(TeamOut):
+    """Adds both join codes, only ever built for a coach caller
+    (app/routers/teams.py): `join_code` is the player code (the original
+    T-003 column, repurposed in place, see app/models/platform.py Team),
+    `coach_join_code` is the new one. Never validated/dumped through the
+    plain TeamOut type, so these two extra keys are never silently
+    dropped by a shared response_model (see the module docstring header)."""
+
+    join_code: str
+    coach_join_code: str
 
 
 class MembershipOut(BaseModel):
@@ -74,9 +96,57 @@ class MembershipOut(BaseModel):
     joined_at: datetime
 
 
+class CoachMembershipOut(MembershipOut):
+    """Same coach-only substitution as CoachTeamOut, one level up: used
+    for a membership whose role_on_team is 'coach' so GET /api/auth/me's
+    memberships list carries both join codes for a coach's own team(s)
+    and neither key at all for a player's."""
+
+    team: CoachTeamOut
+
+
+class TeamMemberOut(BaseModel):
+    """GET /api/teams/members row (T-043 decision 3: head-coach member
+    management). Coach-only end to end (the route itself 403s a player,
+    require_role_on_team("coach")), so no player-vs-coach split is needed
+    on this model the way TeamOut/CoachTeamOut needs one.
+
+    `is_head_coach` is derived server-side from `Team.created_by`, never
+    a client-supplied field, so the frontend can gate its remove/role
+    controls on it without re-deriving the creator check itself (it must
+    still be enforced again on the mutation routes; this field only
+    drives which controls the UI renders, per CLAUDE.md rule 5's
+    UI-is-not-enough principle)."""
+
+    id: int
+    user_id: int
+    display_name: str
+    role_on_team: RoleOnTeam
+    is_head_coach: bool
+    joined_at: datetime
+
+
+class TeamMemberRoleUpdateRequest(BaseModel):
+    """PATCH /api/teams/members/{id}/role body. Head-coach-only
+    (app/deps.py require_head_coach); changing a member's own role is
+    rejected regardless of this payload's contents (T-043 decision 3:
+    "not their own")."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    role_on_team: RoleOnTeam
+
+
 class MeOut(BaseModel):
     """GET /api/auth/me always returns 200: user is null when signed out.
-    See app/deps.py get_current_user_optional for why this is not a 401."""
+    See app/deps.py get_current_user_optional for why this is not a 401.
+
+    Documents the wire shape only: the route itself is response_model=None
+    and returns an already-serialized dict (same pattern as
+    app/routers/roster.py get_roster), because `memberships` mixes
+    MembershipOut and CoachMembershipOut entries per-row depending on each
+    membership's own role_on_team, which a single shared response_model
+    cannot express without silently coercing one shape into the other."""
 
     user: UserOut | None
     memberships: list[MembershipOut]
