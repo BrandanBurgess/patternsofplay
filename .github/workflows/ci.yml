@@ -1,0 +1,30 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13" }
+      - name: Bootstrap
+        run: make bootstrap
+      - name: Copy checks (em-dash scan + seed validator)
+        run: make check-copy
+      - name: Lint + typecheck
+        run: make lint typecheck
+      - name: Unit + integration
+        run: make test
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      - name: E2E (mobile + desktop projects)
+        run: make e2e
+        env: { DATABASE_URL: "sqlite:///./ci.db" }
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-report, path: playwright-report/ }

@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="pitch">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patterns of Play — MVP screen mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--display-font:'Oswald',sans-serif;--body-font:'Inter',sans-serif;--radius:10px;}
+html[data-theme="pitch"]{--bg:#0F3C2C;--bg-stripe:#3B7A57;--bg-stripe-alt:#336A4B;--sidebar-bg:#0B2F22;--surface:#1B4B39;
+ --text-primary:#F5F3E9;--text-secondary:#A9C4B3;--border:rgba(245,243,233,.12);
+ --accent:#E8B923;--accent-ink:#3A2B00;--glow:#FFD65A;--line:rgba(245,243,233,.28);
+ --red:#E23D42;--on-red:#fff;--bg-red:rgba(226,61,66,.18);--text-red:#FF8A8D;}
+html[data-theme="dark"]{--bg:#14161A;--bg-stripe:#1A1D22;--bg-stripe-alt:#1A1D22;--sidebar-bg:#191C21;--surface:#1D2025;
+ --text-primary:#ECEDEE;--text-secondary:#888E97;--border:rgba(255,255,255,.08);
+ --accent:#4FA8FF;--accent-ink:#052240;--glow:#7CC1FF;--line:rgba(255,255,255,.14);
+ --red:#E5484D;--on-red:#fff;--bg-red:rgba(229,72,77,.16);--text-red:#FF9298;}
+html[data-theme="board"]{--bg:#FAFAF6;--bg-stripe:#F1F2EC;--bg-stripe-alt:#F1F2EC;--sidebar-bg:#F1F2EC;--surface:#fff;
+ --text-primary:#1B2420;--text-secondary:#657064;--border:rgba(27,36,32,.12);
+ --accent:#2D6A4F;--accent-ink:#EAF3EE;--glow:#2D6A4F;--line:rgba(27,36,32,.22);
+ --red:#C81E2C;--on-red:#fff;--bg-red:#FBE7E7;--text-red:#B01F26;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--body-font);background:#0A0C0B;color:var(--text-primary);padding:14px;}
+.controls{display:flex;gap:8px;justify-content:center;margin-bottom:12px;}
+.ctl{padding:7px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:transparent;color:#ddd;font-size:13px;cursor:pointer;font-family:var(--body-font);}
+.ctl.on{background:#E8B923;color:#3A2B00;border-color:transparent;}
+.frame{margin:0 auto;max-width:1200px;height:calc(100vh - 76px);min-height:560px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.15);transition:max-width .3s;}
+.frame.phone{max-width:390px;height:780px;border-radius:34px;border:6px solid #222;}
+.shell{position:relative;display:grid;grid-template-columns:200px 1fr;grid-template-rows:54px 1fr;height:100%;background:var(--bg);}
+.topbar{grid-column:1/3;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:1px solid var(--border);background:var(--sidebar-bg);}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--display-font);font-weight:600;font-size:15px;white-space:nowrap;}
+.bdot{width:9px;height:9px;border-radius:50%;background:var(--glow);box-shadow:0 0 10px 2px var(--glow);animation:bp 2.2s ease-in-out infinite;}
+@keyframes bp{0%,100%{transform:scale(1)}50%{transform:scale(1.3);opacity:.7}}
+.spacer{flex:1;}
+.themepicker{display:flex;gap:6px;padding:4px;border:1px solid var(--border);border-radius:999px;}
+.swatch{width:16px;height:16px;border-radius:50%;cursor:pointer;border:2px solid transparent;}
+.swatch[data-t="pitch"]{background:#0F3C2C;}.swatch[data-t="dark"]{background:#14161A;}
+.swatch[data-t="board"]{background:#FAFAF6;border-color:rgba(0,0,0,.15);}
+.swatch.active{border-color:var(--accent);}
+.sidebar{background:var(--sidebar-bg);border-right:1px solid var(--border);padding:14px 8px;display:flex;flex-direction:column;gap:2px;}
+.navitem{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--radius);font-size:13px;color:var(--text-secondary);cursor:pointer;}
+.navitem svg{width:16px;height:16px;flex:none;}
+.navitem.active{background:var(--accent);color:var(--accent-ink);font-weight:500;}
+.main{overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+h1{font-family:var(--display-font);font-weight:500;font-size:18px;margin:0;}
+.info-btn{width:18px;height:18px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text-secondary);
+ font-family:var(--display-font);font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.info-card{display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:12px;color:var(--text-secondary);line-height:1.5;}
+.info-card.show{display:block;}
+.chiprow{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{padding:6px 11px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-secondary);font-size:12px;cursor:pointer;white-space:nowrap;}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:transparent;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px 12px;cursor:pointer;}
+.card:hover{border-color:var(--accent);}
+.card .code{font-size:10px;letter-spacing:.1em;color:var(--accent);font-family:var(--display-font);}
+.card h3{font-family:var(--display-font);font-weight:500;font-size:15px;margin:2px 0 6px;}
+.card p{font-size:12px;color:var(--text-secondary);margin:0;line-height:1.5;}
+.tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;}
+.tag{font-size:10px;padding:3px 7px;border-radius:999px;background:var(--bg-red);color:var(--text-red);}
+.tag.gold{background:rgba(232,185,35,.15);color:var(--glow);}
+.tag.dim{background:transparent;border:1px solid var(--border);color:var(--text-secondary);}
+.thumb{display:block;width:100%;border-radius:8px;margin-bottom:8px;background-image:repeating-linear-gradient(115deg,var(--bg-stripe) 0 14px,var(--bg-stripe-alt) 14px 28px);border:1px solid var(--border);}
+.thumb .tl{stroke:var(--line);stroke-width:.7;fill:none;}
+.thumb .mv{stroke:var(--text-secondary);stroke-width:1;stroke-dasharray:2 2;fill:none;opacity:.8;}
+.thumb .bp{stroke:var(--glow);stroke-width:1.3;fill:none;}
+.thumb circle.pd{fill:var(--surface);stroke:var(--accent);stroke-width:1.2;}
+.thumb circle.bd{fill:var(--glow);}
+.detail{display:none;flex-direction:column;gap:12px;}
+.detail.show{display:flex;}
+.back{font-size:12px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:5px;}
+.steps{display:flex;flex-direction:column;gap:8px;}
+.step{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;}
+.stepnum{width:20px;height:20px;flex:none;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-family:var(--display-font);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+.kv{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;}
+.kv .k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:4px;font-family:var(--display-font);}
+.kv .v{font-size:13px;line-height:1.55;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cta{align-self:flex-start;padding:9px 16px;border-radius:var(--radius);background:var(--accent);color:var(--accent-ink);font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:var(--body-font);}
+.cta.ghost{background:transparent;border:1px solid var(--border);color:var(--text-secondary);}
+.board{position:relative;border-radius:14px;border:1px solid var(--border);overflow:hidden;aspect-ratio:16/10;
+ background-image:repeating-linear-gradient(115deg,var(--bg-stripe) 0 36px,var(--bg-stripe-alt) 36px 72px);}
+.pl{position:absolute;border:1.5px solid var(--line);}
+.pl.outer{inset:14px;border-radius:4px;}
+.pl.half{top:14px;bottom:14px;left:50%;width:0;border-left:1.5px solid var(--line);border-top:0;border-bottom:0;border-right:0;}
+.pl.circ{width:20%;aspect-ratio:1;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
+.pl.pen{top:28%;bottom:28%;width:12%;}
+.pl.pen.l{left:14px;}.pl.pen.r{right:14px;}
+.pl.gb{top:41%;bottom:41%;width:4%;}
+.pl.gb.l{left:8px;}.pl.gb.r{right:8px;}
+.dot{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);
+ color:var(--text-primary);display:flex;align-items:center;justify-content:center;font-family:var(--display-font);font-size:11px;font-weight:600;z-index:2;}
+.dot.key{animation:keypulse 1.8s ease-in-out infinite;cursor:pointer;}
+@keyframes keypulse{0%,100%{box-shadow:0 0 0 0 var(--glow);}50%{box-shadow:0 0 0 6px transparent,0 0 12px 3px var(--glow);}}
+.dot.opp{background:var(--bg-red);border-color:var(--red);color:var(--text-red);}
+.dot.ball{width:14px;height:14px;margin:-7px 0 0 -7px;border:none;background:var(--glow);box-shadow:0 0 12px 4px var(--glow);}
+.playbadge{position:absolute;top:10px;right:10px;z-index:3;font-size:11px;padding:4px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--border);color:var(--text-secondary);display:flex;align-items:center;gap:6px;}
+.playbadge .pb{width:7px;height:7px;border-radius:50%;background:var(--glow);animation:bp 1.4s ease-in-out infinite;}
+.enlarge-btn{position:absolute;bottom:10px;right:10px;z-index:3;width:30px;height:30px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.enlarge-btn svg{width:14px;height:14px;}
+.overlay{position:absolute;inset:0;z-index:20;background:rgba(4,10,7,.82);display:none;flex-direction:column;padding:22px;gap:12px;}
+.overlay.show{display:flex;}
+.overlay .ohead{display:flex;align-items:center;gap:10px;}
+.overlay h2{font-family:var(--display-font);font-weight:500;font-size:17px;margin:0;flex:1;}
+.overlay .close{width:30px;height:30px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.overlay .board{flex:1;aspect-ratio:auto;}
+.keycard{background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:10px 14px;font-size:12.5px;line-height:1.55;display:none;}
+.keycard.show{display:block;}
+.keycard b{font-family:var(--display-font);font-weight:500;}
+.formlist{display:flex;flex-direction:column;gap:6px;}
+.formitem{padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:8px;}
+.formitem.on{border-color:var(--accent);}
+.formitem .sub{font-size:11px;color:var(--text-secondary);}
+.formlayout{display:grid;grid-template-columns:230px 1fr;gap:12px;align-items:start;}
+.playerrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;font-size:13px;}
+.playerrow.on{border-color:var(--accent);}
+.pnum{width:28px;height:28px;flex:none;border-radius:50%;background:var(--bg);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--display-font);font-size:12px;font-weight:600;}
+.playerrow .meta{flex:1;min-width:0;}
+.playerrow .meta .nm{font-weight:500;}
+.playerrow .meta .rl{font-size:11px;color:var(--text-secondary);}
+.wr{font-size:10px;padding:3px 7px;border-radius:999px;background:rgba(232,185,35,.15);color:var(--glow);white-space:nowrap;}
+.warn{display:flex;gap:9px;align-items:flex-start;background:var(--bg-red);border:1px solid var(--red);border-radius:12px;padding:10px 13px;font-size:12.5px;line-height:1.5;color:var(--text-primary);}
+.warn .wi{color:var(--text-red);font-weight:600;font-family:var(--display-font);}
+.sliders{display:flex;flex-direction:column;gap:9px;}
+.srow{display:grid;grid-template-columns:130px 1fr 18px;gap:10px;align-items:center;font-size:12.5px;}
+.sbar{height:6px;border-radius:3px;background:var(--border);position:relative;}
+.sbar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--accent);}
+.rosterlayout{display:grid;grid-template-columns:250px 1fr;gap:12px;align-items:start;}
+.idnote{border-left:3px solid var(--accent);padding:8px 12px;font-size:12.5px;color:var(--text-secondary);line-height:1.55;}
+.screen{display:none;flex-direction:column;gap:12px;}
+.screen.show{display:flex;}
+.wb-canvas{position:relative;flex:1;min-height:340px;border-radius:14px;border:1px solid var(--border);overflow:hidden;touch-action:none;
+ background-image:repeating-linear-gradient(115deg,var(--bg-stripe) 0 36px,var(--bg-stripe-alt) 36px 72px);}
+.zones{position:absolute;inset:0;pointer-events:none;}
+.zone{position:absolute;background:rgba(232,185,35,.12);border:1px dashed var(--glow);display:none;}
+.zone.show{display:block;}
+.zone .zl{position:absolute;top:4px;left:8px;font-size:10px;color:var(--glow);font-family:var(--display-font);letter-spacing:.06em;}
+svg.wblanes,svg.wbtrace{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+svg.wblanes line.auto{stroke:var(--glow);stroke-width:1.4;stroke-dasharray:5 6;opacity:.5;}
+svg.wblanes line.blocked{stroke:var(--red);stroke-width:1.6;stroke-dasharray:3 5;opacity:.8;}
+svg.wblanes circle{fill:var(--red);}
+svg.wbtrace polyline{stroke:var(--accent);stroke-width:2.4;fill:none;}
+.token{position:absolute;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);
+ color:var(--text-primary);display:flex;align-items:center;justify-content:center;font-family:var(--display-font);font-size:12px;font-weight:600;cursor:grab;user-select:none;z-index:2;}
+.token.opp{background:var(--bg-red);border-color:var(--red);color:var(--text-red);}
+.token.ball{width:14px;height:14px;margin:-7px 0 0 -7px;border:none;background:var(--glow);box-shadow:0 0 12px 4px var(--glow);}
+.wbtools{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:4px;padding:5px;border-radius:11px;background:var(--surface);border:1px solid var(--border);z-index:5;}
+.wt{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);cursor:pointer;position:relative;}
+.wt svg{width:15px;height:15px;}
+.wt.on{background:var(--accent);color:var(--accent-ink);}
+.wt.rec-on{background:var(--red);color:var(--on-red);}
+.wt.rec-on .recdot{animation:bp 1s ease-in-out infinite;}
+.recdot{width:10px;height:10px;border-radius:50%;background:currentColor;}
+.panel{position:absolute;bottom:44px;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;display:none;flex-direction:column;min-width:170px;z-index:6;}
+.panel.show{display:flex;}
+.trow{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:6px 4px;gap:12px;}
+.recbanner{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:5;font-size:11.5px;padding:5px 12px;border-radius:999px;background:var(--bg-red);border:1px solid var(--red);color:var(--text-primary);display:none;align-items:center;gap:7px;}
+.recbanner.show{display:flex;}
+.recbanner .pb{width:7px;height:7px;border-radius:50%;background:var(--red);animation:bp 1s ease-in-out infinite;}
+.savebar{display:none;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:10px 12px;}
+.savebar.show{display:flex;flex-wrap:wrap;}
+.savebar input{flex:1;min-width:140px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text-primary);font-family:var(--body-font);font-size:13px;outline:none;}
+.savebar input:focus{border-color:var(--accent);}
+
+.patboard{position:relative;flex:1;min-height:380px;border-radius:14px;border:1px solid var(--border);overflow:hidden;
+ background-image:repeating-linear-gradient(115deg,var(--bg-stripe) 0 36px,var(--bg-stripe-alt) 36px 72px);}
+.emptyhint{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--text-secondary);font-size:13px;z-index:2;
+ background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 18px;max-width:300px;line-height:1.55;}
+.patmeta{position:absolute;top:10px;left:10px;z-index:4;display:none;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:6px 8px 6px 12px;}
+.patmeta.show{display:flex;}
+.patmeta .pm-name{font-family:var(--display-font);font-size:13.5px;font-weight:500;}
+.patmeta .pm-btn{font-size:11.5px;padding:5px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--border);color:var(--text-secondary);}
+.patmeta .pm-btn.gold{background:var(--accent);color:var(--accent-ink);border-color:transparent;}
+.drawer{position:absolute;left:0;right:0;bottom:0;z-index:30;background:var(--sidebar-bg);border-top:1px solid var(--border);
+ border-radius:16px 16px 0 0;transform:translateY(calc(100% - 42px));transition:transform .3s ease;max-height:80%;display:none;flex-direction:column;
+ box-shadow:0 -8px 30px rgba(0,0,0,.35);}
+.drawer.avail{display:flex;}
+.drawer.open{transform:translateY(0);}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;}
+.ptile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;cursor:pointer;}
+.ptile:hover{border-color:var(--accent);}
+.ptile .thumb{margin-bottom:6px;}
+.ptile .code{font-size:9.5px;letter-spacing:.1em;color:var(--accent);font-family:var(--display-font);}
+.ptile h3{font-family:var(--display-font);font-weight:500;font-size:13px;margin:1px 0 0;}
+.pgrid .info-card{grid-column:1/-1;}
+.drawer-handle{height:42px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-size:12.5px;color:var(--text-secondary);flex:none;}
+.drawer-handle .grab{width:34px;height:4px;border-radius:2px;background:var(--border);}
+.drawer-handle svg{width:14px;height:14px;transition:transform .3s;}
+.drawer.open .drawer-handle svg{transform:rotate(180deg);}
+.drawer-body{padding:4px 14px 14px;display:flex;flex-direction:column;gap:10px;overflow:auto;}
+.searchrow{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:0 10px;flex:none;}
+.searchrow svg{width:15px;height:15px;color:var(--text-secondary);flex:none;}
+.searchrow input{flex:1;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--body-font);font-size:13px;padding:10px 0;}
+.detailpanel{position:absolute;top:10px;right:10px;bottom:10px;width:320px;max-width:82%;z-index:9;background:var(--sidebar-bg);
+ border:1px solid var(--border);border-radius:14px;padding:14px;display:none;flex-direction:column;gap:10px;overflow:auto;}
+.detailpanel.show{display:flex;}
+.detailpanel .dp-close{position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:7px;background:var(--surface);border:1px solid var(--border);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.frame.phone .detailpanel{width:auto;left:10px;top:auto;max-height:70%;}
+.frame.phone .patmeta .pm-name{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+
+.pill{font-size:10.5px;padding:4px 9px;border-radius:999px;font-family:var(--display-font);letter-spacing:.05em;}
+.pill.sent{background:var(--accent);color:var(--accent-ink);}
+.pill.draft{background:transparent;border:1px solid var(--border);color:var(--text-secondary);}
+.pill.viewed{background:rgba(232,185,35,.15);color:var(--glow);}
+.pill.notyet{background:transparent;border:1px solid var(--border);color:var(--text-secondary);}
+.sesshead{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;flex-wrap:wrap;}
+.sesshead .sh-name{font-family:var(--display-font);font-size:15px;font-weight:500;}
+.sesshead .sh-date{font-size:12px;color:var(--text-secondary);}
+.sessitem{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 10px;}
+.sessitem .si-thumb{width:74px;flex:none;border-radius:6px;overflow:hidden;}
+.sessitem .si-thumb svg{display:block;width:100%;}
+.sessitem .si-meta{flex:1;min-width:0;}
+.sessitem .si-name{font-size:13px;font-weight:500;}
+.sessitem .si-code{font-size:10.5px;color:var(--accent);font-family:var(--display-font);letter-spacing:.08em;}
+.sessitem .si-x{width:24px;height:24px;border-radius:6px;border:1px solid var(--border);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;}
+.picker{display:none;flex-direction:column;gap:6px;background:var(--sidebar-bg);border:1px solid var(--border);border-radius:12px;padding:10px;max-height:280px;overflow:auto;}
+.picker.show{display:flex;}
+.pickrow{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--text-secondary);}
+.pickrow:hover{background:var(--border);color:var(--text-primary);}
+.pickrow .si-thumb{width:56px;flex:none;border-radius:5px;overflow:hidden;}
+.pickrow b{color:var(--text-primary);font-weight:500;}
+.recip{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);font-size:13px;}
+.recip .meta{flex:1;}
+
+
+.roleseg{display:flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;}
+.roleseg span{padding:5px 11px;font-size:11.5px;cursor:pointer;color:var(--text-secondary);}
+.roleseg span.on{background:var(--accent);color:var(--accent-ink);font-weight:500;}
+.shell.role-player .coach-only{display:none !important;}
+.player-only{display:none !important;}
+.shell.role-player .player-only{display:flex !important;}
+.shell.role-player .player-only.blockish{display:block !important;}
+.suggest{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;}
+.suggest textarea{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 10px;color:var(--text-primary);font-family:var(--body-font);font-size:13px;outline:none;resize:vertical;min-height:56px;}
+.suggest textarea:focus{border-color:var(--accent);}
+.sugg-badge{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;}
+.frame.phone .roleseg span{padding:5px 8px;font-size:10.5px;}
+
+
+.frame.phone .wb-canvas,.frame.phone .patboard{aspect-ratio:7/10;flex:none;min-height:0;}
+.frame.phone .board{aspect-ratio:7/10;}
+.frame.phone .pl.half{left:14px;right:14px;top:50%;bottom:auto;width:auto;height:0;border-width:1.5px 0 0 0;}
+.frame.phone .pl.pen{left:28%;right:28%;width:auto;height:12%;}
+.frame.phone .pl.pen.l{bottom:14px;top:auto;left:28%;}
+.frame.phone .pl.pen.r{top:14px;bottom:auto;}
+.frame.phone .pl.gb{left:41%;right:41%;width:auto;height:4%;}
+.frame.phone .pl.gb.l{bottom:8px;top:auto;left:41%;}
+.frame.phone .pl.gb.r{top:8px;bottom:auto;}
+.frame.phone #z-hs1{left:18%;width:16%;top:14px;bottom:14px;height:auto;right:auto;}
+.frame.phone #z-hs2{left:66%;width:16%;top:14px;bottom:14px;height:auto;right:auto;}
+.frame.phone #z-14{left:33%;width:34%;top:21%;height:15%;right:auto;}
+.frame.phone #z-cb{left:22%;width:56%;top:8%;height:9%;}
+.frame.phone #z-t1{left:14px;right:14px;top:66.6%;bottom:auto;width:auto;height:0;border-width:1.5px 0 0 0;}
+.frame.phone #z-t2{left:14px;right:14px;top:33.3%;bottom:auto;width:auto;height:0;border-width:1.5px 0 0 0;}
+
+.frame.phone .shell{grid-template-columns:52px 1fr;grid-template-rows:48px 1fr;}
+.frame.phone .topbar{padding:0 12px;gap:8px;}
+.frame.phone .brand{font-size:13px;}
+.frame.phone .themepicker{padding:3px;}
+.frame.phone .swatch{width:13px;height:13px;}
+.frame.phone .sidebar{padding:10px 6px;align-items:center;gap:6px;}
+.frame.phone .navitem{width:40px;height:40px;padding:0;justify-content:center;border-radius:11px;}
+.frame.phone .navitem span{display:none;}
+.frame.phone .navitem svg{width:18px;height:18px;}
+.frame.phone .main{padding:12px;}
+.frame.phone .two,.frame.phone .formlayout,.frame.phone .rosterlayout{grid-template-columns:1fr;}
+.frame.phone .grid{grid-template-columns:1fr;}
+.frame.phone .pgrid{grid-template-columns:1fr 1fr;}
+.frame.phone .srow{grid-template-columns:100px 1fr 18px;}
+.frame.phone h1{font-size:16px;}
+.frame.phone .wb-canvas{min-height:400px;}
+.frame.phone .formlist{flex-direction:row;overflow-x:auto;padding-bottom:4px;}
+.frame.phone .formitem{flex:none;flex-direction:column;gap:2px;}
+.frame.phone .formitem .sub{display:none;}
+.frame.phone .chiprow{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;}
+.frame.phone .overlay{padding:12px;}
+</style>
+</head>
+<body>
+<div class="controls">
+  <button class="ctl on" id="dsk">Desktop</button>
+  <button class="ctl" id="phn">Phone</button>
+  <span style="width:14px"></span>
+  <button class="ctl" onclick="setTheme('pitch')">Pitch</button>
+  <button class="ctl" onclick="setTheme('dark')">Dark</button>
+  <button class="ctl" onclick="setTheme('board')">Board</button>
+</div>
+
+<div class="frame" id="frame">
+<div class="shell" id="shellRoot">
+  <div class="topbar">
+    <div class="brand"><span class="bdot"></span>Patterns of Play</div>
+    <div class="spacer"></div>
+    <div class="roleseg" title="Preview as role">
+      <span class="on" id="roleCoach">Coach</span><span id="rolePlayer">Player</span>
+    </div>
+    <div class="themepicker">
+      <div class="swatch active" data-t="pitch"></div>
+      <div class="swatch" data-t="dark"></div>
+      <div class="swatch" data-t="board"></div>
+    </div>
+  </div>
+
+  <div class="sidebar" id="sidenav"></div>
+
+  <div class="main">
+
+    <div class="screen show" id="scr-whiteboard">
+      <div class="title-row"><h1>Whiteboard</h1><div class="info-btn" data-info="wb-info">i</div></div>
+      <div class="info-card" id="wb-info">Drag any token; dashed gold lines suggest passing lanes, red means an opponent blocks the lane. Hit record, move players and the ball to act out a pattern, stop, name it — it saves to My patterns as a replayable animation.</div>
+      <div class="savebar" id="saveBar">
+        <span style="font-size:12.5px;color:var(--text-secondary);">Recording captured —</span>
+        <input id="patName" placeholder="Pattern name, e.g. Right-side overlap v2">
+        <button class="cta" id="savePat">Save to My patterns</button>
+        <button class="cta ghost" id="discardPat">Discard</button>
+      </div>
+      <div class="wb-canvas" id="wbCanvas">
+        <div class="recbanner" id="recBanner"><span class="pb"></span>Recording — move players and the ball</div>
+        <div class="pl outer"></div><div class="pl half"></div><div class="pl circ"></div>
+        <div class="pl pen l"></div><div class="pl pen r"></div><div class="pl gb l"></div><div class="pl gb r"></div>
+        <div class="zones">
+          <div class="zone" id="z-hs1" style="left:14px;right:14px;top:18%;height:16%"><span class="zl">Half-space</span></div>
+          <div class="zone" id="z-hs2" style="left:14px;right:14px;top:66%;height:16%"><span class="zl">Half-space</span></div>
+          <div class="zone" id="z-14" style="left:64%;width:15%;top:33%;height:34%"><span class="zl">Zone 14</span></div>
+          <div class="zone" id="z-cb" style="left:83%;width:9%;top:22%;height:56%"><span class="zl">Cutback</span></div>
+          <div class="zone" id="z-t1" style="left:33.3%;top:14px;bottom:14px;width:0;border-width:0 0 0 1.5px;"></div>
+          <div class="zone" id="z-t2" style="left:66.6%;top:14px;bottom:14px;width:0;border-width:0 0 0 1.5px;"></div>
+        </div>
+        <svg class="wblanes" id="wbLanes"></svg>
+        <svg class="wbtrace" id="wbTrace"></svg>
+        <div class="wbtools">
+          <div class="wt on" title="Select"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3l7 17 2-7 7-2z"/></svg></div>
+          <div class="wt" id="recBtn" title="Record pattern"><span class="recdot"></span></div>
+          <div class="wt" id="replayBtn" title="Replay recording"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4l14 8-14 8z"/></svg></div>
+          <div class="wt" title="Run arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20L20 4M20 4h-8M20 4v8"/></svg></div>
+          <div class="wt" id="wbView" title="View options"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+            <div class="panel" id="wbPanel">
+              <div class="trow"><span>Passing lanes</span><input type="checkbox" id="tLanes" checked></div>
+              <div class="trow"><span>Thirds</span><input type="checkbox" id="tThirds"></div>
+              <div class="trow"><span>Half-spaces</span><input type="checkbox" id="tHS"></div>
+              <div class="trow"><span>Zone 14 + cutback</span><input type="checkbox" id="tZ14"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" id="scr-patterns">
+      <div class="title-row"><h1>Patterns</h1><div class="info-btn" data-info="pt-info">i</div></div>
+      <div class="info-card" id="pt-info">Visual first: the board is the screen. Pull up the browser to search the library or your recorded patterns; pick one and it plays here. Details opens the coaching notes.</div>
+      <div class="patboard" id="patBoard">
+        <div class="pl outer"></div><div class="pl half"></div><div class="pl circ"></div>
+        <div class="pl pen l"></div><div class="pl pen r"></div><div class="pl gb l"></div><div class="pl gb r"></div>
+        <div class="emptyhint" id="patEmpty">Empty board.<br>Pull up <b>Browse patterns</b> below to load one — or record your own on the whiteboard.</div>
+        <div class="patmeta" id="patMeta">
+          <span class="pm-name" id="pmName"></span>
+          <span class="pm-btn gold" id="pmDetails">Details</span>
+          <span class="pm-btn" id="pmBoard">Open on whiteboard</span>
+          <span class="pm-btn" id="pmDelete" style="display:none;color:var(--text-red);border-color:var(--red);">Delete</span>
+          <span class="pm-btn" id="pmClear">Clear</span>
+        </div>
+        <div class="playbadge" id="patBadge" style="display:none;"><span class="pb"></span>Playing</div>
+        <div class="detailpanel" id="patPanel"></div>
+        
+      </div>
+    </div>
+
+    <div class="screen" id="scr-sessions">
+      <div class="title-row"><h1>Sessions</h1><div class="info-btn" data-info="ss-info">i</div></div>
+      <div class="info-card" id="ss-info">Bundle patterns and your own whiteboard tactics into a classroom session, add a note, and send it to your players. Read receipts show who has watched — receipts are coach-only.</div>
+      <div class="formlayout">
+        <div class="formlist" id="sessList"></div>
+        <div style="display:flex;flex-direction:column;gap:10px;" id="sessDetail"></div>
+      </div>
+    </div>
+
+    <div class="screen" id="scr-formations">
+      <div class="title-row"><h1>Formations</h1><div class="info-btn" data-info="fm-info">i</div></div>
+      <div class="info-card" id="fm-info">The board is the screen. Pull up the browser to pick a shape; glowing dots are keystone positions — tap one for why it makes or breaks the formation. The rondo map overlays which small-sided game lives in each zone.</div>
+      <div class="patboard" id="formBoard">
+        <div class="pl outer"></div><div class="pl half"></div><div class="pl circ"></div>
+        <div class="pl pen l"></div><div class="pl pen r"></div><div class="pl gb l"></div><div class="pl gb r"></div>
+        <div class="patmeta show" id="formMeta">
+          <span class="pm-name" id="fmName"></span>
+          <span class="pm-btn gold" id="fmDetails">Details</span>
+          <span class="pm-btn" id="rondoToggle">Rondo map</span>
+        </div>
+        <div class="keycard" id="keyCard" style="position:absolute;left:10px;bottom:10px;max-width:360px;z-index:5;"></div>
+        <div class="detailpanel" id="formPanel"></div>
+      </div>
+    </div>
+
+    <div class="screen" id="scr-roster">
+      <div class="title-row"><h1>Roster</h1><div class="info-btn" data-info="rs-info">i</div></div>
+      <div class="info-card" id="rs-info">Tag each player with a role, two work rates, and six 1–5 attributes. The fit engine reads these against your formation and flags clashes. Fit warnings are coach-only.</div>
+      <div class="warn coach-only"><span class="wi">FIT</span><span><b>Double exposure — right flank.</b> #7 (Inside Forward, High/Low) plays ahead of #2 (Overlapping FB, High AWR): no cover on this flank in transition. Pair an attacking fullback with a tracking wide player, or drop one deeper.</span></div>
+      <div class="rosterlayout">
+        <div style="display:flex;flex-direction:column;gap:6px;" id="playerList"></div>
+        <div style="display:flex;flex-direction:column;gap:10px;" id="playerProfile"></div>
+      </div>
+    </div>
+
+    <div class="screen" id="scr-identity">
+      <div class="title-row"><h1>Team identity</h1><div class="info-btn" data-info="id-info">i</div></div>
+      <div class="info-card" id="id-info">Identities curate, never lock. Pull up the browser to explore the great teams and style archetypes — pick one and its signature idea plays on the board, with the formation, keystone roles, and youth takeaway in Details.</div>
+      <div class="patboard" id="idBoard">
+        <div class="pl outer"></div><div class="pl half"></div><div class="pl circ"></div>
+        <div class="pl pen l"></div><div class="pl pen r"></div><div class="pl gb l"></div><div class="pl gb r"></div>
+        <div class="emptyhint" id="idEmpty">Pick a team or a style from <b>Browse identities</b> below — its signature idea plays here.</div>
+        <div class="patmeta" id="idMeta">
+          <span class="pm-name" id="idName"></span>
+          <span class="pm-btn gold" id="idDetails">Details</span>
+          <span class="pm-btn" id="idClear">Clear</span>
+        </div>
+        <div class="playbadge" id="idBadge" style="display:none;"><span class="pb"></span>Playing</div>
+        <div class="detailpanel" id="idPanel"></div>
+      </div>
+    </div>
+
+  </div>
+
+  
+
+  <div class="drawer" id="drawer">
+          <div class="drawer-handle" id="drawerHandle"><span class="grab"></span>Browse patterns<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 15l6-6 6 6"/></svg></div>
+          <div class="drawer-body">
+            <div class="chiprow" id="libSeg">
+              <div class="chip on" data-lib="patterns">Patterns</div>
+              <div class="chip" data-lib="deliveries">Deliveries</div>
+              <div class="chip" data-lib="rotations">Rotations</div>
+            </div>
+            <div class="searchrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="patSearch" placeholder="Search patterns, roles, concepts…"></div>
+            <div class="chiprow" id="patFilters"></div>
+            <div class="pgrid" id="patGrid"></div>
+          </div>
+        </div>
+
+  <div class="drawer" id="formSheet">
+    <div class="drawer-handle" data-sheet="formSheet"><span class="grab"></span>Browse formations<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 15l6-6 6 6"/></svg></div>
+    <div class="drawer-body">
+      <div class="searchrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="formSearch" placeholder="Search formations…"></div>
+      <div class="pgrid" id="formGrid"></div>
+    </div>
+  </div>
+  <div class="drawer" id="idSheet">
+    <div class="drawer-handle" data-sheet="idSheet"><span class="grab"></span>Browse identities<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 15l6-6 6 6"/></svg></div>
+    <div class="drawer-body">
+      <div class="chiprow" id="idSeg">
+        <div class="chip on" data-seg="ref">Reference teams</div>
+        <div class="chip" data-seg="style">Style archetypes</div>
+        <div class="chip" data-seg="cult">Cult corner</div>
+      </div>
+      <div class="searchrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="idSearch" placeholder="Search teams, styles, ideas…"></div>
+      <div class="pgrid" id="idGridSheet"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.t===t));
+}
+let playbacks=[];
+function isPortrait(){return document.getElementById('frame').classList.contains('phone');}
+function place(el,x,y){if(isPortrait()){el.style.left=y+'%';el.style.top=(100-x)+'%';}else{el.style.left=x+'%';el.style.top=y+'%';}}
+function mapPt(x,y){return isPortrait()?[y,100-x]:[x,y];}
+function rectStyle(x1,x2,y1,y2){return isPortrait()
+ ?`left:${y1}%;width:${y2-y1}%;top:${100-x2}%;height:${x2-x1}%;`
+ :`left:${x1}%;width:${x2-x1}%;top:${y1}%;height:${y2-y1}%;`;}
+function reorient(){
+ if(typeof wbModels!=='undefined'){wbModels.forEach(m=>place(m.el,m.x,m.y));lanes();wbt.innerHTML='';}
+ if(typeof renderForm==='function')renderForm(curForm);
+ if(typeof activeId!=='undefined'&&activeId)selectIdentity(activeId);}
+let role='coach';const ME=2; // index of the signed-in player (Maya K.) in PLAYERS
+let SUGG=null; // pending playstyle suggestion from the player
+function setRole(r){role=r;
+ document.getElementById('shellRoot').classList.toggle('role-player',r==='player');
+ document.getElementById('roleCoach').classList.toggle('on',r==='coach');
+ document.getElementById('rolePlayer').classList.toggle('on',r==='player');
+ if(typeof renderCards==='function')renderCards();
+ if(typeof refreshMeta==='function')refreshMeta();
+ if(typeof renderSessList==='function'){renderSessList();renderSess();}
+ if(typeof renderPlayerList==='function'){renderPlayerList();renderPlayer(curPlayer);}}
+
+document.querySelectorAll('.swatch').forEach(s=>s.addEventListener('click',()=>setTheme(s.dataset.t)));
+document.getElementById('roleCoach').addEventListener('click',()=>setRole('coach'));
+document.getElementById('rolePlayer').addEventListener('click',()=>setRole('player'));
+const frame=document.getElementById('frame');
+document.getElementById('dsk').onclick=e=>{frame.classList.remove('phone');tglCtl(e.target);reorient();}
+document.getElementById('phn').onclick=e=>{frame.classList.add('phone');tglCtl(e.target);reorient();}
+function tglCtl(btn){document.getElementById('dsk').classList.remove('on');document.getElementById('phn').classList.remove('on');btn.classList.add('on');}
+
+const NAV=[
+ {id:'whiteboard',label:'Whiteboard',icon:'<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 15l5-4 4 3 5-6 4 3"/>'},
+ {id:'patterns',label:'Patterns',icon:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/>'},
+ {id:'sessions',label:'Sessions',icon:'<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>'},
+ {id:'formations',label:'Formations',icon:'<circle cx="12" cy="5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>'},
+ {id:'roster',label:'Roster',icon:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4a3 3 0 0 1 0 6M21 20c0-2.6-1.8-4.8-4-5.6"/>'},
+ {id:'identity',label:'Identity',icon:'<path d="M12 2l3 6 7 1-5 5 1.5 7L12 18l-6.5 3L7 14 2 9l7-1z"/>'},
+];
+const side=document.getElementById('sidenav');
+NAV.forEach(n=>{
+ side.innerHTML+=`<div class="navitem" data-nav="${n.id}" title="${n.label}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${n.icon}</svg><span>${n.label}</span></div>`;
+});
+function go(id){
+ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('show',s.id==='scr-'+id));
+ document.querySelectorAll('[data-nav]').forEach(n=>n.classList.toggle('active',n.dataset.nav===id));
+ const SHEETS={patterns:'drawer',formations:'formSheet',identity:'idSheet'};
+ Object.entries(SHEETS).forEach(([tab,sid])=>{const s=document.getElementById(sid);
+  if(s){s.classList.toggle('avail',id===tab);if(id!==tab)s.classList.remove('open');}});
+ if(id!=='patterns'&&typeof stopPlayback==='function'){stopPlayback();
+  const m=document.getElementById('patMeta');if(m){m.classList.remove('show');
+   document.getElementById('patBadge').style.display='none';
+   document.getElementById('patPanel').classList.remove('show');
+   document.getElementById('patEmpty').style.display='block';}}
+}
+document.querySelectorAll('[data-nav]').forEach(n=>n.addEventListener('click',()=>go(n.dataset.nav)));
+go('whiteboard');
+document.querySelectorAll('.info-btn').forEach(b=>b.addEventListener('click',()=>document.getElementById(b.dataset.info).classList.toggle('show')));
+
+/* ================= whiteboard ================= */
+const wb=document.getElementById('wbCanvas'),wbl=document.getElementById('wbLanes'),wbt=document.getElementById('wbTrace');
+const wbModels=[
+ {id:'p0',l:'2',x:14,y:74,cls:''},{id:'p1',l:'4',x:30,y:34,cls:''},{id:'p2',l:'6',x:50,y:60,cls:''},
+ {id:'p3',l:'9',x:70,y:28,cls:''},{id:'p4',l:'11',x:86,y:66,cls:''},
+ {id:'o0',l:'5',x:38,y:70,cls:' opp'},{id:'o1',l:'3',x:76,y:72,cls:' opp'},
+ {id:'ball',l:'',x:50,y:60,cls:' ball'},
+];
+const wp=wbModels.filter(m=>m.cls===''),wo=wbModels.filter(m=>m.cls===' opp');
+let recording=false,recT0=0,recData=null,lastRec=null;
+wbModels.forEach(m=>{
+ const e=document.createElement('div');e.className='token'+m.cls;e.textContent=m.l;
+ m.el=e;place(e,m.x,m.y);
+ e.addEventListener('pointerdown',ev=>{ev.preventDefault();e.setPointerCapture(ev.pointerId);
+  const mv=v=>{const r=wb.getBoundingClientRect();
+   const L=(v.clientX-r.left)/r.width*100,T=(v.clientY-r.top)/r.height*100;
+   if(isPortrait()){m.x=100-T;m.y=L;}else{m.x=L;m.y=T;}
+   m.x=Math.max(3,Math.min(97,m.x));m.y=Math.max(4,Math.min(96,m.y));
+   place(e,m.x,m.y);lanes();
+   if(recording)recData.frames.push({t:performance.now()-recT0,id:m.id,x:m.x,y:m.y});
+   if(recording&&m.id==='ball')drawRecTrace();};
+  const up=()=>{e.removeEventListener('pointermove',mv);e.removeEventListener('pointerup',up);};
+  e.addEventListener('pointermove',mv);e.addEventListener('pointerup',up);});
+ wb.appendChild(e);});
+function seg(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,L=dx*dx+dy*dy;let t=L?((p.x-a.x)*dx+(p.y-a.y)*dy)/L:0;t=Math.max(0,Math.min(1,t));
+ const px=a.x+t*dx,py=a.y+t*dy;return{d:Math.hypot(p.x-px,p.y-py),x:px,y:py};}
+function lanes(){wbl.innerHTML='';if(!document.getElementById('tLanes').checked)return;
+ for(let i=0;i<wp.length;i++)for(let j=i+1;j<wp.length;j++){const a=wp[i],b=wp[j];
+  if(Math.hypot(a.x-b.x,a.y-b.y)>34)continue;
+  let blk=null;wo.forEach(o=>{const r=seg(o,a,b);if(r.d<=6&&(!blk||r.d<blk.d))blk=r;});
+  const A=mapPt(a.x,a.y),B=mapPt(b.x,b.y);
+  const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+  ln.setAttribute('x1',A[0]+'%');ln.setAttribute('y1',A[1]+'%');ln.setAttribute('x2',B[0]+'%');ln.setAttribute('y2',B[1]+'%');
+  ln.setAttribute('class',blk?'blocked':'auto');wbl.appendChild(ln);
+  if(blk){const K=mapPt(blk.x,blk.y);const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+   c.setAttribute('cx',K[0]+'%');c.setAttribute('cy',K[1]+'%');c.setAttribute('r',3.5);wbl.appendChild(c);}}}
+lanes();
+function drawRecTrace(){
+ const pts=recData.frames.filter(f=>f.id==='ball').map(f=>{const P=mapPt(f.x,f.y);return P[0]+','+P[1];}).join(' ');
+ wbt.innerHTML=pts?`<polyline points="${pts}" vector-effect="non-scaling-stroke"/>`:'';
+ wbt.setAttribute('viewBox','0 0 100 100');wbt.setAttribute('preserveAspectRatio','none');}
+document.getElementById('recBtn').addEventListener('click',function(){
+ if(!recording){
+  recording=true;recT0=performance.now();
+  recData={start:wbModels.map(m=>({id:m.id,x:m.x,y:m.y})),frames:[]};
+  this.classList.add('rec-on');document.getElementById('recBanner').classList.add('show');
+  document.getElementById('saveBar').classList.remove('show');wbt.innerHTML='';
+ }else{
+  recording=false;this.classList.remove('rec-on');
+  document.getElementById('recBanner').classList.remove('show');
+  if(recData.frames.length){lastRec=recData;document.getElementById('saveBar').classList.add('show');}
+ }});
+document.getElementById('discardPat').addEventListener('click',()=>{lastRec=null;wbt.innerHTML='';document.getElementById('saveBar').classList.remove('show');});
+document.getElementById('savePat').addEventListener('click',()=>{
+ if(!lastRec)return;
+ const nm=document.getElementById('patName').value.trim()||'My pattern '+(CUSTOM.length+1);
+ CUSTOM.push({c:'M'+(CUSTOM.length+1),n:nm,cat:'mine',rec:lastRec,author:role==='coach'?'Coach':'Maya K.',
+  blurb:'Recorded on the whiteboard — plays back player and ball movement exactly as captured.'});
+ lastRec=null;wbt.innerHTML='';
+ document.getElementById('saveBar').classList.remove('show');
+ document.getElementById('patName').value='';
+ activeCat='mine';
+ pf.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x.dataset.cat==='mine'));
+ renderCards();go('patterns');selectPattern(CUSTOM[CUSTOM.length-1]);
+});
+document.getElementById('replayBtn').addEventListener('click',()=>{if(lastRec||CUSTOM.length)replayOnWhiteboard(lastRec||CUSTOM[CUSTOM.length-1].rec);});
+function replayOnWhiteboard(rec){
+ rec.start.forEach(s=>{const m=wbModels.find(x=>x.id===s.id);m.x=s.x;m.y=s.y;place(m.el,s.x,s.y);});
+ lanes();
+ const T=rec.frames.length?rec.frames[rec.frames.length-1].t:0;let i=0;const t0=performance.now();
+ function step(){const el=performance.now()-t0;
+  while(i<rec.frames.length&&rec.frames[i].t<=el){const f=rec.frames[i++];
+   const m=wbModels.find(x=>x.id===f.id);m.x=f.x;m.y=f.y;place(m.el,f.x,f.y);}
+  lanes();if(el<T+100)requestAnimationFrame(step);}
+ requestAnimationFrame(step);}
+document.getElementById('wbView').addEventListener('click',e=>{e.stopPropagation();document.getElementById('wbPanel').classList.toggle('show');});
+document.getElementById('wbPanel').addEventListener('click',e=>e.stopPropagation());
+document.addEventListener('click',()=>document.getElementById('wbPanel').classList.remove('show'));
+document.getElementById('tLanes').addEventListener('change',lanes);
+document.getElementById('tThirds').addEventListener('change',e=>['z-t1','z-t2'].forEach(z=>document.getElementById(z).classList.toggle('show',e.target.checked)));
+document.getElementById('tHS').addEventListener('change',e=>['z-hs1','z-hs2'].forEach(z=>document.getElementById(z).classList.toggle('show',e.target.checked)));
+document.getElementById('tZ14').addEventListener('change',e=>['z-14','z-cb'].forEach(z=>document.getElementById(z).classList.toggle('show',e.target.checked)));
+
+/* ================= patterns ================= */
+const CATS=[['all','All'],['A','Combination'],['B','Space'],['C','Transition'],['D','Pressing'],['mine','My patterns']];
+const PATS=[
+{c:'A1',n:'Overlap',cat:'A',age:'U11+',roles:['Inside Forward','Overlapping FB'],blurb:'The fullback runs outside and beyond his winger. The defender must choose: follow the runner or stay.',
+ steps:['Winger receives wide, faces up the fullback.','Own fullback sprints an arced run outside him.','Ball released into the overlap for a cross or cutback — or winger cuts inside the vacated half-space.'],
+ when:'Opponent defends narrow; your winger is inverted and wants to come inside anyway.',coach:'The overlap works even without the pass — the threat of the run drags the defender. Winger delays one beat to let the run mature.',youth:'Two players, one decision for the defender — the simplest 2v1 to teach.',
+ anim:{players:[{l:'7',f:[64,74],t:[72,58]},{l:'2',f:[34,86],t:[84,88]},{l:'6',f:[46,58],t:[50,60]}],opp:[[72,78]],ball:[[46,58],[64,74],[84,88],[90,60]]}},
+{c:'A2',n:'Underlap',cat:'A',age:'U12+',roles:['Touchline Winger','Inverted FB / 8'],blurb:'Same idea, inside lane: the runner attacks the half-space between fullback and centre back.',
+ steps:['Winger holds the ball high and wide, pinning the opposition fullback.','Runner attacks the inside channel.','Slipped through-ball, then cutback or shot.'],
+ when:'Their winger tracks outside runs; the inside channel opens because your winger stretched them.',coach:'The winger must stay wide to open the inside lane — width creates the underlap.',youth:'Teaches that standing still (wide) can be the assist.',
+ anim:{players:[{l:'7',f:[68,88],t:[72,88]},{l:'8',f:[48,58],t:[82,66]},{l:'6',f:[40,50],t:[44,52]}],opp:[[74,84]],ball:[[40,50],[68,88],[82,66],[90,55]]}},
+{c:'A3',n:'One-two',cat:'A',age:'U9+',roles:['Any two','10 + wall'],blurb:'Pass, sprint past your marker, receive it back first-time. The oldest way to beat a man without dribbling.',
+ steps:['Player A passes into a teammate\u2019s feet.','A immediately bursts beyond his marker.','Teammate plays a one-touch return into A\u2019s path.'],
+ when:'Tight central areas around the box; against man-marking the run kills the marker.',coach:'Pass firm to the correct foot; the run starts as the pass travels, not after.',youth:'First combination every player should own.',
+ anim:{players:[{l:'10',f:[55,52],t:[80,40]},{l:'9',f:[68,44],t:[68,44]}],opp:[[62,50]],ball:[[55,52],[68,44],[80,40]]}},
+{c:'A4',n:'Up-back (bounce)',cat:'A',age:'U11+',roles:['Target / False 9','Arriving 8 or 10'],blurb:'Pass up into the striker\u2019s feet; he sets it back first-time to a facing teammate. Advance 20 metres, keep a facing player on the ball.',
+ steps:['Vertical pass into the 9\u2019s feet, back to goal.','One-touch layoff back to an arriving midfielder.','That midfielder plays forward or switches.'],
+ when:'Their midfield line is compact — go into the 9 and play off him instead of through.',coach:'The bounce player only needs to shield one touch. Support arrives at an angle, never flat.',youth:'The striker doesn\u2019t have to turn to be useful.',
+ anim:{players:[{l:'9',f:[76,48],t:[76,48]},{l:'8',f:[52,62],t:[64,55]},{l:'6',f:[40,48],t:[42,48]}],opp:[[82,46]],ball:[[40,48],[76,48],[64,56],[84,30]]}},
+{c:'A5',n:'Third-man run',cat:'A',age:'U12+',roles:['Bounce 9/10','Facing 6/8','Runner'],blurb:'A plays to B; while everyone watches, C is already running; B\u2019s first touch releases C. The pass the defence can\u2019t see.',
+ steps:['6 or CB plays up into the 9/10 between the lines.','Layoff back to an 8.','8 plays first-time through for the third man attacking in behind — his run started at step 1.'],
+ when:'The single most important pattern vs organised defences; core of every good build-out.',coach:'Timing over speed — the runner curves to stay onside; the back pass pulls eyes toward the ball.',youth:'The unmarked player is the one who was never on the ball.',
+ anim:{players:[{l:'6',f:[38,52],t:[38,52]},{l:'10',f:[64,46],t:[64,46]},{l:'8',f:[52,60],t:[56,56]},{l:'11',f:[68,78],t:[88,48]}],opp:[[70,50]],ball:[[38,52],[64,46],[54,58],[86,48]]}},
+{c:'B3',n:'Switch of play',cat:'B',age:'U12+',roles:['DLP / Ball-playing CB','Far-side winger'],blurb:'The block has shifted ball-side — one long diagonal to the far-side free man attacks the space it left.',
+ steps:['Deliberate 3\u20134 pass overload on the left, drawing the block across.','6 or CB receives facing forward.','40-yard diagonal to the right winger in acres, then immediate 1v1 or cross.'],
+ when:'Opponent defends in a compact ball-side block; the standard plan behind an elite 1v1 winger.',coach:'The switch must arrive before the block slides — a slow bouncing diagonal wastes the overload.',youth:'Possession on one side is a setup, not the plan.',
+ anim:{players:[{l:'2',f:[30,78],t:[32,78]},{l:'6',f:[40,62],t:[42,60]},{l:'11',f:[70,12],t:[84,18]}],opp:[[48,66],[52,50]],ball:[[30,78],[40,62],[72,13],[86,20]]}},
+{c:'B5',n:'Build-out vs press',cat:'B',age:'U13+',roles:['Sweeper Keeper','Ball-playing CBs','Single Pivot'],blurb:'Structured short passing from the GK designed to bait the press forward, then play through it — their pressure becomes your space.',
+ steps:['GK splits the CBs wide; 6 shows between them.','Their strikers jump; the free man appears.','Line-broken pass into the 8/10 between the lines.','Release runners — chains straight into the third-man run.'],
+ when:'Core identity choice — the default restart pattern for possession identities.',coach:'The press is the invitation: every presser who jumps leaves a free man behind him. Know your +1 before the ball arrives.',youth:'Courage on the ball is a structure, not a personality trait.',
+ anim:{players:[{l:'GK',f:[8,50],t:[8,50]},{l:'4',f:[18,28],t:[20,28]},{l:'5',f:[18,72],t:[20,72]},{l:'6',f:[28,50],t:[32,50]},{l:'8',f:[52,42],t:[58,40]}],opp:[[26,40],[26,60]],ball:[[8,50],[18,28],[32,50],[56,41],[74,30]]}},
+{c:'C1',n:'Counter-attack',cat:'C',age:'U11+',roles:['Anchor 6','Transition 10','Wide Forwards'],blurb:'Win the ball, attack the disorganised opponent before they re-form. First pass forward; ideal completion inside 8\u201310 seconds.',
+ steps:['Regain in own half.','First pass vertical into the 10 or wide forward.','Two runners break beyond the ball into the channels.','Finish before the recovery lines form — the transition clock overlay runs 0\u201310s.'],
+ when:'Core weapon of vertical and hybrid identities; situationally available to everyone.',coach:'The first two seconds decide the counter — face forward, play forward. No vertical pass by pass two? Keep it and reorganise.',youth:'Counters need runners without the ball as much as the player on it.',
+ anim:{players:[{l:'6',f:[34,56],t:[36,54]},{l:'10',f:[50,50],t:[62,46]},{l:'9',f:[58,34],t:[88,30]},{l:'11',f:[56,70],t:[86,72]}],opp:[[44,48]],ball:[[34,56],[52,50],[64,46],[87,32]]}},
+{c:'C2',n:'Long ball + second ball',cat:'C',age:'U9+',roles:['Target Man','Aerial 8s','Shoulder runner'],blurb:'Skip the build-up: hit the target directly. The real contest is the second ball — the team structured around the landing zone wins.',
+ steps:['GK or CB launches to the Target Man.','A pre-set second-ball cage: 8s and wide players ringed 10\u201315m before the ball lands.','Second ball won — immediate forward action.'],
+ when:'Vs high presses, bad pitches, or as a deliberate identity. Very teachable in youth contexts.',coach:'Long ball is not hopeful ball — the target and the cage are pre-planned. Compactness around the landing zone is the whole game.',youth:'Chaos can be organised — that\u2019s the trick.',
+ anim:{players:[{l:'GK',f:[8,50],t:[8,50]},{l:'9',f:[64,46],t:[64,46]},{l:'8',f:[54,36],t:[62,40]},{l:'8',f:[54,62],t:[64,54]}],opp:[[68,44]],ball:[[8,50],[64,46],[64,54],[80,44]]}},
+{c:'B8',n:'La pausa — attracting pressure',cat:'B',age:'U13+',roles:['Ball-playing CB','Single Pivot','Press-resistant 8'],blurb:'Don’t pass early — hold the ball, invite the presser, release as he commits. Pressure on you is space for someone else.',
+ steps:['CB or 6 receives with time — and deliberately waits, ball exposed as bait.','The presser commits — the moment his weight goes forward is the point of no return.','Ball released past him: one line broken, and the presser is now behind the ball.'],
+ when:'Foundation skill for possession identities — the individual twin of the build-out.',coach:'Passing before pressure arrives wastes the possession’s power. Receive → invite → commit them → release. Teach the pause explicitly — young players’ instinct is to get rid of it.',youth:'A free teammate only exists because someone’s marker left him.',
+ anim:{players:[{l:'4',f:[26,55],t:[34,55]},{l:'8',f:[54,40],t:[58,40]}],opp:[[40,50]],ball:[[26,55],[33,55],[57,40]]}},
+{c:'B9',n:'Press baiting',cat:'B',age:'U14+',roles:['Sweeper Keeper','Ball-playing CBs','Outlet 9'],blurb:'Play into “trapped” areas on purpose — the back-pass is the bait that pulls their block forward, then play through the space it vacated.',
+ steps:['Ball goes backward to the keeper — their whole line pushes up in response.','Second bait: pass to the pressing-trap fullback; their winger and 8 converge.','The prepared out-ball: first-time bounce inside or a clip over the jumped press into the abandoned space.'],
+ when:'Vs aggressive pressing teams — their aggression is the raw material.',coach:'Every bait needs its pre-planned exit before the bait is played. Backward passes are forward plays.',youth:'The ball goes back so the team can go forward.',
+ anim:{players:[{l:'GK',f:[8,50],t:[8,50]},{l:'4',f:[20,60],t:[22,60]},{l:'9',f:[62,44],t:[72,42]}],opp:[[30,52],[30,66]],ball:[[20,60],[8,50],[70,42]]}},
+{c:'D1',n:'Pressing triggers',cat:'D',age:'U13+',roles:['Whole team','Pressing 9 leads'],blurb:'A press is not chasing — it\u2019s a coordinated spring released by cues: a back-pass, a bad touch, a ball to a weak foot.',
+ steps:['Team holds mid-block shape — patience phase.','Trigger event: back-pass to the CB.','Whole unit jumps as one: nearest player curves his run to cut the return, others lock the short options, the line steps up.'],
+ when:'Teachable to any identity; the aggressive version defines gegenpressing sides.',coach:'Press the pass, not the man — arrive as the ball arrives. One player pressing alone is worse than nobody.',youth:'Effort has choreography; it can be trained like a passing drill.',
+ anim:{players:[{l:'9',f:[68,50],t:[80,48]},{l:'7',f:[70,28],t:[80,38]},{l:'11',f:[70,72],t:[80,62]}],opp:[[86,54],[84,42]],ball:[[86,56],[85,48]]}},
+];
+const CUSTOM=[];
+const DELIV=[
+{c:'F1',n:'Byline cutback',traj:'ground',zone:'Byline',corr:'Penalty spot',blurb:'Reach the byline, pull it back low to the spot against defenders running toward their own goal — statistically the highest-value delivery in football.',
+ anim:{players:[{l:'7',f:[74,84],t:[90,86]},{l:'9',f:[68,50],t:[82,55]},{l:'8',f:[58,58],t:[76,62]}],opp:[[84,70]],ball:[[60,70],[90,86],[82,55]]}},
+{c:'F2',n:'Whipped early cross',traj:'whipped',zone:'Wide-early',corr:'Corridor of uncertainty',blurb:'Hit from deep before the block sets, curled with pace between keeper and back line — the receiver’s run meets it, no touch needed.',
+ anim:{players:[{l:'2',f:[56,88],t:[60,88]},{l:'9',f:[66,42],t:[86,58]}],opp:[[74,60]],ball:[[56,88],[86,58]]}},
+{c:'F3',n:'Low driven cross',traj:'driven',zone:'Half-space',corr:'Six-yard box',blurb:'Flat, hard, across the six-yard box — nobody needs to win a duel, just touch it. Even a miss becomes a second ball.',
+ anim:{players:[{l:'10',f:[76,74],t:[80,74]},{l:'9',f:[72,46],t:[87,42]}],opp:[[84,50]],ball:[[76,74],[88,42]]}},
+{c:'F4',n:'Floated back-post',traj:'floated',zone:'Byline',corr:'Back post',blurb:'Hung up high to the far post for an aerial mismatch or a ghosting arrival from the blind side.',
+ anim:{players:[{l:'11',f:[70,12],t:[74,12]},{l:'R',f:[70,58],t:[87,68]}],opp:[[80,55]],ball:[[70,12],[86,68]]}},
+{c:'F7',n:'Slide-rule through ball',traj:'ground',zone:'Zone 14',corr:'CB–FB channel',blurb:'Threaded flat into the channel, weighted to the runner’s stride — the feeder-and-finisher’s bread and butter.',
+ anim:{players:[{l:'10',f:[60,50],t:[62,50]},{l:'9',f:[66,34],t:[88,42]}],opp:[[72,40]],ball:[[60,50],[87,42]]}},
+{c:'F8',n:'Ball over the top',traj:'clipped',zone:'Deep',corr:'In behind',blurb:'Aerial, over a high line into space — the counter identity’s 40-yard dagger and the punishment for every bad press.',
+ anim:{players:[{l:'6',f:[34,55],t:[36,55]},{l:'9',f:[58,32],t:[90,36]}],opp:[[55,45]],ball:[[34,55],[89,36]]}},
+];
+const ROT=[
+{c:'R1',n:'False-9 drop & wing dive',form:'4-3-3 positional',creates:'A free receiver and two runners simultaneously.',dilemma:'The CB follows the 9 (channel opens behind him) or passes him off (free man between the lines).',
+ blurb:'Ball reaches the 6 facing forward: the 9 drops between the lines and both wingers cut diagonals into the channels the instant he drops. The most copied rotation of the modern era.',
+ anim:{players:[{l:'9',f:[78,50],t:[62,50]},{l:'11',f:[72,14],t:[87,34]},{l:'7',f:[72,86],t:[87,66]},{l:'8',f:[55,42],t:[70,46]}],opp:[[72,50]],ball:[[42,52],[63,50]]}},
+{c:'R12',n:'Strikers’ scissors',form:'3-5-2 / 4-4-2',creates:'Constant bounce and run-in-behind availability from one unit.',dilemma:'The CBs must swap marks mid-action, endlessly — the 3-5-2’s whole attacking argument.',
+ blurb:'One striker drops short to bounce; the other crosses behind him diagonally the opposite way. The pair alternates every sequence.',
+ anim:{players:[{l:'9',f:[75,42],t:[64,46]},{l:'10',f:[75,58],t:[90,40]},{l:'8',f:[50,55],t:[52,55]}],opp:[[70,44],[70,58]],ball:[[50,55],[65,46]]}},
+{c:'R13',n:'Overlapping centre back',form:'3-5-2 (Sheffield)',creates:'A crosser nobody’s marking scheme accounts for.',dilemma:'Unmarkable by design — the assignment doesn’t exist.',
+ blurb:'The wingback receives pinned inside — so the outside CB overlaps beyond his own wingback while the rest form the cover triangle behind.',
+ anim:{players:[{l:'WB',f:[58,86],t:[64,72]},{l:'CB',f:[30,78],t:[84,90]},{l:'6',f:[40,58],t:[44,62]}],opp:[[64,84]],ball:[[40,58],[58,86],[84,90]]}},
+];
+const pf=document.getElementById('patFilters'),pg=document.getElementById('patGrid');
+const drawer=document.getElementById('drawer'),patBoard=document.getElementById('patBoard');
+let activeCat='all',activePat=null,activeLib='patterns';
+document.getElementById('libSeg').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
+ activeLib=c.dataset.lib;
+ document.querySelectorAll('#libSeg .chip').forEach(x=>x.classList.toggle('on',x===c));
+ pf.style.display=activeLib==='patterns'?'flex':'none';
+ renderCards();});
+CATS.forEach(([k,l],i)=>{pf.innerHTML+=`<div class="chip${i===0?' on':''}" data-cat="${k}">${l}</div>`;});
+pf.addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
+ activeCat=c.dataset.cat;
+ pf.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');renderCards();});
+document.getElementById('patSearch').addEventListener('input',renderCards);
+document.getElementById('drawerHandle').addEventListener('click',()=>drawer.classList.toggle('open'));
+document.querySelectorAll('.drawer-handle[data-sheet]').forEach(h=>h.addEventListener('click',()=>document.getElementById(h.dataset.sheet).classList.toggle('open')));
+function thumbSVG(p){
+ let dots='',moves='',ballp='';
+ if(p.anim){
+  p.anim.players.forEach(pl=>{
+   dots+=`<circle class="pd" cx="${pl.f[0]}" cy="${pl.f[1]*0.62}" r="3.4"/>`;
+   if(pl.f[0]!==pl.t[0]||pl.f[1]!==pl.t[1])moves+=`<line class="mv" x1="${pl.f[0]}" y1="${pl.f[1]*0.62}" x2="${pl.t[0]}" y2="${pl.t[1]*0.62}"/>`;});
+  (p.anim.opp||[]).forEach(o=>{dots+=`<circle cx="${o[0]}" cy="${o[1]*0.62}" r="3" fill="none" stroke="var(--red)" stroke-width="1.2"/>`;});
+  ballp=`<polyline class="bp" points="${p.anim.ball.map(b=>b[0]+','+(b[1]*0.62)).join(' ')}"/><circle class="bd" cx="${p.anim.ball[0][0]}" cy="${p.anim.ball[0][1]*0.62}" r="2"/>`;
+ }else if(p.rec){
+  const seen={};p.rec.start.forEach(s=>{seen[s.id]=s;});
+  Object.values(seen).forEach(s=>{if(s.id==='ball')return;
+   dots+=`<circle class="pd" cx="${s.x}" cy="${s.y*0.62}" r="3.4"${s.id[0]==='o'?' stroke="var(--red)"':''}/>`;});
+  const bp=p.rec.frames.filter(f=>f.id==='ball');
+  if(bp.length)ballp=`<polyline class="bp" points="${bp.map(f=>f.x+','+(f.y*0.62)).join(' ')}"/>`;
+ }
+ return `<svg class="thumb" viewBox="0 0 100 62"><rect class="tl" x="3" y="3" width="94" height="56" rx="2"/><line class="tl" x1="50" y1="3" x2="50" y2="59"/><circle class="tl" cx="50" cy="31" r="8"/>${moves}${ballp}${dots}</svg>`;}
+function matches(p,q){if(!q)return true;q=q.toLowerCase();
+ return [p.c,p.n,p.blurb,(p.roles||[]).join(' '),p.when||'',p.coach||''].join(' ').toLowerCase().includes(q);}
+function tileCode(p){
+ if(p.cat==='mine')return p.c+' · '+(p.author||'Coach').toUpperCase();
+ if(p.traj)return p.c+' · '+p.traj.toUpperCase();
+ if(p.form)return p.c+' · '+p.form.toUpperCase();
+ return p.c+' · '+CATS.find(c=>c[0]===p.cat)[1].toUpperCase();}
+function renderCards(){
+ const q=document.getElementById('patSearch').value.trim();
+ let list;
+ if(activeLib==='deliveries')list=DELIV.filter(p=>matches(p,q));
+ else if(activeLib==='rotations')list=ROT.filter(p=>matches(p,q));
+ else list=(activeCat==='mine'?CUSTOM:PATS.filter(p=>activeCat==='all'||p.cat===activeCat)).filter(p=>matches(p,q));
+ pg.innerHTML=list.length?list.map(p=>
+ `<div class="ptile" data-pat="${p.c}">${thumbSVG(p)}<div class="code">${tileCode(p)}</div><h3>${p.n}</h3></div>`).join('')
+ :'<div class="info-card show">'+(activeLib==='patterns'&&activeCat==='mine'?'No recorded patterns yet — open the whiteboard, hit record, and move your players.':'Nothing matches that search.')+'</div>';}
+renderCards();
+pg.addEventListener('click',e=>{const c=e.target.closest('.ptile');if(!c)return;
+ const p=PATS.concat(CUSTOM,DELIV,ROT).find(x=>x.c===c.dataset.pat);
+ if(p)selectPattern(p);});
+function selectPattern(p){
+ activePat=p;drawer.classList.remove('open');
+ document.getElementById('patEmpty').style.display='none';
+ document.getElementById('patBadge').style.display='flex';
+ const meta=document.getElementById('patMeta');meta.classList.add('show');
+ document.getElementById('pmName').textContent=p.c+' — '+p.n;
+ document.getElementById('patPanel').classList.remove('show');
+ refreshMeta();
+ startPlayback(p,patBoard);}
+function refreshMeta(){
+ const del=document.getElementById('pmDelete');
+ if(del)del.style.display=(activePat&&activePat.cat==='mine'&&role==='coach')?'inline-flex':'none';}
+document.getElementById('pmClear').addEventListener('click',()=>{
+ activePat=null;stopPlayback(patBoard);
+ document.getElementById('patMeta').classList.remove('show');
+ document.getElementById('patBadge').style.display='none';
+ document.getElementById('patPanel').classList.remove('show');
+ document.getElementById('patEmpty').style.display='block';});
+document.getElementById('pmDelete').addEventListener('click',()=>{
+ if(!activePat||activePat.cat!=='mine')return;
+ const i=CUSTOM.indexOf(activePat);if(i>-1)CUSTOM.splice(i,1);
+ document.getElementById('pmClear').click();renderCards();});
+document.getElementById('pmBoard').addEventListener('click',()=>go('whiteboard'));
+document.getElementById('pmDetails').addEventListener('click',()=>{
+ const p=activePat;if(!p)return;
+ const panel=document.getElementById('patPanel');
+ if(panel.classList.contains('show')){panel.classList.remove('show');return;}
+ panel.innerHTML=`<div class="dp-close" id="dpClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+  <div class="title-row" style="padding-right:26px;"><h1 style="font-size:15px;">${p.c} — ${p.n}</h1></div>
+  <div class="kv"><div class="k">What it is</div><div class="v">${p.blurb}</div></div>
+  ${p.steps?`<div class="steps">${p.steps.map((s,i)=>`<div class="step"><span class="stepnum">${i+1}</span><span>${s}</span></div>`).join('')}</div>
+  <div class="kv"><div class="k">When to use it</div><div class="v">${p.when}</div></div>
+  <div class="kv"><div class="k">Coaching points</div><div class="v">${p.coach}</div></div>
+  <div class="kv"><div class="k">Youth takeaway · ${p.age}</div><div class="v">${p.youth}</div></div>`:
+  p.traj?`<div class="two">
+   <div class="kv"><div class="k">Delivery</div><div class="v">${p.traj.charAt(0).toUpperCase()+p.traj.slice(1)} trajectory · from the ${p.zone.toLowerCase()} zone</div></div>
+   <div class="kv"><div class="k">Target corridor</div><div class="v">${p.corr}</div></div></div>`:
+  p.creates?`<div class="two">
+   <div class="kv"><div class="k">What it creates</div><div class="v">${p.creates}</div></div>
+   <div class="kv"><div class="k">The defender’s dilemma</div><div class="v">${p.dilemma}</div></div></div>
+   <div class="kv"><div class="k">Home system</div><div class="v">${p.form} — loops continuously as whole-unit choreography, often nowhere near the ball.</div></div>`:
+  '<div class="kv"><div class="k">Recorded pattern</div><div class="v">Captured on the whiteboard — playback replays player and ball movement exactly as recorded.</div></div>'}`;
+ panel.classList.add('show');
+ document.getElementById('dpClose').onclick=()=>panel.classList.remove('show');});
+
+/* --- pattern playback engine --- */
+function stopPlayback(board){
+ playbacks=playbacks.filter(pb=>{
+  if(board&&pb.board!==board)return true;
+  cancelAnimationFrame(pb.raf);pb.board.querySelectorAll('.dot').forEach(d=>d.remove());return false;});}
+function startPlayback(p,board){
+ stopPlayback(board);
+ const toks=[];
+ function addDot(cls,label,x,y){const d=document.createElement('div');d.className='dot'+cls;d.textContent=label;
+  place(d,x,y);board.appendChild(d);return d;}
+ const pb={board,raf:0};playbacks.push(pb);
+ if(p.anim){
+  const segd=1100,total=(p.anim.ball.length-1)*segd+700;
+  p.anim.players.forEach(pl=>toks.push({el:addDot('',pl.l,pl.f[0],pl.f[1]),f:pl.f,t:pl.t,x:pl.f[0],y:pl.f[1]}));
+  (p.anim.opp||[]).forEach(o=>addDot(' opp','',o[0],o[1]));
+  const ballEl=addDot(' ball','',p.anim.ball[0][0],p.anim.ball[0][1]);
+  /* bind each ball waypoint to the player who starts OR finishes there, so passes chase moving players */
+  const binds=p.anim.ball.map(w=>{let bi=-1;
+   p.anim.players.forEach((pl,i)=>{
+    if(Math.hypot(pl.f[0]-w[0],pl.f[1]-w[1])<5||Math.hypot(pl.t[0]-w[0],pl.t[1]-w[1])<5)bi=i;});return bi;});
+  function wpos(i){const bi=binds[i];return bi>=0?[toks[bi].x,toks[bi].y]:p.anim.ball[i];}
+  const t0=performance.now();
+  function step(){
+   const el=(performance.now()-t0)%total,k=Math.min(el/(total-700),1);
+   toks.forEach(tk=>{tk.x=tk.f[0]+(tk.t[0]-tk.f[0])*k;tk.y=tk.f[1]+(tk.t[1]-tk.f[1])*k;
+    place(tk.el,tk.x,tk.y);});
+   const si=Math.min(Math.floor(el/segd),p.anim.ball.length-2),st=Math.min((el-si*segd)/segd,1);
+   const a=wpos(si),b=wpos(si+1);
+   place(ballEl,a[0]+(b[0]-a[0])*st,a[1]+(b[1]-a[1])*st);
+   pb.raf=requestAnimationFrame(step);}
+  pb.raf=requestAnimationFrame(step);
+ }else if(p.rec){
+  const map={};
+  p.rec.start.forEach(s=>{map[s.id]=addDot(s.id[0]==='o'?' opp':s.id==='ball'?' ball':'',
+   s.id==='ball'?'':(wbModels.find(m=>m.id===s.id)||{}).l||'',s.x,s.y);});
+  const T=p.rec.frames.length?p.rec.frames[p.rec.frames.length-1].t:1;
+  const t0=performance.now();
+  function step(){
+   const el=(performance.now()-t0)%(T+900);let i=0;
+   p.rec.start.forEach(s=>{place(map[s.id],s.x,s.y);});
+   while(i<p.rec.frames.length&&p.rec.frames[i].t<=el){const f=p.rec.frames[i++];
+    place(map[f.id],f.x,f.y);}
+   pb.raf=requestAnimationFrame(step);}
+  pb.raf=requestAnimationFrame(step);
+ }}
+
+/* ================= formations ================= */
+const FORMS=[
+{n:'4-3-3',sub:'Possession / press default',str:'Natural triangles everywhere; built for wide overloads, third-man play, and a high press.',
+ vul:'The space beside the single pivot; counters behind attacking fullbacks.',
+ dots:[[6,50],[20,32],[20,68],[22,10],[22,90],[38,50,'6',1],[52,28,'8',1],[52,72,'8',1],[72,14],[72,86],[80,50,'9',1]],
+ keys:{'6':'The whole machine balances on this player. Needs passing range and elite positional discipline — if he\u2019s bypassed, the back four is naked.',
+       '8':'Half-space engines — must combine High/High work rate with the craft to receive between the lines.',
+       '9':'Choose the identity: a Runner stretches the game vertically; a False 9 collapses it centrally. This choice defines what the wingers do.'}},
+{n:'4-2-3-1',sub:'The balanced modern shape',str:'Double pivot gives counter-security and two build-up outlets; the 10 gets a protected creative station; converts cleanly to a 4-4-2 block.',
+ vul:'The sides of the double pivot; a lone 9 isolated if support is slow; two destroyer pivots go sterile.',
+ dots:[[6,50],[20,32],[20,68],[22,10],[22,90],[40,38,'DP',1],[40,62,'DP',1],[60,50,'10',1],[64,14],[64,86],[82,50]],
+ keys:{'10':'The system exists to feed this player between the lines. Needs press-resistance and the final pass — if he\u2019s marked out, the shape needs a plan B.',
+       'DP':'Balance is everything: one controller + one destroyer or runner. Two of the same profile halves the shape\u2019s value.'}},
+{n:'4-4-2',sub:'The teaching shape',str:'Simplest to teach and the gold-standard defensive shape; two strikers permanently occupy both CBs. Ideal youth base.',
+ vul:'2v3 in central midfield vs any three; Zone 14 opens if the banks stretch apart.',
+ dots:[[6,50],[20,32],[20,68],[22,10],[22,90],[45,14],[45,38,'CM',1],[45,62,'CM',1],[45,86],[75,40,'ST',1],[75,60,'ST',1]],
+ keys:{'CM':'Two must do the work of three. Box-to-box engines with discipline — the shape lives or dies on their compactness.',
+       'ST':'One target or link + one runner. Their chemistry is the attack: bounce and run in behind off each other all game.'}},
+{n:'3-5-2',sub:'Wingback system',str:'Central overload plus a spare CB in build-up; wingbacks give width without sacrificing back-line numbers.',
+ vul:'The space behind the wingbacks; wide CBs dragged into channel 1v1s.',
+ dots:[[6,50],[18,28],[16,50,'CB',1],[18,72],[40,7,'WB',1],[40,93,'WB',1],[46,34],[42,50],[46,66],[76,42],[76,58]],
+ keys:{'WB':'The most demanding role on the pitch — the entire width, both ways. Without genuine High/High engines here, do not pick this shape.',
+       'CB':'Organiser and spare man; ideally the ball-player who steps into midfield.'}},
+{n:'3-4-3',sub:'Pressing back three',str:'Ferocious in the press — front three plus wingbacks makes five pressers; wide overloads; spare man in build-up.',
+ vul:'Only two central midfielders — can be overrun; same behind-the-wingback exposure as 3-5-2.',
+ dots:[[6,50],[18,28],[16,50],[18,72],[42,8],[42,92],[46,40,'CM',1],[46,60,'CM',1],[70,20,'WF',1],[70,80,'WF',1],[80,50]],
+ keys:{'CM':'Two players covering the whole engine room — must be the two fittest, smartest midfielders in the squad.',
+       'WF':'Half-space assassins playing off the 9, with wingbacks supplying width outside them.'}},
+{n:'5-4-1',sub:'The low-block family',str:'Covers the full width of the box with five; kills crosses and cutbacks; the counter-attack identity\u2019s home shape with a pacey outlet.',
+ vul:'No possession relief — without a functioning outlet the block faces a 90-minute siege.',
+ dots:[[6,50],[18,10],[19,30],[20,50,'CB',1],[19,70],[18,90],[44,16],[44,40],[44,60],[44,84],[74,50,'OUT',1]],
+ keys:{'OUT':'The most important defender on the team plays up front: if he can\u2019t hold the ball or win his sprint, the block never breathes.',
+       'CB':'Commands the box, wins everything aerial, organises the line vocally.'}},
+];
+const fb=document.getElementById('formBoard'),kc=document.getElementById('keyCard');
+let curForm=0,rondoOn=false;
+const RONDOS=[
+ {r:[8,30,26,74],n:'4v2',t:'First-line build-up: two CBs + pivot (+ keeper) vs two pressing strikers \u2014 literally the 4v2 rondo at the edge of your box. Solved by the build-out and la pausa (B5, B8).'},
+ {r:[35,62,30,70],n:'5v3',t:'The midfield box: pivot(s) + 10 + a stepping CB vs their midfield triangle \u2014 same split-pass and pause logic as the 5v3 square (B2, B8, A5).'},
+ {r:[30,75,4,20],n:'2v1',t:'The flank corridor: winger + fullback vs their fullback \u2014 every overlap/underlap decision is the corridor rondo (A1, A2, F1).'},
+ {r:[30,75,80,96],n:'2v1',t:'The flank corridor, far side \u2014 same channel game (A1, A2, F1).'},
+ {r:[68,92,30,70],n:'2v2',t:'The last line: strikers vs CBs (+ keeper) \u2014 the qualitative-superiority zone where pins, scissors (R12) and runs in behind decide it (B4, C3).'},
+];
+function formThumb(f){
+ const dots=f.dots.map(d=>`<circle class="pd" cx="${d[0]}" cy="${d[1]*0.62}" r="3"${d[3]?' stroke="var(--glow)" stroke-width="1.6"':''}/>`).join('');
+ return `<svg class="thumb" viewBox="0 0 100 62"><rect class="tl" x="3" y="3" width="94" height="56" rx="2"/><line class="tl" x1="50" y1="3" x2="50" y2="59"/><circle class="tl" cx="50" cy="31" r="8"/>${dots}</svg>`;}
+function renderFormGrid(){
+ const q=(document.getElementById('formSearch').value||'').trim().toLowerCase();
+ const list=FORMS.map((f,i)=>({f,i})).filter(x=>!q||(x.f.n+' '+x.f.sub+' '+x.f.str).toLowerCase().includes(q));
+ document.getElementById('formGrid').innerHTML=list.map(x=>
+ `<div class="ptile" data-form="${x.i}">${formThumb(x.f)}<div class="code">${x.f.sub.toUpperCase()}</div><h3>${x.f.n}</h3></div>`).join('')
+ ||'<div class="info-card show">Nothing matches that search.</div>';}
+document.getElementById('formSearch').addEventListener('input',renderFormGrid);
+document.getElementById('formGrid').addEventListener('click',e=>{
+ const t=e.target.closest('.ptile');if(!t)return;
+ document.getElementById('formSheet').classList.remove('open');
+ renderForm(+t.dataset.form);});
+function renderRondos(){
+ if(!rondoOn)return;
+ RONDOS.forEach(z=>{
+  const d=document.createElement('div');
+  d.className='zone show rondozone';d.style.cssText=rectStyle(z.r[0],z.r[1],z.r[2],z.r[3])+'pointer-events:auto;cursor:pointer;';
+  d.innerHTML='<span class="zl">'+z.n+'</span>';
+  d.addEventListener('click',()=>{kc.classList.add('show');kc.innerHTML='<b>'+z.n+' \u2014 this zone is a rondo.</b> '+z.t;});
+  fb.appendChild(d);});}
+function renderForm(i){curForm=i;const f=FORMS[i];
+ fb.querySelectorAll('.dot,.rondozone').forEach(d=>d.remove());kc.classList.remove('show');
+ document.getElementById('formPanel').classList.remove('show');
+ document.getElementById('fmName').textContent=f.n+' \u2014 '+f.sub;
+ renderRondos();
+ f.dots.forEach(d=>{const e=document.createElement('div');e.className='dot'+(d[3]?' key':'');
+  place(e,d[0],d[1]);e.textContent=d[2]||'';
+  if(d[3])e.addEventListener('click',()=>{kc.classList.add('show');kc.innerHTML='<b>'+d[2]+' \u2014 keystone.</b> '+f.keys[d[2]];});
+  fb.appendChild(e);});}
+document.getElementById('rondoToggle').addEventListener('click',function(){
+ rondoOn=!rondoOn;this.classList.toggle('gold',rondoOn);renderForm(curForm);});
+document.getElementById('fmDetails').addEventListener('click',()=>{
+ const f=FORMS[curForm];const panel=document.getElementById('formPanel');
+ if(panel.classList.contains('show')){panel.classList.remove('show');return;}
+ panel.innerHTML=`<div class="dp-close" id="fmClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+  <div class="title-row" style="padding-right:26px;"><h1 style="font-size:15px;">${f.n} \u2014 ${f.sub}</h1></div>
+  <div class="kv"><div class="k">Strengths</div><div class="v">${f.str}</div></div>
+  <div class="kv"><div class="k">Danger areas conceded</div><div class="v">${f.vul}</div></div>
+  ${Object.entries(f.keys).map(([k,v])=>`<div class="kv"><div class="k">Keystone \u00b7 ${k}</div><div class="v">${v}</div></div>`).join('')}`;
+ panel.classList.add('show');
+ document.getElementById('fmClose').onclick=()=>panel.classList.remove('show');});
+renderFormGrid();renderForm(0);
+
+/* ================= roster ================= */
+const PLAYERS=[
+{num:2,nm:'Jordan T.',role:'Overlapping FB',wr:'High / Med',att:[4,3,3,2,3,4],note:'Supplies all right-side width; pair with a tracking wide player.'},
+{num:6,nm:'Sam R.',role:'Single Pivot (DLP)',wr:'Med / High',att:[2,5,3,5,3,3],note:'The metronome. If he\u2019s bypassed, the back four is naked.'},
+{num:7,nm:'Maya K.',role:'Inside Forward',wr:'High / Low',att:[5,3,5,2,2,3],note:'Wants to come inside onto her strong foot — width must come from behind her.'},
+{num:9,nm:'Alex B.',role:'Target Man',wr:'Med / Med',att:[2,3,2,3,5,3],note:'The bounce player: up-back and second-ball patterns run through him.'},
+];
+const ATT=['Pace','Passing range','1v1 / carrying','Discipline','Aerial & physical','Pressing engine'];
+const pl=document.getElementById('playerList'),pp=document.getElementById('playerProfile');
+let curPlayer=2;
+function renderPlayerList(){
+ pl.innerHTML=PLAYERS.map((p,i)=>`<div class="playerrow${i===curPlayer?' on':''}" data-p="${i}"><span class="pnum">${p.num}</span>
+ <span class="meta"><div class="nm">${p.nm}${role==='player'&&i===ME?' (you)':''}</div><div class="rl">${p.role}</div></span>
+ ${role==='coach'&&SUGG&&i===ME?'<span class="sugg-badge" title="1 suggestion"></span>':''}
+ <span class="wr">${p.wr}</span></div>`).join('');}
+function renderPlayer(i){curPlayer=i;const p=PLAYERS[i];
+ pl.querySelectorAll('.playerrow').forEach((x,xi)=>x.classList.toggle('on',xi===i));
+ let extra='';
+ if(role==='coach'&&SUGG&&i===ME){
+  extra=`<div class="suggest"><div class="kv" style="border:none;padding:0;"><div class="k">Playstyle suggestion from ${p.nm}</div>
+   <div class="v">“${SUGG}”</div></div>
+   <div style="display:flex;gap:8px;"><button class="cta" id="sugApprove">Approve — add to profile</button>
+   <button class="cta ghost" id="sugDismiss">Dismiss</button></div></div>`;}
+ if(role==='player'&&i===ME){
+  extra=SUGG?`<div class="kv" style="border-color:var(--accent);"><div class="k">Your suggestion · pending coach review</div><div class="v">“${SUGG}”</div></div>`
+  :`<div class="suggest"><div class="kv" style="border:none;padding:0;"><div class="k">Suggest a change to your playstyle</div>
+   <div class="v" style="color:var(--text-secondary);">Tell your coach how you see your game — role, runs, what you want to work on. The coach reviews before anything changes.</div></div>
+   <textarea id="sugText" placeholder="e.g. I feel more dangerous starting wider right and cutting in — could we try me as a touchline winger for a session?"></textarea>
+   <button class="cta" id="sugSend" style="align-self:flex-start;">Send suggestion</button></div>`;}
+ const readonly=role==='player';
+ pp.innerHTML=`<div class="kv"><div class="k">#${p.num} ${p.nm} — ${p.role}</div><div class="v">${p.note}</div></div>
+ <div class="kv"><div class="k">Work rates (attacking / defensive)${readonly?' · view only':''}</div><div class="v">${p.wr}</div></div>
+ <div class="kv"><div class="k">Attributes (coach-rated, 1–5)${readonly?' · view only':''}</div><div class="sliders" style="margin-top:8px;">${
+  ATT.map((a,ai)=>`<div class="srow"><span>${a}</span><span class="sbar"><i style="width:${p.att[ai]*20}%"></i></span><span>${p.att[ai]}</span></div>`).join('')}</div></div>
+ ${extra}`;
+ const send=document.getElementById('sugSend');
+ if(send)send.onclick=()=>{const t=document.getElementById('sugText').value.trim();
+  if(t){SUGG=t;renderPlayerList();renderPlayer(ME);}};
+ const ap=document.getElementById('sugApprove');
+ if(ap)ap.onclick=()=>{PLAYERS[ME].note+=' Player note: '+SUGG;SUGG=null;renderPlayerList();renderPlayer(ME);};
+ const dm=document.getElementById('sugDismiss');
+ if(dm)dm.onclick=()=>{SUGG=null;renderPlayerList();renderPlayer(ME);};}
+pl.addEventListener('click',e=>{const r=e.target.closest('.playerrow');if(r)renderPlayer(+r.dataset.p);});
+renderPlayerList();renderPlayer(2);
+
+/* ================= sessions ================= */
+const SESSIONS=[
+{n:'Tuesday — wide overloads',date:'Tue Jul 21 · U14 boys',status:'sent',
+ note:'Watch both patterns before training — first 20 minutes we walk the overlap, then we scrimmage with wide overloads as the theme.',
+ items:['A1','B3'],
+ rec:[{num:2,nm:'Jordan T.',v:1},{num:6,nm:'Sam R.',v:1},{num:7,nm:'Maya K.',v:0},{num:9,nm:'Alex B.',v:1}]},
+{n:'Matchday prep — pressing triggers',date:'Fri Jul 24 · U14 boys',status:'draft',
+ note:'Short one: just the trigger pattern. Look for the back-pass cue.',
+ items:['D1'],
+ rec:[{num:2,nm:'Jordan T.',v:0},{num:6,nm:'Sam R.',v:0},{num:7,nm:'Maya K.',v:0},{num:9,nm:'Alex B.',v:0}]},
+];
+let activeSess=0;
+const sl=document.getElementById('sessList'),sd=document.getElementById('sessDetail');
+function allPats(){return PATS.concat(CUSTOM,DELIV,ROT);}
+function findPat(c){return allPats().find(p=>p.c===c);}
+function visSessions(){return role==='player'?SESSIONS.filter(s=>s.status==='sent'):SESSIONS;}
+function renderSessList(){
+ const vs=visSessions();
+ if(activeSess>=vs.length)activeSess=0;
+ sl.innerHTML=vs.map((s,i)=>`<div class="formitem${i===activeSess?' on':''}" data-s="${i}">
+  <span>${s.n}</span><span class="sub">${role==='player'?(s.rec[ME].v?'Watched':'New'):(s.status==='sent'?'Sent':'Draft')}</span></div>`).join('');}
+sl.addEventListener('click',e=>{const it=e.target.closest('.formitem');if(!it)return;
+ activeSess=+it.dataset.s;renderSessList();renderSess();});
+function renderSess(){
+ const s=visSessions()[activeSess];
+ if(!s){sd.innerHTML='<div class="info-card show">No sessions yet.</div>';return;}
+ if(role==='player'){renderSessPlayer(s);return;}
+ const viewed=s.rec.filter(r=>r.v).length;
+ sd.innerHTML=`
+ <div class="sesshead">
+  <div style="flex:1;min-width:150px;"><div class="sh-name">${s.n}</div><div class="sh-date">${s.date}</div></div>
+  <span class="pill ${s.status}">${s.status==='sent'?'SENT · '+viewed+'/'+s.rec.length+' viewed':'DRAFT'}</span>
+  ${s.status==='draft'?'<button class="cta" id="sendSess">Send to players</button>':''}
+ </div>
+ <div class="kv"><div class="k">Coach note</div><div class="v">${s.note}</div></div>
+ <h1 style="font-size:14px;">Session content</h1>
+ <div style="display:flex;flex-direction:column;gap:6px;" id="sessItems">${s.items.map(c=>{
+  const p=findPat(c);if(!p)return'';
+  return `<div class="sessitem"><span class="si-thumb">${thumbSVG(p)}</span>
+   <span class="si-meta"><div class="si-code">${p.c}</div><div class="si-name">${p.n}</div></span>
+   ${s.status==='draft'?`<span class="si-x" data-rm="${c}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="12" height="12"><path d="M6 6l12 12M18 6L6 18"/></svg></span>`:''}
+  </div>`;}).join('')}</div>
+ ${s.status==='draft'?`<button class="cta ghost" id="addItem">+ Add from library</button>
+ <div class="picker" id="picker">${allPats().filter(p=>!s.items.includes(p.c)).map(p=>
+  `<div class="pickrow" data-add="${p.c}"><span class="si-thumb">${thumbSVG(p)}</span><span><b>${p.c}</b> · ${p.n}</span></div>`).join('')||'<span style="font-size:12px;color:var(--text-secondary);padding:4px;">Everything is already in this session.</span>'}</div>`:''}
+ <h1 style="font-size:14px;">Players</h1>
+ <div style="display:flex;flex-direction:column;gap:6px;">${s.rec.map(r=>
+  `<div class="recip"><span class="pnum">${r.num}</span><span class="meta">${r.nm}</span>
+   <span class="pill ${s.status==='sent'?(r.v?'viewed':'notyet'):'draft'}">${s.status==='sent'?(r.v?'Viewed':'Not yet'):'Will receive'}</span></div>`).join('')}</div>`;
+ const send=document.getElementById('sendSess');
+ if(send)send.onclick=()=>{s.status='sent';s.rec.forEach((r,i)=>r.v=i===0?1:0);renderSessList();renderSess();};
+ const add=document.getElementById('addItem');
+ if(add)add.onclick=()=>document.getElementById('picker').classList.toggle('show');
+ sd.querySelectorAll('[data-add]').forEach(el=>el.addEventListener('click',()=>{s.items.push(el.dataset.add);renderSess();
+  document.getElementById('picker')&&document.getElementById('picker').classList.add('show');}));
+ sd.querySelectorAll('[data-rm]').forEach(el=>el.addEventListener('click',()=>{s.items=s.items.filter(c=>c!==el.dataset.rm);renderSess();}));
+}
+function renderSessPlayer(s){
+ const me=s.rec[ME];
+ sd.innerHTML=`
+ <div class="sesshead">
+  <div style="flex:1;min-width:150px;"><div class="sh-name">${s.n}</div><div class="sh-date">${s.date}</div></div>
+  ${me.v?'<span class="pill viewed">Watched \u2713</span>':'<button class="cta" id="markWatched">Mark as watched</button>'}
+ </div>
+ <div class="kv"><div class="k">Coach note</div><div class="v">${s.note}</div></div>
+ <h1 style="font-size:14px;">Session content \u00b7 tap to watch</h1>
+ <div style="display:flex;flex-direction:column;gap:6px;">${s.items.map(c=>{
+  const p=findPat(c);if(!p)return'';
+  return `<div class="sessitem" data-play="${p.c}" style="cursor:pointer;"><span class="si-thumb">${thumbSVG(p)}</span>
+   <span class="si-meta"><div class="si-code">${p.c}</div><div class="si-name">${p.n}</div></span>
+   <span class="pm-btn gold" style="flex:none;">Watch</span></div>`;}).join('')}</div>`;
+ const mw=document.getElementById('markWatched');
+ if(mw)mw.onclick=()=>{me.v=1;renderSessList();renderSess();};
+ sd.querySelectorAll('[data-play]').forEach(el=>el.addEventListener('click',()=>{
+  const p=findPat(el.dataset.play);if(!p)return;
+  go('patterns');selectPattern(p);}));}
+
+renderSessList();renderSess();
+
+/* ================= identity ================= */
+const idBoard=document.getElementById('idBoard');
+function byCode(c){return PATS.concat(CUSTOM,DELIV,ROT).find(p=>p.c===c);}
+const LIV_ANIM={anim:{players:[{l:'8',f:[48,44],t:[54,52]},{l:'6',f:[46,62],t:[53,57]},{l:'7',f:[63,64],t:[57,58]},{l:'9',f:[66,34],t:[88,32]}],opp:[[56,54]],ball:[[55,55],[57,54],[87,33]]}};
+const CITY_DOTS=[[6,50],[18,30],[16,50],[18,70],[34,42],[34,58],[56,32],[56,68],[68,10],[68,90],[80,50]];
+const REFTEAMS=[
+{id:'t1',n:'Barcelona 2008\u201312',s:'Positional possession \u2014 the reference',form:'4-3-3 with a False 9',animRef:'A5',sig:['B5','B6','A5','D2'],
+ idea:'Juego de posici\u00f3n: strict zone occupation so there is always a free man and always a triangle. Messi drops from the 9 into a central overload no one solved; wingers pin maximum width; on loss, the 6-second counterpress \u2014 possession itself as the defensive system.',
+ key:'Busquets (Single Pivot, the archetype) \u00b7 Xavi\u2013Iniesta (controller 8 + half-space 8) \u00b7 Messi (False 9, the archetype) \u00b7 Alves (Overlapping FB).',
+ youth:'Positions before players \u2014 occupy zones, form triangles, and the free man appears by structure, not talent. The rondo is this entire identity in a 10-yard square.'},
+{id:'t2',n:'Liverpool 2018\u201320',s:'Gegenpress \u2014 the reference',form:'4-3-3, narrow front three',animCustom:'LIV',sig:['D2','C1','A1','B3'],
+ idea:'\u201cGegenpressing is the best playmaker\u201d: the moment possession is lost, swarm; the moment it\u2019s won, go vertical. All width from the fullbacks; a pressing False 9 vacates the centre so the inside forwards score.',
+ key:'Firmino (pressing False 9, the selfless role) \u00b7 Alexander-Arnold / Robertson (creator fullbacks) \u00b7 van Dijk (covering CB enabling the high line) \u00b7 Henderson/Fabinho (engine + anchor).',
+ youth:'Effort can be a system, not a vibe \u2014 pressing has choreography (curved runs, triggers, cover) that can be trained like a passing drill.'},
+{id:'t3',n:'Real Madrid 2010\u201313',s:'Counter-attack pace \u2014 the reference',form:'4-2-3-1, bait block',animRef:'C1',sig:['C1','B4','D3','C3'],
+ idea:'The most lethal transition team of its era: a block that invited opponents forward as bait, then regain \u2192 Alonso/\u00d6zil release \u2192 three sprinters, many goals inside ten seconds. Identity flexed by opponent \u2014 against Bar\u00e7a it parked outright.',
+ key:'Alonso (deep-lying quarterback) \u00b7 \u00d6zil (transition 10, the archetype) \u00b7 Ronaldo (Inside Forward as apex scorer) \u00b7 Khedira (the High/High sprints that make counters 3v3).',
+ youth:'Defending deep is a plan, not a surrender \u2014 and a counter needs runners without the ball as much as the star with it.'},
+{id:'t4',n:'Leicester City 2015/16',s:'Counter-attack purity',form:'4-4-2 mid-block',animRef:'F8',sig:['C1','C3','B4'],
+ idea:'The 5,000\u20131 title: bottom-three possession, champions anyway. Kant\u00e9\u2019s one-man press feeding first-time diagonals over the fullback \u2014 the ball airborne before the opponent\u2019s shape turned.',
+ key:'Kant\u00e9 (Destroyer, generational) \u00b7 Vardy (Runner-in-Behind, the modern reference) \u00b7 Mahrez (Inside Forward isolation).',
+ youth:'A team that knows exactly what it is beats eleven better players who don\u2019t.'},
+{id:'t5',n:'Atl\u00e9tico Madrid 2013/14',s:'The mid-block masterclass',form:'4-4-2, ultra-compact banks',formShape:'4-4-2',sig:['D3','C2'],
+ idea:'Two banks so laterally compact they covered barely half the pitch\u2019s width \u2014 daring you to cross into God\u00edn. Every duel is the game; set pieces as a primary scoring plan; the title won against the Messi\u2013Ronaldo duopoly on a fraction of the budget.',
+ key:'God\u00edn (organising CB) \u00b7 Gabi (destroyer-captain) \u00b7 Costa (outlet 9 as psychological warfare).',
+ youth:'A block isn\u2019t passive \u2014 Atl\u00e9tico attacked you with their shape.'},
+{id:'t6',n:'Man City 2022/23',s:'The box midfield',form:'3-2-4-1 in possession',dots:CITY_DOTS,sig:['B7','B2','D4'],
+ idea:'Stones stepping from CB into the pivot beside Rodri \u2014 the CB-into-midfield systematised \u2014 forming a 3-2 base with a box of creators ahead; Haaland pinning both CBs alone so the 8s attacked Zone 14. Rest defence so structured that counters died at birth.',
+ key:'Stones (hybrid CB/DM \u2014 the fit engine\u2019s dream edge case) \u00b7 Rodri (pivot) \u00b7 Haaland (the pin) \u00b7 De Bruyne (half-space assassin).',
+ youth:'Formations are phone numbers \u2014 what matters is the in-possession shape, and it can differ from the defensive one.'},
+];
+const IDS=[
+{id:'s1',n:'Control',s:'Positional possession',animRef:'B5',pats:['B5','A5','B3'],b:'Keep the ball to control the game; move their shape until it breaks; swarm for 5 seconds on every loss.',
+ enc:'Short circulation, line-breakers into feet, prepared switches, cutbacks',dis:'Hopeful long balls, unprepared diagonals, crossing for volume',tempo:'Slow-slow-fast: circulate patiently, accelerate only through gaps'},
+{id:'s2',n:'Vertical',s:'Counter-attack pace',animRef:'C1',pats:['C1','C3','B4'],b:'Concede the ball on purpose; defend compact; win it and go for the throat in under 10 seconds.',
+ enc:'First-pass-forward, balls over the top, early crosses',dis:'Slow lateral circulation in transition \u2014 wasting the regain',tempo:'Fast on regain (10s), calm reset if the window closes'},
+{id:'s3',n:'Chaos on purpose',s:'Gegenpress',animRef:'D1',pats:['D1','D2','C1'],b:'The press is the playmaker: suffocate high, win it 30 metres from goal, score before they reset.',
+ enc:'Vertical ground passes, driven crosses, quick through balls after regains',dis:'Square or back passes under no pressure',tempo:'Always forward-first \u2014 possession is a means, not a KPI'},
+{id:'s4',n:'Park & break',s:'Low-block counter',animRef:'C2',pats:['D3','C1','C2'],b:'Two banks, zero space between the lines \u2014 then release one or two sprinters into 60 metres of grass.',
+ enc:'Channel outlets, long clearances to the Target, over-the-top when sprung',dis:'Risky short build-up near your own box',tempo:'Two speeds only: dead slow with the ball, maximal on the break'},
+{id:'s5',n:'Territory',s:'Direct & second ball',animRef:'C2',pats:['C2','A4','D1'],b:'Go long to a target early; structure the team around the second ball; camp in their half.',
+ enc:'Channel balls, long diagonals to the Target, floated crosses, forward throw-ins',dis:'Short GK build-up, pivot-drop patterns',tempo:'High constant tempo \u2014 forward or long'},
+{id:'s6',n:'Pragmatism',s:'Hybrid / transition control',animRef:'A4',pats:['B5','C1','D3'],b:'Comfortable in possession and in a block; chooses per opponent. The sanest default for a youth team.',
+ enc:'Context-switched: possession menu when controlling, counter menu on transition',dis:'Nothing categorically \u2014 decision quality is the graded skill',tempo:'Game-state driven: winning uses Control\u2019s menu, chasing uses Vertical\u2019s'},
+];
+const CULT=[
+{id:'c1',n:'Greece 2004',b:'Man-marking + a libero wins the Euros \u2014 set pieces and a low block as a complete identity.',pats:['D3']},
+{id:'c2',n:'Stoke 2008\u201312',b:'Delap\u2019s flat long throws as a primary weapon \u2014 the throw-in as a corner.',pats:['C2']},
+{id:'c3',n:'Burnley 2016\u201320',b:'4-4-2 low block + aerial territory, out-running their budget on organisation alone.',pats:['D3','C2']},
+{id:'c4',n:'Wimbledon 1988',b:'The ur-second-ball team \u2014 direct play as open psychological warfare.',pats:['C2']},
+{id:'c5',n:'Ajax 2018/19',b:'Youth-built positional side pressing giants off the pitch \u2014 the aspirational card for a development app.',pats:['B5','B7']},
+{id:'c6',n:'Chile 2014\u201316',b:'National-team man-press chaos; back-to-back Copa Am\u00e9rica wins.',pats:['D1']},
+];
+let idSeg='ref',activeId=null;
+document.getElementById('idSeg').addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
+ idSeg=c.dataset.seg;
+ document.querySelectorAll('#idSeg .chip').forEach(x=>x.classList.toggle('on',x===c));renderIdGrid();});
+document.getElementById('idSearch').addEventListener('input',renderIdGrid);
+function idList(){return idSeg==='ref'?REFTEAMS:idSeg==='style'?IDS:CULT;}
+function idThumbFor(x){
+ const p=x.animRef?byCode(x.animRef):null;
+ if(x.animCustom==='LIV')return thumbSVG(LIV_ANIM);
+ if(p)return thumbSVG(p);
+ if(x.dots||x.formShape){const dots=(x.dots||FORMS.find(f=>f.n===x.formShape).dots);
+  return `<svg class="thumb" viewBox="0 0 100 62"><rect class="tl" x="3" y="3" width="94" height="56" rx="2"/><line class="tl" x1="50" y1="3" x2="50" y2="59"/><circle class="tl" cx="50" cy="31" r="8"/>${dots.map(d=>`<circle class="pd" cx="${d[0]}" cy="${d[1]*0.62}" r="3"/>`).join('')}</svg>`;}
+ return `<svg class="thumb" viewBox="0 0 100 62"><rect class="tl" x="3" y="3" width="94" height="56" rx="2"/><line class="tl" x1="50" y1="3" x2="50" y2="59"/><circle class="tl" cx="50" cy="31" r="8"/></svg>`;}
+function renderIdGrid(){
+ const q=(document.getElementById('idSearch').value||'').trim().toLowerCase();
+ const list=idList().filter(x=>!q||JSON.stringify(x).toLowerCase().includes(q));
+ document.getElementById('idGridSheet').innerHTML=list.map(x=>
+ `<div class="ptile" data-id="${x.id}">${idThumbFor(x)}<div class="code">${(x.s||'CULT CLASSIC').toUpperCase()}</div><h3>${x.n}</h3></div>`).join('')
+ ||'<div class="info-card show">Nothing matches that search.</div>';}
+document.getElementById('idGridSheet').addEventListener('click',e=>{
+ const t=e.target.closest('.ptile');if(!t)return;
+ const x=REFTEAMS.concat(IDS,CULT).find(v=>v.id===t.dataset.id);
+ if(x)selectIdentity(x);});
+function clearIdBoard(){stopPlayback(idBoard);idBoard.querySelectorAll('.dot').forEach(d=>d.remove());}
+function selectIdentity(x){
+ activeId=x;document.getElementById('idSheet').classList.remove('open');
+ clearIdBoard();
+ document.getElementById('idEmpty').style.display='none';
+ document.getElementById('idMeta').classList.add('show');
+ document.getElementById('idName').textContent=x.n;
+ document.getElementById('idPanel').classList.remove('show');
+ const animSrc=x.animCustom==='LIV'?LIV_ANIM:(x.animRef?byCode(x.animRef):null);
+ if(animSrc&&animSrc.anim){document.getElementById('idBadge').style.display='flex';startPlayback({anim:animSrc.anim},idBoard);}
+ else{document.getElementById('idBadge').style.display='none';
+  const dots=x.dots||(x.formShape?FORMS.find(f=>f.n===x.formShape).dots:null);
+  if(dots)dots.forEach(d=>{const e=document.createElement('div');e.className='dot';place(e,d[0],d[1]);e.textContent=d[2]||'';idBoard.appendChild(e);});}}
+document.getElementById('idClear').addEventListener('click',()=>{
+ activeId=null;clearIdBoard();
+ document.getElementById('idMeta').classList.remove('show');
+ document.getElementById('idBadge').style.display='none';
+ document.getElementById('idPanel').classList.remove('show');
+ document.getElementById('idEmpty').style.display='block';});
+document.getElementById('idDetails').addEventListener('click',()=>{
+ const x=activeId;if(!x)return;
+ const panel=document.getElementById('idPanel');
+ if(panel.classList.contains('show')){panel.classList.remove('show');return;}
+ panel.innerHTML=`<div class="dp-close" id="idClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+  <div class="title-row" style="padding-right:26px;"><h1 style="font-size:15px;">${x.n}</h1></div>
+  ${x.form?`<div class="kv"><div class="k">Formation &amp; shape</div><div class="v">${x.form}</div></div>`:''}
+  <div class="kv"><div class="k">Core idea</div><div class="v">${x.idea||x.b}</div></div>
+  ${x.sig||x.pats?`<div class="kv"><div class="k">Signature patterns</div><div class="v"><div class="tags">${(x.sig||x.pats).map(p=>`<span class="tag gold">${p}</span>`).join('')}</div></div></div>`:''}
+  ${x.key?`<div class="kv"><div class="k">Keystone roles</div><div class="v">${x.key}</div></div>`:''}
+  ${x.enc?`<div class="kv"><div class="k">Passing menu</div><div class="v"><span style="color:var(--glow);">Encouraged:</span> ${x.enc}<br><span style="color:var(--text-red);">Off-menu:</span> ${x.dis}<br><span style="color:var(--text-secondary);font-style:italic;">Tempo \u2014 ${x.tempo}</span></div></div>`:''}
+  ${x.youth?`<div class="kv"><div class="k">Youth takeaway</div><div class="v">${x.youth}</div></div>`:''}`;
+ panel.classList.add('show');
+ document.getElementById('idClose').onclick=()=>panel.classList.remove('show');});
+renderIdGrid();
+</script>
+</body>
+</html>
