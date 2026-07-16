@@ -11,6 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/oswald": "^5.2.8",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
