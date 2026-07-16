@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import ThemeSwitcher from "./theme/ThemeSwitcher";
+import "./App.css";
 
 export default function App() {
   const [apiStatus, setApiStatus] = useState("checking");
@@ -19,9 +21,14 @@ export default function App() {
   }, []);
 
   return (
-    <main>
-      <h1>Patterns of Play</h1>
-      <p>API status: {apiStatus}</p>
-    </main>
+    <div className="app-shell">
+      <header className="app-topbar">
+        <h1 className="app-brand">Patterns of Play</h1>
+        <ThemeSwitcher />
+      </header>
+      <main className="app-main">
+        <p className="app-status">API status: {apiStatus}</p>
+      </main>
+    </div>
   );
 }

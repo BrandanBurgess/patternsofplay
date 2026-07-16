@@ -1,0 +1,73 @@
+/* Design tokens: three themes as CSS custom properties on html[data-theme].
+   Source of truth: docs/source/design-handoff/README.md "Design tokens"
+   table plus the reference values baked into pop-mvp-mockups.html, which is
+   the interactive source the README table summarizes.
+
+   Rule: components consume these variables only. No component ships a
+   hardcoded color. */
+
+:root {
+  --display-font: "Oswald", sans-serif;
+  --body-font: "Inter", sans-serif;
+  --radius: 10px;
+}
+
+/* Pitch (default) */
+html[data-theme="pitch"] {
+  --bg: #0f3c2c;
+  --bg-stripe: #3b7a57;
+  --bg-stripe-alt: #336a4b;
+  --sidebar-bg: #0b2f22;
+  --surface: #1b4b39;
+  --text-primary: #f5f3e9;
+  --text-secondary: #a9c4b3;
+  --border: rgba(245, 243, 233, 0.12);
+  --line: rgba(245, 243, 233, 0.28);
+  --accent: #e8b923;
+  --accent-ink: #3a2b00;
+  --glow: #ffd65a;
+  --red: #e23d42;
+  --on-red: #fff;
+  --bg-red: rgba(226, 61, 66, 0.18);
+  --text-red: #ff8a8d;
+}
+
+/* Dark */
+html[data-theme="dark"] {
+  --bg: #14161a;
+  --bg-stripe: #1a1d22;
+  --bg-stripe-alt: #1a1d22;
+  --sidebar-bg: #191c21;
+  --surface: #1d2025;
+  --text-primary: #ecedee;
+  --text-secondary: #888e97;
+  --border: rgba(255, 255, 255, 0.08);
+  --line: rgba(255, 255, 255, 0.14);
+  --accent: #4fa8ff;
+  --accent-ink: #052240;
+  --glow: #7cc1ff;
+  --red: #e5484d;
+  --on-red: #fff;
+  --bg-red: rgba(229, 72, 77, 0.16);
+  --text-red: #ff9298;
+}
+
+/* Board (light) */
+html[data-theme="board"] {
+  --bg: #fafaf6;
+  --bg-stripe: #f1f2ec;
+  --bg-stripe-alt: #f1f2ec;
+  --sidebar-bg: #f1f2ec;
+  --surface: #fff;
+  --text-primary: #1b2420;
+  --text-secondary: #657064;
+  --border: rgba(27, 36, 32, 0.12);
+  --line: rgba(27, 36, 32, 0.22);
+  --accent: #2d6a4f;
+  --accent-ink: #eaf3ee;
+  --glow: #2d6a4f;
+  --red: #c81e2c;
+  --on-red: #fff;
+  --bg-red: #fbe7e7;
+  --text-red: #b01f26;
+}
