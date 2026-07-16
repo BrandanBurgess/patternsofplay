@@ -1,0 +1,53 @@
+/* Board styling. Colors come only from theme CSS variables (with fallbacks so
+   the board is correct before the T-002 token set merges). No hardcoded brand
+   colors, no layout thrash during drag. */
+
+.board-wrap {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  /* deep pitch green backdrop; theme variable with a sensible fallback */
+  background: var(--bg-stripe, #3b7a57);
+  border: 1px solid var(--surface, #1b4b39);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.board-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* the whole board is a drag surface: never let touch scroll steal the gesture */
+  touch-action: none;
+  user-select: none;
+}
+
+.token {
+  cursor: grab;
+  touch-action: none;
+}
+
+.token-active {
+  cursor: grabbing;
+}
+
+.token-face {
+  stroke-width: 3;
+  transition: none; /* transforms are driven per frame; no CSS transition lag */
+}
+
+.token-ball .token-face {
+  /* gold glow on the ball (design README: glowing gold dot) */
+  filter: drop-shadow(0 0 6px var(--glow, #ffd65a));
+  stroke: none;
+}
+
+.token-active .token-face {
+  filter: drop-shadow(0 0 5px var(--accent, #e8b923));
+}
+
+.token-label {
+  font-family: var(--font-display, "Oswald", system-ui, sans-serif);
+  font-weight: 600;
+  pointer-events: none;
+}

@@ -1,0 +1,56 @@
+/* Minimal shell layout for the board dev surface. The real whiteboard page is
+   T-030; this only frames the board for T-020. Theme variables with fallbacks,
+   no hardcoded brand colors. */
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.app-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  font-family: var(--font-body, "Inter", system-ui, sans-serif);
+  color: var(--text, #f4f4ef);
+  background: var(--bg, #0f3c2c);
+  min-height: 100vh;
+}
+
+.app-header h1 {
+  font-family: var(--font-display, "Oswald", system-ui, sans-serif);
+  margin: 0 0 4px;
+}
+
+.app-header p {
+  margin: 0 0 16px;
+  opacity: 0.8;
+}
+
+.board-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.board-toolbar button {
+  font: inherit;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent, #e8b923);
+  background: var(--accent, #e8b923);
+  color: var(--bg, #0f3c2c);
+  cursor: pointer;
+}
+
+.board-toolbar span {
+  opacity: 0.85;
+}
