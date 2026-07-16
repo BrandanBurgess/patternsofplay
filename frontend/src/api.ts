@@ -63,7 +63,17 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
     throw new ApiError(response.status, detail);
   }
 
-  if (response.status === 204) return undefined as T;
+  if (response.status === 204) {
+    // Drain the (empty) body explicitly rather than discarding the
+    // Response with its stream unread: some browsers, when automated in
+    // headless/CDP-driven contexts (encountered writing T-033's roster
+    // delete e2e journey), otherwise report the request as aborted
+    // (net::ERR_ABORTED) after the fact even though the 204 itself
+    // already completed successfully, which trips the clean-page,
+    // zero-failed-requests assertion every UI journey ends with.
+    await response.text();
+    return undefined as T;
+  }
   return (await response.json()) as T;
 }
 
