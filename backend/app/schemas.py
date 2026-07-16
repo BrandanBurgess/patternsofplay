@@ -297,10 +297,15 @@ class PlayerOut(BaseModel):
     dwr: WorkRate
     attributes: PlayerAttributesIn
     # True when this row belongs to the calling user (README roles table:
-    # player's "own row marked (you)"). Always false until a roster row is
-    # claimed by a player account, which is out of this ticket's scope
-    # (see T-033 final report).
+    # player's "own row marked (you)"). Set by app/routers/roster.py's
+    # claim-by-name-match (T-041; see that module's docstring) once a
+    # player's display_name uniquely matches an unclaimed row.
     is_you: bool
+    # doc 03 section 3: "approved text merges into players.playstyle_note".
+    # Visible to both roles (it is part of the player's profile, not
+    # coach-only data like fit_warnings/receipts): README "Approve merges
+    # the note into the profile."
+    playstyle_note: str | None = None
 
 
 class FitWarningOut(BaseModel):
@@ -334,6 +339,44 @@ class CoachRosterOut(RosterOut):
     based on the caller's role_on_team, never both from one shared model."""
 
     fit_warnings: list[FitWarningOut]
+
+
+# ---------------------------------------------------------------------------
+# Playstyle suggestions (doc 03 section 3 playstyle_suggestions; Brief step
+# 22, PNG 24/25/27; T-041). README roles table: a player suggests a change
+# to their own playstyle as free text; it sits "pending coach review" until
+# a coach approves (merging the text into players.playstyle_note above) or
+# dismisses it (clearing it with no merge).
+# ---------------------------------------------------------------------------
+
+SuggestionStatus = Literal["pending", "approved", "dismissed"]
+
+
+class SuggestionCreateRequest(BaseModel):
+    """No player_id, author_user_id, team_id, or status field on purpose
+    (CLAUDE.md rule 4 / doc 03 4.2 author-stamping precedent): player_id
+    comes from the path, author_user_id and team_id are stamped server-side
+    from the session, and a freshly submitted suggestion is always
+    'pending'."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1, max_length=2000)
+
+
+class SuggestionOut(BaseModel):
+    id: int
+    player_id: int
+    # Resolved server-side (same pattern as PlayerOut.role_name /
+    # SavedPatternOut.author_label) so the frontend never re-derives it and
+    # the coach's pending-review list can render a name without a second
+    # round trip per row.
+    player_name: str
+    author_user_id: int
+    text: str
+    status: SuggestionStatus
+    created_at: datetime
+    reviewed_at: datetime | None
 
 
 # ---------------------------------------------------------------------------
