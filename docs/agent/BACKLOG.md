@@ -15,10 +15,10 @@ Model: sonnet default; opus = hard ticket, never downgrade.
 | T-021 | Lane graph: suggested/confirmed/blocked states, two independent thresholds, live recompute during drag, interception dot | 11, 12 | board-engineer | opus | T-020 | T-011 | done |
 | T-022 | Zones + animation player (declarative specs AND raw keyframes, ball waypoints chase bound player) + recorder (all tokens incl. opponents + ball) | 13, 14, 15 | board-engineer | opus | T-021 | none | done |
 | T-030 | Whiteboard page (PNG 01-05, 14, 34): toolbar, view menu, record/save into My Patterns | 16 | screens | sonnet | T-022, T-004 | T-031 | done |
-| T-031 | Patterns page (PNG 05-10, 29-31, 15-18, 35): sheet w/ 3 libraries, chips, search, meta bar, details panels | 17 | screens | sonnet | T-022, T-011 | T-030 | doing |
-| T-032 | Formations page (PNG 11, 19, 37-39, 43) + keystone pulse/keycards + Rondo Map (PNG 32, 36) | 18 | screens | sonnet | T-031 | T-033 | todo |
-| T-033 | Roster page (PNG 12, 20): CRUD, chips, 6 sliders, double-exposure warning coach-only | 19 | screens | sonnet | T-004, T-011 | T-032 | doing |
-| T-034 | Identity page (PNG 13, 33, 40-42, 44, 45): 4 scripted animations, 2 static shapes, detail slots, pass-risk, cult corner | 20 | screens | sonnet | T-031 | T-033 | todo |
+| T-031 | Patterns page (PNG 05-10, 29-31, 15-18, 35): sheet w/ 3 libraries, chips, search, meta bar, details panels | 17 | screens | sonnet | T-022, T-011 | T-030 | done |
+| T-032 | Formations page (PNG 11, 19, 37-39, 43) + keystone pulse/keycards + Rondo Map (PNG 32, 36) | 18 | screens | sonnet | T-031 | T-033 | doing |
+| T-033 | Roster page (PNG 12, 20): CRUD, chips, 6 sliders, double-exposure warning coach-only | 19 | screens | sonnet | T-004, T-011 | T-032 | pr |
+| T-034 | Identity page (PNG 13, 33, 40-42, 44, 45): 4 scripted animations, 2 static shapes, detail slots, pass-risk, cult corner | 20 | screens | sonnet | T-031 | T-033 | doing |
 | T-040 | Role gating UI + API 403 enforcement, permission test suite both roles (Brief §3 table, every row) | 21 | collab | sonnet | T-030..T-034 | T-041 | todo |
 | T-041 | Playstyle suggestion flow (PNG 24, 25, 27) | 22 | collab | sonnet | T-033 | T-040 | todo |
 | T-042 | Sessions: draft builder + picker w/ thumbnails, send, receipts, player view w/ Watch deep-link + Mark as watched (PNG 21-23, 26, 28) | 23 | collab | sonnet | T-031, T-040 | none | todo |
