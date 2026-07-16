@@ -1,0 +1,432 @@
+{
+  "content_version": "1.0.0",
+  "table": "identities",
+  "kind": "reference_team",
+  "items": [
+    {
+      "code": "barcelona_2008_12",
+      "name": "Barcelona 2008-12 (Guardiola)",
+      "tag_line": "Juego de posición: strict zone occupation creates a free man and a triangle everywhere on the pitch.",
+      "formation_code": "433",
+      "core_idea": "Formation: 4-3-3 with a false nine. Juego de posición divides the pitch into zones with strict occupation rules (proper width, staggered heights, never two players in one lane), so there is always a free man and always a triangle. Messi drops from the nine into midfield, creating a central overload nobody solved. Wingers hold maximum width to pin the back line. Busquets is the single-pivot metronome. On loss, the famous counterpress (the six-second rule) turns possession itself into the defensive system: roughly seventy percent of the ball meant the opponent simply never had it to hurt them.",
+      "signature_pattern_codes": ["B5", "A5", "R1"],
+      "keystone_roles_json": [
+        {"role": "single_pivot", "note": "Busquets, the single-pivot archetype"},
+        {"role": "advanced_8", "note": "Xavi and Iniesta as the controller and half-space eight"},
+        {"role": "false_9", "note": "Messi, the false nine archetype"},
+        {"role": "overlapping_fb", "note": "Alves, supplying all right-side width"}
+      ],
+      "youth_takeaway": "Positions before players: teach players to occupy zones and form triangles, and the free man appears by structure, not talent. The rondo is this entire identity in a ten-yard square.",
+      "block": "high",
+      "pass_risk_json": null,
+      "shape_render": "animated",
+      "signature_animation_spec_json": {
+        "slots": [
+          {"slot": "busquets", "role_hint": "DM", "start": {"x": 38, "y": 50}},
+          {"slot": "xavi", "role_hint": "CM", "start": {"x": 50, "y": 65}},
+          {"slot": "messi", "role_hint": "ST", "start": {"x": 62, "y": 50}},
+          {"slot": "winger", "role_hint": "W", "start": {"x": 60, "y": 15}}
+        ],
+        "ball": {"holder_slot": "busquets"},
+        "steps": [
+          {"n": 1, "caption": "Busquets plays up into Messi, who has dropped deep as the false nine, and the winger's run begins.",
+           "moves": [{"slot": "winger", "to": {"x": 72, "y": 20}, "arc": "inside"}],
+           "ball_to": {"bind_slot": "messi", "trajectory": "ground"}},
+          {"n": 2, "caption": "Layoff back to Xavi, arriving to receive between the lines.",
+           "moves": [], "ball_to": {"bind_slot": "xavi", "trajectory": "ground"}},
+          {"n": 3, "caption": "Xavi releases the third man in behind with the up-back-through pass.",
+           "moves": [{"slot": "winger", "to": {"x": 90, "y": 15}, "arc": "outside"}],
+           "ball_to": {"bind_slot": "winger", "trajectory": "ground"}}
+        ],
+        "loop": false
+      },
+      "static_shape_json": null,
+      "source_ref": "bible:6.2",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "liverpool_2018_20",
+      "name": "Liverpool 2018-20 (Klopp)",
+      "tag_line": "The moment the ball is lost the team swarms; the moment it is won, the team goes vertical.",
+      "formation_code": "433",
+      "core_idea": "Formation: 4-3-3. Gegenpressing is the best playmaker: the moment possession is lost, the team swarms, and the moment it is won, the team goes vertical. A narrow front three sees Salah and Mané play as inside forwards attacking half-spaces and channels, while Firmino is a pressing false nine who vacates the centre for them. All width comes from the fullbacks, with Alexander-Arnold and Robertson as the primary creators. A very high line sits behind an organised press, made safe by van Dijk's reading and recovery pace, while a workmanlike midfield three runs, screens, and wins second balls rather than creating.",
+      "signature_pattern_codes": ["C1", "A1", "B3", "D1"],
+      "keystone_roles_json": [
+        {"role": "false_9", "note": "Firmino, the pressing false nine whose selflessness frees the wide scorers"},
+        {"role": "overlapping_fb", "note": "Alexander-Arnold and Robertson as the creator fullbacks"},
+        {"role": "covering_cb", "note": "van Dijk, whose reading and recovery pace enable the high line"},
+        {"role": "box_to_box_8", "note": "Henderson and Fabinho supplying engine and anchoring"}
+      ],
+      "youth_takeaway": "Effort can be a system, not just a vibe: pressing has choreography, with curved runs and triggers, that can be trained like a passing drill. Width does not have to come from wingers.",
+      "block": "high",
+      "pass_risk_json": null,
+      "shape_render": "animated",
+      "signature_animation_spec_json": {
+        "slots": [
+          {"slot": "presser_1", "role_hint": "CM", "start": {"x": 55, "y": 40}},
+          {"slot": "presser_2", "role_hint": "CM", "start": {"x": 55, "y": 60}},
+          {"slot": "carrier", "role_hint": "AM", "start": {"x": 50, "y": 50}},
+          {"slot": "runner", "role_hint": "FB", "start": {"x": 60, "y": 10}},
+          {"slot": "opp_holder", "side": "opponent", "start": {"x": 50, "y": 50}}
+        ],
+        "ball": {"holder_slot": "opp_holder"},
+        "steps": [
+          {"n": 1, "caption": "Possession is lost near the halfway line.", "moves": []},
+          {"n": 2, "caption": "The nearest players collapse in and swarm the ball inside five seconds.",
+           "moves": [{"slot": "presser_1", "to": {"x": 52, "y": 44}}, {"slot": "presser_2", "to": {"x": 52, "y": 56}}]},
+          {"n": 3, "caption": "The ball is regained and played forward immediately.",
+           "moves": [], "ball_to": {"bind_slot": "carrier", "trajectory": "driven"}},
+          {"n": 4, "caption": "A fullback overlaps into the cutback zone as the attack goes vertical.",
+           "moves": [{"slot": "runner", "to": {"x": 88, "y": 8}, "arc": "outside"}],
+           "ball_to": {"bind_slot": "runner", "trajectory": "ground"}}
+        ],
+        "loop": false
+      },
+      "static_shape_json": null,
+      "source_ref": "bible:6.4",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "real_madrid_2010_13",
+      "name": "Real Madrid 2010-13 (Mourinho)",
+      "tag_line": "A mid-block invites pressure, then a rapid transition turns the regain into three attackers in seconds.",
+      "formation_code": "4231",
+      "core_idea": "Formation: 4-2-3-1. The most lethal transition team of its era: the 2011/12 title season set a then-record 121 league goals, many from moves lasting under ten seconds. A mid-to-low block invited opponents forward as bait. Alonso's deep passing range and Özil's between-the-lines creation turned regains into three-on-threes instantly, with Ronaldo as the ultimate left inside forward attacking the far channel, Di María stretching the right, Benzema and Higuaín running channels, and Khedira making the high-work-rate supporting sprints. Against Barcelona and in the biggest games the team could park the bus outright, flexing identity by opponent.",
+      "signature_pattern_codes": ["C1", "D1"],
+      "keystone_roles_json": [
+        {"role": "single_pivot", "note": "Alonso, the deep-lying quarterback whose first pass starts the counter"},
+        {"role": "classic_10", "note": "Özil, the transition-ten archetype"},
+        {"role": "inside_forward", "note": "Ronaldo as the apex-scoring inside forward"},
+        {"role": "box_to_box_8", "note": "Khedira, making the counters three-on-three rather than one-on-three"},
+        {"role": "stopper_cb", "note": "Ramos, the front-foot stopper"}
+      ],
+      "youth_takeaway": "Defending deep is a plan, not a surrender: the block's job is to choose where the opponent loses the ball, and a counter needs runners without the ball as much as the star with it.",
+      "block": "mid",
+      "pass_risk_json": null,
+      "shape_render": "animated",
+      "signature_animation_spec_json": {
+        "slots": [
+          {"slot": "alonso", "role_hint": "DM", "start": {"x": 35, "y": 50}},
+          {"slot": "ozil", "role_hint": "AM", "start": {"x": 55, "y": 50}},
+          {"slot": "ronaldo", "role_hint": "W", "start": {"x": 65, "y": 85}},
+          {"slot": "di_maria", "role_hint": "W", "start": {"x": 65, "y": 15}}
+        ],
+        "ball": {"holder_slot": "alonso"},
+        "steps": [
+          {"n": 1, "caption": "The ball is regained, and the transition clock starts.", "moves": []},
+          {"n": 2, "caption": "Alonso's first pass releases Özil into the space between the lines.",
+           "moves": [], "ball_to": {"bind_slot": "ozil", "trajectory": "ground"}},
+          {"n": 3, "caption": "Ronaldo and Di María sprint the channels, three attackers arriving inside seconds.",
+           "moves": [{"slot": "ronaldo", "to": {"x": 85, "y": 85}}, {"slot": "di_maria", "to": {"x": 85, "y": 15}}]},
+          {"n": 4, "caption": "Özil releases the move before the defence can reset.",
+           "moves": [], "ball_to": {"bind_slot": "ronaldo", "trajectory": "ground"}}
+        ],
+        "loop": false
+      },
+      "static_shape_json": null,
+      "source_ref": "bible:6.6",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "leicester_2015_16",
+      "name": "Leicester City 2015/16 (Ranieri)",
+      "tag_line": "A one-man midfield press wins the ball, then a first-time diagonal sends the runner over the top.",
+      "formation_code": "442",
+      "core_idea": "Formation: 4-4-2 mid-block. The 5,000-to-1 title: bottom-three possession numbers, champions anyway. Kanté led Europe in tackles and interceptions as a one-man midfield press, feeding instant vertical balls. Vardy's channel runs were timed off Drinkwater and Fuchs' first-time diagonals over the fullback, the pass airborne before the opponent's shape turned. Mahrez provided far-side isolation, while Okazaki did the dirty pressing so Vardy could cheat on the last shoulder.",
+      "signature_pattern_codes": ["F8", "D1"],
+      "keystone_roles_json": [
+        {"role": "anchor_destroyer", "note": "Kanté, a generational destroyer"},
+        {"role": "runner_in_behind", "note": "Vardy, the modern reference for the role"},
+        {"role": "inside_forward", "note": "Mahrez, isolated on the far side"}
+      ],
+      "youth_takeaway": "A team that knows exactly what it is can beat eleven better players who don't.",
+      "block": "mid",
+      "pass_risk_json": null,
+      "shape_render": "animated",
+      "signature_animation_spec_json": {
+        "slots": [
+          {"slot": "kante", "role_hint": "DM", "start": {"x": 40, "y": 45}},
+          {"slot": "drinkwater", "role_hint": "CM", "start": {"x": 50, "y": 55}},
+          {"slot": "vardy", "role_hint": "ST", "start": {"x": 70, "y": 60}}
+        ],
+        "ball": {"holder_slot": "drinkwater"},
+        "steps": [
+          {"n": 1, "caption": "Kanté wins the ball in a one-man midfield press.", "moves": []},
+          {"n": 2, "caption": "Drinkwater plays a first-time diagonal before the defence's shape can turn.", "moves": []},
+          {"n": 3, "caption": "Vardy's run times itself off the pass, already airborne over the top.",
+           "moves": [{"slot": "vardy", "to": {"x": 88, "y": 55}}],
+           "ball_to": {"bind_slot": "vardy", "trajectory": "clipped"}}
+        ],
+        "loop": false
+      },
+      "static_shape_json": null,
+      "source_ref": "bible:6.10",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "atletico_2013_14",
+      "name": "Atletico Madrid 2013/14 (Simeone)",
+      "tag_line": "Two banks of four sit so compact they cover barely half the pitch, daring you to cross into Godín.",
+      "formation_code": "442",
+      "core_idea": "Formation: 4-4-2, laterally compact. Cholismo: every duel is the game. Wide midfielders Koke and Arda doubled as auxiliary fullbacks, Diego Costa turned outlet hold-up play into psychological warfare, and set pieces such as Godín's headers formed a primary scoring plan. The team won La Liga against the Messi-Ronaldo duopoly on a fraction of the budget.",
+      "signature_pattern_codes": ["C2"],
+      "keystone_roles_json": [
+        {"role": "covering_cb", "note": "Godín, organising the back line"},
+        {"role": "anchor_destroyer", "note": "Gabi, the destroyer-captain"},
+        {"role": "target_man", "note": "Costa, the outlet nine as a weapon"}
+      ],
+      "youth_takeaway": "A block is not passive: this team attacked opponents with its shape as much as with the ball.",
+      "block": "mid",
+      "pass_risk_json": null,
+      "shape_render": "static",
+      "signature_animation_spec_json": null,
+      "static_shape_json": {
+        "positions": [
+          {"slot": "gk", "role_hint": "GK", "x": 6, "y": 50},
+          {"slot": "cb_l", "role_hint": "CB", "x": 18, "y": 40},
+          {"slot": "cb_r", "role_hint": "CB", "x": 18, "y": 60},
+          {"slot": "fb_l", "role_hint": "FB", "x": 20, "y": 22},
+          {"slot": "fb_r", "role_hint": "FB", "x": 20, "y": 78},
+          {"slot": "wm_l", "role_hint": "W", "x": 38, "y": 28},
+          {"slot": "cm_l", "role_hint": "CM", "x": 38, "y": 44},
+          {"slot": "cm_r", "role_hint": "CM", "x": 38, "y": 56},
+          {"slot": "wm_r", "role_hint": "W", "x": 38, "y": 72},
+          {"slot": "st_l", "role_hint": "ST", "x": 58, "y": 42},
+          {"slot": "st_r", "role_hint": "ST", "x": 58, "y": 58}
+        ],
+        "note": "The two banks of four compress toward the defensive third, narrower than the default 4-4-2 shape."
+      },
+      "source_ref": "bible:6.8",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "man_city_2022_23",
+      "name": "Manchester City 2022/23 (Guardiola)",
+      "tag_line": "In possession the back four becomes a back three, freeing an extra body into the midfield box.",
+      "formation_code": null,
+      "core_idea": "Formation: an in-possession 3-2-4-1, not one of the library's six preset shapes. John Stones steps from right centre back into the pivot beside Rodri, forming a 3-2 base with a 2-4 box of midfielders and half-space creators ahead. Haaland pins both centre backs alone, so De Bruyne and Gündoğan attack Zone 14 and make late box arrivals. Rest defence is structured so tightly that counters die at birth: the 3-2 shape behind every attack is the modern gold standard.",
+      "signature_pattern_codes": [],
+      "keystone_roles_json": [
+        {"role": "ball_playing_cb", "note": "Stones, a hybrid centre back and defensive midfielder"},
+        {"role": "single_pivot", "note": "Rodri, the base of the pivot"},
+        {"role": "target_man", "note": "Haaland, whose job is to pin both centre backs"},
+        {"role": "advanced_8", "note": "De Bruyne, the half-space assassin"}
+      ],
+      "youth_takeaway": "Formations are just phone numbers: what matters is the shape in possession, and it can differ from the shape without the ball.",
+      "block": null,
+      "pass_risk_json": null,
+      "shape_render": "static",
+      "signature_animation_spec_json": null,
+      "static_shape_json": {
+        "positions": [
+          {"slot": "gk", "role_hint": "GK", "x": 5, "y": 50},
+          {"slot": "cb_l", "role_hint": "CB", "x": 18, "y": 25},
+          {"slot": "cb_c", "role_hint": "CB", "x": 16, "y": 50},
+          {"slot": "cb_r", "role_hint": "CB", "x": 18, "y": 75},
+          {"slot": "rodri", "role_hint": "DM", "x": 35, "y": 42},
+          {"slot": "stones_pivot", "role_hint": "DM", "x": 35, "y": 58},
+          {"slot": "kdb", "role_hint": "CM", "x": 58, "y": 30},
+          {"slot": "gundogan", "role_hint": "CM", "x": 58, "y": 70},
+          {"slot": "winger_l", "role_hint": "W", "x": 75, "y": 10},
+          {"slot": "winger_r", "role_hint": "W", "x": 75, "y": 90},
+          {"slot": "haaland", "role_hint": "ST", "x": 88, "y": 50}
+        ],
+        "note": "In-possession shape only. Stones has stepped out of the back four into the pivot; the defensive shape reverts to a back four without the ball."
+      },
+      "source_ref": "bible:6.13",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "france_2018",
+      "name": "France 2018 (Deschamps)",
+      "tag_line": "A disciplined mid-block concedes possession without conceding control, built on the Kanté-Pogba pivot.",
+      "formation_code": "4231",
+      "core_idea": "Formation: 4-2-3-1 on paper, defended as an asymmetric 4-4-2, with Matuidi tucked in as an auxiliary midfielder and Mbappé staying high on the right. Concede possession without conceding control: a disciplined mid-block built on the Kanté-Pogba pivot, then two release valves, Mbappé's runs into space and Griezmann's hybrid ten work between the lines. Giroud scored zero and was essential, a pure pinning and bounce target so others attacked the space he created, plus elite set pieces from Varane, Umtiti, and Griezmann's delivery.",
+      "signature_pattern_codes": ["C1", "A4"],
+      "keystone_roles_json": [
+        {"role": "anchor_destroyer", "note": "Kanté, low work rate forward but high work rate back"},
+        {"role": "single_pivot", "note": "Pogba, a deep passer with vertical range"},
+        {"role": "wide_forward", "note": "Mbappé, the role's global reference"},
+        {"role": "second_striker", "note": "Griezmann, the working ten and second-striker hybrid"},
+        {"role": "target_man", "note": "Giroud, target man as a function rather than a scorer"}
+      ],
+      "youth_takeaway": "A team does not need the ball to be in charge: asymmetry is legal, since one flank can defend while the other attacks.",
+      "block": "mid",
+      "pass_risk_json": null,
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:6.1",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "spain_2008_2012",
+      "name": "Spain 2008-2012 (Aragones to Del Bosque)",
+      "tag_line": "Suffocating ball retention made possession itself the defence across three straight tournament wins.",
+      "formation_code": "433",
+      "core_idea": "Formation: 4-3-3 and 4-2-3-1 hybrids, with Euro 2012 famously using Fabregas as a false nine and no recognised striker. Tiki-taka at international level: suffocating the game through ball retention, often slower and more conservative than Barcelona's version and prioritising control over chance creation. A double pivot of Busquets and Xabi Alonso in 2010 gave two deep controllers, while Xavi, Iniesta, and Silva rotated between the lines. The team conceded two goals total across knockout football in three straight tournament wins: the possession was the defence.",
+      "signature_pattern_codes": ["B5", "A3"],
+      "keystone_roles_json": [
+        {"role": "single_pivot", "note": "A deliberate controller-plus-controller double pivot, an exception made because control was the identity"},
+        {"role": "advanced_8", "note": "Xavi as tempo dictator, Iniesta as the pressure-release dribbler in the half-spaces"}
+      ],
+      "youth_takeaway": "Patience can be a weapon: a team that never gives the ball away cannot lose its shape chasing it. The striker is optional, the free man is not.",
+      "block": "high",
+      "pass_risk_json": null,
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:6.3",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "bayern_2019_20",
+      "name": "Bayern Munich 2019-20 (Flick)",
+      "tag_line": "The most extreme high line in the modern game, paired with aggressive man-oriented pressing everywhere.",
+      "formation_code": "4231",
+      "core_idea": "Formation: 4-2-3-1. The most extreme high line in modern elite football, plus aggressive man-oriented pressing all over the pitch, winning the ball high or forcing panicked long balls onto a stepped-up back line. In possession the team was faster and more vertical than Guardiola-style control: the ball reached Lewandowski and Müller early, with Gnabry and Coman attacking the half-space and byline, Davies' recovery pace single-handedly underwriting the high line on the left, and the Kimmich-Goretzka pivot mixing control with box-crashing runs. Treble winners, with the 8-2 win over Barcelona as the identity's exhibition match.",
+      "signature_pattern_codes": ["D1", "C1", "A4", "A5", "A1", "A2"],
+      "keystone_roles_json": [
+        {"role": "sweeper_keeper", "note": "Neuer, the archetype"},
+        {"role": "overlapping_fb", "note": "Davies, the recovery-pace fullback"},
+        {"role": "inverted_fb", "note": "Kimmich, the hybrid pivot and inverted-fullback brain"},
+        {"role": "raumdeuter", "note": "Müller, the archetype"},
+        {"role": "complete_forward", "note": "Lewandowski"}
+      ],
+      "youth_takeaway": "Bravery is structural: an aggressive high line only works if the keeper sweeps and someone on the back line has the recovery pace to cover for it.",
+      "block": "high",
+      "pass_risk_json": null,
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:6.5",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "ac_milan_1987_91",
+      "name": "AC Milan 1987-91 (Sacchi)",
+      "tag_line": "Zonal marking and a twenty-five-metre line-to-striker rule replaced man-marking across Italian football overnight.",
+      "formation_code": "442",
+      "core_idea": "Formation: 4-4-2, zonal everything, built on a famous rule: no more than twenty-five metres between the last defender and the striker. Sacchi's four reference points (ball, teammates, opponents, space) replaced man-marking overnight. The offside trap was run like a drill team, trained with shadow play: eleven players attacking an empty pitch against imagined opponents, choreographing movements by position. Baresi conducted the line's step-ups, Rijkaard and Ancelotti formed a double screen, and Gullit and van Basten pressed as the first defenders. Every pressing team in this library descends from this one.",
+      "signature_pattern_codes": ["D1"],
+      "keystone_roles_json": [
+        {"role": "covering_cb", "note": "Baresi, conducting the line's step-ups"},
+        {"role": "anchor_destroyer", "note": "Rijkaard and Ancelotti's double screen"},
+        {"role": "target_man", "note": "Gullit and van Basten pressing as the first defenders"}
+      ],
+      "youth_takeaway": "Compactness is measurable: give players the actual number of metres, not just an instruction to work harder.",
+      "block": "high",
+      "pass_risk_json": null,
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:6.7",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "leeds_2018_20",
+      "name": "Leeds United 2018-20 (Bielsa)",
+      "tag_line": "All-pitch man-marking with a spare defender trusts fitness to win every individual duel.",
+      "formation_code": null,
+      "core_idea": "Formation: not stated in the source (all-pitch man-to-man with a plus-one spare at the back). Everyone else follows their man anywhere, even into unfamiliar positions, trusting fitness to win the duels. Murderball training sessions, with no stoppages and coaches throwing balls back in, built the engine. Kalvin Phillips played as the spare-man pivot dropping between the centre backs, with vertical possession reflecting Bielsa's dogma that the fastest route to goal is through runners, not circulation. Wingers face constant one-against-ones, since man-marking elsewhere isolates the wide duels.",
+      "signature_pattern_codes": [],
+      "keystone_roles_json": [
+        {"role": "single_pivot", "note": "Phillips, the spare-man pivot"},
+        {"role": "classic_10", "note": "Hernández, the release-valve ten"}
+      ],
+      "youth_takeaway": "Man-marking is the most teachable press for young players, since every job is clear, and it is the most physically honest system too.",
+      "block": "high",
+      "pass_risk_json": null,
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:6.9",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "chelsea_2016_17",
+      "name": "Chelsea 2016/17 (Conte)",
+      "tag_line": "A mid-season switch to a back three turned a struggling season into thirteen straight wins.",
+      "formation_code": "343",
+      "core_idea": "Formation: started as a 4-2-4, lost 3-0 at Arsenal, then switched to a 3-4-3 mid-season and won thirteen straight. Moses and Alonso, a converted winger and a converted attacker, became title-winning wingbacks. David Luiz was reborn as the libero spraying diagonals from the central centre-back slot. Kanté and Matić formed a double shield, Hazard was given a free inside-left role with Alonso's overlap supplying the width, and Pedro and Willian tucked into the half-spaces.",
+      "signature_pattern_codes": [],
+      "keystone_roles_json": [
+        {"role": "wingback", "note": "Moses and Alonso, proof the role makes the player"},
+        {"role": "ball_playing_cb", "note": "David Luiz, the ball-playing central centre back of three"},
+        {"role": "anchor_destroyer", "note": "Kanté"}
+      ],
+      "youth_takeaway": "Changing shape mid-season can rescue a team: it helps to teach players two shapes, not just one.",
+      "block": "mid",
+      "pass_risk_json": null,
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:6.11",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "ac_milan_2003_07",
+      "name": "AC Milan 2003-07 (Ancelotti)",
+      "tag_line": "Pirlo moved backward into a deep playmaker role, with Gattuso doing the running behind him.",
+      "formation_code": null,
+      "core_idea": "Formation: a diamond midfield, also called the Christmas tree 4-3-2-1, not one of the library's six preset shapes. Ancelotti moved Pirlo, a failing trequartista, backward to the base of midfield, inventing the modern deep-lying playmaker in front of the defence, with Gattuso as the snarling bodyguard doing his running: the original brain-and-shield pairing. The diamond stacked Seedorf, Rui Costa, and Kaká between the lines with zero natural width, so width came from the Cafu and Serginho fullbacks alone. Kaká's ball-carrying transitions from 2005-07 were the era's best example of a vertical transition.",
+      "signature_pattern_codes": ["C1"],
+      "keystone_roles_json": [
+        {"role": "single_pivot", "note": "Pirlo, the deep-lying playmaker archetype at its source"},
+        {"role": "anchor_destroyer", "note": "Gattuso, the destroyer archetype"},
+        {"role": "classic_10", "note": "Kaká, the transition-carrying ten"}
+      ],
+      "youth_takeaway": "A player's best position may be one nobody has tried yet: profile matters more than the label on the shirt.",
+      "block": "mid",
+      "pass_risk_json": null,
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:6.12",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "napoli_2017_18",
+      "name": "Napoli 2017/18 (Sarri)",
+      "tag_line": "One-touch automatisms were drilled until the same five-pass sequences ran like rehearsed code.",
+      "formation_code": null,
+      "core_idea": "Formation: not stated in the source (positional play at double speed, built around Jorginho's pivot). Sarrismo drilled one-touch automatisms until the same build-out-to-finish sequences ran like code. Jorginho's metronome pivot set a league-record pass volume, Mertens was converted from winger into a tiny false nine whose spins in behind punished centre backs who stepped with him, and Insigne cut into the left half-space on rehearsed patterns. Sarri's thirty-three pre-planned build-up automatisms are the strongest real-world argument that patterns of play can be scripted.",
+      "signature_pattern_codes": ["B5", "A4", "A5"],
+      "keystone_roles_json": [
+        {"role": "single_pivot", "note": "Jorginho, the metronome pivot"},
+        {"role": "advanced_8", "note": "Hamšík, the mezzala"},
+        {"role": "false_9", "note": "Mertens, the micro false nine"}
+      ],
+      "youth_takeaway": "Scripting the first few passes removes decisions for developing players and frees their attention for the choices that matter most.",
+      "block": "high",
+      "pass_risk_json": null,
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:6.16",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "inter_milan_2009_10",
+      "name": "Inter Milan 2009/10 (Mourinho)",
+      "tag_line": "Down to ten men against the best possession side of its era, the block conceded once and advanced.",
+      "formation_code": null,
+      "core_idea": "Formation: a 4-4-1 shifting to a 4-5-0 in a low block, not one of the library's six preset shapes. At the Camp Nou semi-final, down to ten men for an hour against the greatest possession side of its era, Inter completed a remarkably low pass total, conceded once, and went through, with Eto'o, a Ballon d'Or-level striker, playing auxiliary right back. Cambiasso's positional genius, Lucio and Samuel's box dominance, Sneijder's release as the only creative license, and Milito's finishing of the two or three transitions the plan budgeted for distilled the low block into art.",
+      "signature_pattern_codes": [],
+      "keystone_roles_json": [
+        {"role": "anchor_destroyer", "note": "Cambiasso, the thinking destroyer"},
+        {"role": "classic_10", "note": "Sneijder, the transition ten"},
+        {"role": "runner_in_behind", "note": "Milito, the clinical finisher"},
+        {"role": "defensive_fb", "note": "Eto'o, a star forward converted to auxiliary right back as the tactical sacrifice"}
+      ],
+      "youth_takeaway": "Defending with total commitment is a skill and an honour, not a failure: it is the cultural counterweight every possession-obsessed environment needs.",
+      "block": "low",
+      "pass_risk_json": null,
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:6.18",
+      "content_version": "1.0.0"
+    }
+  ]
+}

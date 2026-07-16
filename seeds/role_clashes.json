@@ -1,0 +1,77 @@
+{
+  "content_version": "1.0.0",
+  "table": "role_clashes",
+  "kind": "clash",
+  "items": [
+    {
+      "code": "two_receivers_one_space",
+      "name": "Two Receivers, One Space",
+      "trigger_expression": "classic_10 + false_9 both dropping between the lines",
+      "warning_copy": "A Classic Ten and a False Nine both dropping between the lines congest the same zone and leave nobody stretching the defence. One of them needs to become a runner.",
+      "kind": "clash",
+      "is_active_mvp": false,
+      "source_ref": "bible:2B.4",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "no_width_flank",
+      "name": "No-Width Flank",
+      "trigger_expression": "inside_forward + inverted_fb on the same side",
+      "warning_copy": "An Inside Forward and an Inverted Fullback on the same flank put both players in the half-space with zero width, which is easy for a defence to cover. Pair each inside-mover with a width supplier.",
+      "kind": "clash",
+      "is_active_mvp": false,
+      "source_ref": "bible:2B.4",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "double_exposure_flank",
+      "name": "Double Exposure Flank",
+      "trigger_expression": "touchline_winger (high awr, low dwr) + overlapping_fb (high awr) on the same side",
+      "warning_copy": "A high-attacking, low-tracking winger paired with a high-work-rate overlapping fullback opens the same flank as a corridor on every transition.",
+      "kind": "clash",
+      "is_active_mvp": true,
+      "source_ref": "bible:2B.4",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "sterile_pivot",
+      "name": "Sterile Pivot",
+      "trigger_expression": "anchor_destroyer + anchor_destroyer double pivot in a possession identity",
+      "warning_copy": "Two Destroyers in the double pivot leave nobody to break lines in a possession identity, though the same pairing is legitimate in a low-block identity.",
+      "kind": "clash",
+      "is_active_mvp": false,
+      "source_ref": "bible:2B.4",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "uncovered_aggression",
+      "name": "Uncovered Aggression",
+      "trigger_expression": "stopper_cb + stopper_cb, or a stopper_cb with no covering partner or sweeper_keeper, behind a high line",
+      "warning_copy": "Two Stopper centre backs, or one Stopper with no covering partner or sweeper keeper, behind a high line leaves the space in behind undefended.",
+      "kind": "clash",
+      "is_active_mvp": false,
+      "source_ref": "bible:2B.4",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "bus_with_no_outlet",
+      "name": "Bus With No Outlet",
+      "trigger_expression": "low_block_counter identity with no target_man or elite-pace runner_in_behind",
+      "warning_copy": "A low-block identity with no target man or elite-pace runner up front means the block never exits its own third.",
+      "kind": "clash",
+      "is_active_mvp": false,
+      "source_ref": "bible:2B.4",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "bounce_player_missing",
+      "name": "Third-Man Pattern Without a Bounce Player",
+      "trigger_expression": "A5 or A4 in the starter set with no target_man, false_9, or classic_10 on the pitch",
+      "warning_copy": "Third-man patterns need a bounce player: without a target man, false nine, or ten profile on the pitch, there is nobody to play off.",
+      "kind": "clash",
+      "is_active_mvp": false,
+      "source_ref": "bible:2B.4",
+      "content_version": "1.0.0"
+    }
+  ]
+}

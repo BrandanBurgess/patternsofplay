@@ -1,0 +1,67 @@
+{
+  "content_version": "1.0.0",
+  "table": "rondo_zones",
+  "note": "Bible 3G.2 describes the rondo map as a generic overlay on any 11v11 shape. Attached here to formation_code 433, the Bible's primary reference formation, per doc 03 section 5's formation_code natural key requirement.",
+  "items": [
+    {
+      "formation_code": "433",
+      "zone_key": "first_line",
+      "rondo_name": "4v2 / 3v2 (first-line build-up)",
+      "teaches": "Two centre backs and the pivot, plus the keeper, against two pressing strikers: literally the 4v2 rondo, played at the edge of your own box.",
+      "polygon_json": [
+        {"x": 0, "y": 10}, {"x": 35, "y": 10}, {"x": 35, "y": 90}, {"x": 0, "y": 90}
+      ],
+      "trains_pattern_codes": ["B5"],
+      "source_ref": "bible:3G.2",
+      "content_version": "1.0.0"
+    },
+    {
+      "formation_code": "433",
+      "zone_key": "midfield_box",
+      "rondo_name": "5v3 (the midfield box)",
+      "teaches": "The double pivot, the ten, and a stepping centre back against the opposition midfield triangle: the same split-pass and pause logic as the 5v3 square.",
+      "polygon_json": [
+        {"x": 35, "y": 15}, {"x": 65, "y": 15}, {"x": 65, "y": 85}, {"x": 35, "y": 85}
+      ],
+      "trains_pattern_codes": ["B8", "A5"],
+      "source_ref": "bible:3G.2",
+      "content_version": "1.0.0"
+    },
+    {
+      "formation_code": "433",
+      "zone_key": "flank_corridor",
+      "rondo_name": "2v1 to 2v2 (the flank corridor)",
+      "teaches": "Winger and fullback against their fullback, with a tracking winger: every overlap or underlap decision is this corridor rondo in its pure form.",
+      "polygon_json": [
+        {"x": 20, "y": 75}, {"x": 90, "y": 75}, {"x": 90, "y": 100}, {"x": 20, "y": 100}
+      ],
+      "trains_pattern_codes": ["A1", "A2", "F1"],
+      "source_ref": "bible:3G.2",
+      "content_version": "1.0.0"
+    },
+    {
+      "formation_code": "433",
+      "zone_key": "last_line",
+      "rondo_name": "2v2 (+1 keeper) (the last line)",
+      "teaches": "Strikers against centre backs: the qualitative-superiority zone where pins, scissors, and runs in behind decide the game.",
+      "polygon_json": [
+        {"x": 75, "y": 10}, {"x": 100, "y": 10}, {"x": 100, "y": 90}, {"x": 75, "y": 90}
+      ],
+      "trains_pattern_codes": ["R12"],
+      "source_ref": "bible:3G.2",
+      "content_version": "1.0.0"
+    },
+    {
+      "formation_code": "433",
+      "zone_key": "counterpress",
+      "rondo_name": "4v4+3 (the counterpress moment)",
+      "teaches": "The five-second swarm is the neutral-player transition game played for real stakes, wherever the ball is lost.",
+      "polygon_json": [
+        {"x": 30, "y": 10}, {"x": 70, "y": 10}, {"x": 70, "y": 90}, {"x": 30, "y": 90}
+      ],
+      "trains_pattern_codes": ["C1"],
+      "source_ref": "bible:3G.2",
+      "content_version": "1.0.0"
+    }
+  ]
+}
