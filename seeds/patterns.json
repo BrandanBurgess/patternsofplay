@@ -1,0 +1,419 @@
+{
+  "content_version": "1.0.0",
+  "table": "library_items",
+  "item_type": "pattern",
+  "items": [
+    {
+      "code": "A1",
+      "name": "Overlap",
+      "category": "combination",
+      "blurb": "The fullback overlaps outside the winger, forcing the defender to track the run or leave the cross open.",
+      "when_to_use": "Best when the opponent defends narrow and the winger naturally wants to cut inside onto his stronger side.",
+      "coaching_points_json": [
+        "The threat of the run alone drags the defender, even when the ball is never passed.",
+        "The winger should delay one beat to let the run mature before deciding."
+      ],
+      "youth_takeaway": "Even an unused run can create space: the fullback's sprint alone forces a defensive decision.",
+      "age_hint": "U9+",
+      "roles_involved": ["inside_forward", "overlapping_fb"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "winger_R", "role_hint": "W", "start": {"x": 78, "y": 15}},
+          {"slot": "fb_R", "role_hint": "FB", "start": {"x": 55, "y": 10}},
+          {"slot": "opp_fb_L", "side": "opponent", "start": {"x": 84, "y": 18}}
+        ],
+        "ball": {"holder_slot": "winger_R"},
+        "steps": [
+          {"n": 1, "caption": "Winger receives wide and faces up the fullback.", "moves": []},
+          {"n": 2, "caption": "Own fullback sprints an arced run outside him.",
+           "moves": [{"slot": "fb_R", "to": {"x": 90, "y": 4}, "arc": "outside"}]},
+          {"n": 3, "caption": "Ball is released into the overlap for the cross or cutback.",
+           "moves": [], "ball_to": {"bind_slot": "fb_R", "trajectory": "ground"}}
+        ],
+        "loop": false
+      },
+      "extras_json": null,
+      "source_ref": "bible:3A.A1",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "A2",
+      "name": "Underlap",
+      "category": "combination",
+      "blurb": "A fullback or advanced eight underlaps inside the winger into the half-space between fullback and centre back.",
+      "when_to_use": "Fits when the opponent's winger tracks the outside run, leaving the inside channel open because the touchline winger has stretched them.",
+      "coaching_points_json": [
+        "The touchline winger must hold true width, since that width is what opens the inside lane.",
+        "Time the underlap run to arrive as the winger's touch draws the marker's eyes."
+      ],
+      "youth_takeaway": "Width and the underlap are a pair: nobody creates the inside lane by running into it alone.",
+      "age_hint": "U11+",
+      "roles_involved": ["touchline_winger", "inverted_fb", "advanced_8"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "winger_R", "role_hint": "W", "start": {"x": 78, "y": 15}},
+          {"slot": "runner_underlap", "role_hint": "CM", "start": {"x": 50, "y": 35}},
+          {"slot": "opp_fb_L", "side": "opponent", "start": {"x": 82, "y": 20}}
+        ],
+        "ball": {"holder_slot": "winger_R"},
+        "steps": [
+          {"n": 1, "caption": "Winger holds the ball high and wide, pinning the opposition fullback to the touchline.", "moves": []},
+          {"n": 2, "caption": "Runner attacks the inside channel between fullback and centre back.",
+           "moves": [{"slot": "runner_underlap", "to": {"x": 66, "y": 28}, "arc": "inside"}]},
+          {"n": 3, "caption": "A slipped through-ball sets up the cutback or shot.",
+           "moves": [], "ball_to": {"bind_slot": "runner_underlap", "trajectory": "ground"}}
+        ],
+        "loop": false
+      },
+      "extras_json": null,
+      "source_ref": "bible:3A.A2",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "A3",
+      "name": "One-Two (Wall Pass / Give-and-Go)",
+      "category": "combination",
+      "blurb": "A player passes into a teammate's feet, sprints beyond his marker, and receives the return first time.",
+      "when_to_use": "Suited to tight central areas around the box against opponents marking man to man, since the marker follows the pass and the run beats him.",
+      "coaching_points_json": [
+        "The pass into the wall must be firm and played to the correct foot.",
+        "The run starts as the pass travels, not after it arrives."
+      ],
+      "youth_takeaway": "The oldest trick in football still works: pass, sprint, receive, because the marker cannot watch the ball and the run at once.",
+      "age_hint": "U9+",
+      "roles_involved": ["advanced_8", "classic_10", "target_man", "false_9"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "passer_A", "role_hint": "CM", "start": {"x": 50, "y": 50}},
+          {"slot": "wall_9", "role_hint": "ST", "start": {"x": 65, "y": 50}}
+        ],
+        "ball": {"holder_slot": "passer_A"},
+        "steps": [
+          {"n": 1, "caption": "Player A passes into the wall player's feet.",
+           "moves": [], "ball_to": {"bind_slot": "wall_9", "trajectory": "ground"}},
+          {"n": 2, "caption": "A immediately bursts beyond his marker.",
+           "moves": [{"slot": "passer_A", "to": {"x": 70, "y": 45}, "arc": "inside"}]},
+          {"n": 3, "caption": "The wall plays a one-touch return into A's path.",
+           "moves": [], "ball_to": {"bind_slot": "passer_A", "trajectory": "ground"}}
+        ],
+        "loop": false
+      },
+      "extras_json": null,
+      "source_ref": "bible:3A.A3",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "A4",
+      "name": "Playing Off the Target: Up-Back (Bounce & Recycle)",
+      "category": "combination",
+      "blurb": "A pass up into a striker with his back to goal is set back first time to a facing teammate.",
+      "when_to_use": "Useful when the opposition midfield is compact and cannot be played through directly, so the team goes over it and off the nine instead.",
+      "coaching_points_json": [
+        "The bounce player only needs to shield the ball for one touch, not win the duel.",
+        "The support runner arrives at an angle, never flat behind the ball."
+      ],
+      "youth_takeaway": "A pass forward can still be a pass back: bouncing it off a teammate keeps the ball moving toward goal.",
+      "age_hint": "U9+",
+      "roles_involved": ["target_man", "false_9", "box_to_box_8", "classic_10"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "passer_6", "role_hint": "DM", "start": {"x": 40, "y": 50}},
+          {"slot": "target_9", "role_hint": "ST", "start": {"x": 70, "y": 50}},
+          {"slot": "support_8", "role_hint": "CM", "start": {"x": 55, "y": 55}}
+        ],
+        "ball": {"holder_slot": "passer_6"},
+        "steps": [
+          {"n": 1, "caption": "Vertical pass into the nine's feet, with a centre back tight behind him.",
+           "moves": [], "ball_to": {"bind_slot": "target_9", "trajectory": "ground"}},
+          {"n": 2, "caption": "One-touch layoff back to an arriving midfielder.",
+           "moves": [], "ball_to": {"bind_slot": "support_8", "trajectory": "ground"}},
+          {"n": 3, "caption": "That midfielder plays forward, or switches the play.", "moves": []}
+        ],
+        "loop": false
+      },
+      "extras_json": null,
+      "source_ref": "bible:3A.A4",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "A5",
+      "name": "Third-Man Run (Up-Back-Through)",
+      "category": "combination",
+      "blurb": "While everyone watches the first pass, a third player is already running and gets released by the second player's touch.",
+      "when_to_use": "The single most important pattern against an organised defence, and core to every good build-out.",
+      "coaching_points_json": [
+        "Timing beats speed: the runner curves his run to stay onside.",
+        "The back pass is what unlocks the run, since it pulls opposition eyes toward the ball."
+      ],
+      "youth_takeaway": "The best runs are never on the ball: the third man was never marked because he was never in possession.",
+      "age_hint": "U11+",
+      "roles_involved": [
+        "classic_10", "false_9", "target_man", "single_pivot", "box_to_box_8",
+        "wide_forward", "runner_in_behind"
+      ],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "six", "role_hint": "DM", "start": {"x": 38, "y": 50}},
+          {"slot": "ten", "role_hint": "AM", "start": {"x": 58, "y": 50}},
+          {"slot": "eight", "role_hint": "CM", "start": {"x": 50, "y": 62}},
+          {"slot": "runner", "role_hint": "W", "start": {"x": 60, "y": 15}}
+        ],
+        "ball": {"holder_slot": "six"},
+        "steps": [
+          {"n": 1, "caption": "The six plays up into the nine or ten between the lines, and the third man's run begins.",
+           "moves": [{"slot": "runner", "to": {"x": 72, "y": 20}, "arc": "inside"}],
+           "ball_to": {"bind_slot": "ten", "trajectory": "ground"}},
+          {"n": 2, "caption": "Layoff back to the arriving eight.",
+           "moves": [], "ball_to": {"bind_slot": "eight", "trajectory": "ground"}},
+          {"n": 3, "caption": "The eight plays first time through for the third man attacking in behind.",
+           "moves": [{"slot": "runner", "to": {"x": 90, "y": 15}, "arc": "outside"}],
+           "ball_to": {"bind_slot": "runner", "trajectory": "ground"}}
+        ],
+        "loop": false
+      },
+      "extras_json": null,
+      "source_ref": "bible:3A.A5",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "B3",
+      "name": "Switch of Play",
+      "category": "space",
+      "blurb": "After the block shifts to the ball side, one long diagonal finds the free winger on the far side.",
+      "when_to_use": "The opponent defends in a compact ball-side block, the standard plan for teams with an elite one-against-one winger.",
+      "coaching_points_json": [
+        "The switch must arrive before the block slides across, since a slow diagonal wastes the overload.",
+        "Build the overload on purpose: three or four deliberate passes on one side before the switch."
+      ],
+      "youth_takeaway": "Moving the ball quickly from side to side outruns eleven defenders trying to shift with it.",
+      "age_hint": "U11+",
+      "roles_involved": ["single_pivot", "ball_playing_cb", "touchline_winger", "wingback"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "switcher", "role_hint": "DM", "start": {"x": 45, "y": 50}},
+          {"slot": "far_winger", "role_hint": "W", "start": {"x": 75, "y": 88}}
+        ],
+        "ball": {"holder_slot": "switcher"},
+        "steps": [
+          {"n": 1, "caption": "A deliberate three or four pass overload on the left draws the block across.", "moves": []},
+          {"n": 2, "caption": "The six or centre back receives facing forward.", "moves": []},
+          {"n": 3, "caption": "A forty-yard diagonal finds the right winger in acres of space.",
+           "moves": [], "ball_to": {"bind_slot": "far_winger", "trajectory": "floated"}},
+          {"n": 4, "caption": "Immediate one-against-one, or a cross.",
+           "moves": [{"slot": "far_winger", "to": {"x": 85, "y": 88}}]}
+        ],
+        "loop": false
+      },
+      "extras_json": null,
+      "source_ref": "bible:3B.B3",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "B5",
+      "name": "Build-Out From the Back (vs press)",
+      "category": "space",
+      "blurb": "Short structured passing from the goalkeeper through the thirds baits the press forward, then plays through or past it.",
+      "when_to_use": "The default restart pattern for possession identities, whenever the opponent presses with its front line.",
+      "coaching_points_json": [
+        "The press is an invitation, not a problem: every presser who jumps leaves a free man behind him.",
+        "Know where the spare man is before the ball arrives, not after."
+      ],
+      "youth_takeaway": "Passing calmly under pressure is a skill you can drill: know your free man before the ball comes to you.",
+      "age_hint": "U11+",
+      "roles_involved": ["sweeper_keeper", "ball_playing_cb", "single_pivot"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "gk", "role_hint": "GK", "start": {"x": 5, "y": 50}},
+          {"slot": "cb_l", "role_hint": "CB", "start": {"x": 18, "y": 32}},
+          {"slot": "cb_r", "role_hint": "CB", "start": {"x": 18, "y": 68}},
+          {"slot": "six", "role_hint": "DM", "start": {"x": 35, "y": 50}},
+          {"slot": "eight", "role_hint": "CM", "start": {"x": 55, "y": 50}}
+        ],
+        "ball": {"holder_slot": "gk"},
+        "steps": [
+          {"n": 1, "caption": "The keeper splits the centre backs wide while the six shows between them.", "moves": []},
+          {"n": 2, "caption": "The opposition strikers jump, and a free man appears behind them.", "moves": []},
+          {"n": 3, "caption": "A line-broken pass finds the eight or ten between the lines.",
+           "moves": [], "ball_to": {"bind_slot": "eight", "trajectory": "ground"}},
+          {"n": 4, "caption": "Runners are released, continuing into a third-man combination.", "moves": []}
+        ],
+        "loop": false
+      },
+      "extras_json": null,
+      "source_ref": "bible:3B.B5",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "B8",
+      "name": "Attracting Pressure to Release: La Pausa (Waiting for Pressure)",
+      "category": "space",
+      "blurb": "A player on the ball waits, invites the presser to commit, and releases the pass only as he does.",
+      "when_to_use": "A foundation skill for possession-based identities, and the individual twin of team-level build-out play.",
+      "coaching_points_json": [
+        "Passing before pressure arrives wastes the ball's power, since nothing about the defence was displaced.",
+        "The sequence is receive, invite, wait for the commitment, then release."
+      ],
+      "youth_takeaway": "Holding the ball on purpose is not hesitation: it is what makes the pass that follows unstoppable.",
+      "age_hint": "U13+",
+      "roles_involved": ["ball_playing_cb", "single_pivot"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "receiver", "role_hint": "DM", "start": {"x": 40, "y": 50}},
+          {"slot": "line_break_target", "role_hint": "CM", "start": {"x": 55, "y": 40}},
+          {"slot": "opp_presser", "side": "opponent", "start": {"x": 50, "y": 52}}
+        ],
+        "ball": {"holder_slot": "receiver"},
+        "steps": [
+          {"n": 1, "caption": "The centre back or six receives with time and deliberately holds the ball, exposed as bait.", "moves": []},
+          {"n": 2, "caption": "The presser commits, his weight going forward past the point of no return.",
+           "moves": [{"slot": "opp_presser", "to": {"x": 42, "y": 50}}]},
+          {"n": 3, "caption": "The ball is released past him into the line-break target, and the presser is now behind the play.",
+           "moves": [], "ball_to": {"bind_slot": "line_break_target", "trajectory": "ground"}}
+        ],
+        "loop": false
+      },
+      "extras_json": null,
+      "source_ref": "bible:3B.B8",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "B9",
+      "name": "Press Baiting (Team-Level Traps in Possession)",
+      "category": "pressing",
+      "blurb": "The team plays deliberately into a trapped area to draw the opponent's press forward and out of shape.",
+      "when_to_use": "Against aggressive pressing teams, whose own aggression becomes the raw material for the trap.",
+      "coaching_points_json": [
+        "Every bait needs its exit planned before it is played: know the out-ball and where the second ball lands.",
+        "A backward pass is a forward play: the ball goes back so the team can go forward."
+      ],
+      "youth_takeaway": "Sometimes passing backward is the bravest attacking decision on the pitch, because it sets the trap for what comes next.",
+      "age_hint": "U13+",
+      "roles_involved": ["sweeper_keeper", "ball_playing_cb", "target_man"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "gk", "role_hint": "GK", "start": {"x": 8, "y": 50}},
+          {"slot": "cb", "role_hint": "CB", "start": {"x": 20, "y": 40}},
+          {"slot": "trap_fb", "role_hint": "FB", "start": {"x": 25, "y": 85}},
+          {"slot": "outlet", "role_hint": "ST", "start": {"x": 60, "y": 50}}
+        ],
+        "ball": {"holder_slot": "cb"},
+        "steps": [
+          {"n": 1, "caption": "The ball goes backward to the keeper, and the opposition line pushes up in response.",
+           "moves": [], "ball_to": {"bind_slot": "gk", "trajectory": "ground"}},
+          {"n": 2, "caption": "A pass to the pressing-trap fullback draws their winger and eight to converge.",
+           "moves": [], "ball_to": {"bind_slot": "trap_fb", "trajectory": "ground"}},
+          {"n": 3, "caption": "The prepared out-ball clips over the jumped press into the space the block abandoned.",
+           "moves": [], "ball_to": {"bind_slot": "outlet", "trajectory": "clipped"}}
+        ],
+        "loop": false
+      },
+      "extras_json": null,
+      "source_ref": "bible:3B.B9",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "C1",
+      "name": "Counter-Attack (Vertical Transition)",
+      "category": "transition",
+      "blurb": "Win the ball, then attack the disorganised opponent before it can reform, ideally finishing inside ten seconds.",
+      "when_to_use": "A core weapon of counter-attacking and hybrid identities, and situationally available to any team.",
+      "coaching_points_json": [
+        "The first two seconds decide the counter: face forward and play forward.",
+        "If the vertical pass is not on by the second pass, keep the ball and reorganise instead."
+      ],
+      "youth_takeaway": "Winning the ball is only half the job: the team must already know who sprints and where.",
+      "age_hint": "U11+",
+      "roles_involved": ["anchor_destroyer", "classic_10", "wide_forward", "runner_in_behind"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "winner", "role_hint": "DM", "start": {"x": 35, "y": 50}},
+          {"slot": "carrier", "role_hint": "AM", "start": {"x": 50, "y": 50}},
+          {"slot": "runner_1", "role_hint": "W", "start": {"x": 60, "y": 15}},
+          {"slot": "runner_2", "role_hint": "ST", "start": {"x": 60, "y": 80}}
+        ],
+        "ball": {"holder_slot": "winner"},
+        "steps": [
+          {"n": 1, "caption": "The ball is regained in the team's own half.", "moves": []},
+          {"n": 2, "caption": "The first pass goes forward into the ten or wide forward.",
+           "moves": [], "ball_to": {"bind_slot": "carrier", "trajectory": "driven"}},
+          {"n": 3, "caption": "Two runners break beyond the ball at full sprint into the channels and the far post.",
+           "moves": [
+             {"slot": "runner_1", "to": {"x": 88, "y": 12}, "arc": "outside"},
+             {"slot": "runner_2", "to": {"x": 88, "y": 70}, "arc": "outside"}
+           ]},
+          {"n": 4, "caption": "The move finishes before the opponent's recovery lines can form.",
+           "moves": [], "ball_to": {"bind_slot": "runner_1", "trajectory": "ground"}}
+        ],
+        "loop": false
+      },
+      "extras_json": null,
+      "source_ref": "bible:3C.C1",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "C2",
+      "name": "Long Ball & The Second-Ball Game",
+      "category": "transition",
+      "blurb": "The team skips the build-up to hit the target man, then swarms to win the second ball that follows.",
+      "when_to_use": "Against high presses, on difficult pitches, or as a deliberate identity built around territory.",
+      "coaching_points_json": [
+        "A long ball is not a hopeful ball: the target and the cage around him are pre-planned.",
+        "Compactness around the landing zone decides the whole contest."
+      ],
+      "youth_takeaway": "Football's second contest matters as much as the first: winning the loose ball is a team job, not a lucky bounce.",
+      "age_hint": "U9+",
+      "roles_involved": ["target_man", "box_to_box_8", "second_striker"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "gk", "role_hint": "GK", "start": {"x": 8, "y": 50}},
+          {"slot": "target", "role_hint": "ST", "start": {"x": 70, "y": 50}},
+          {"slot": "cage_1", "role_hint": "CM", "start": {"x": 65, "y": 40}},
+          {"slot": "cage_2", "role_hint": "CM", "start": {"x": 65, "y": 60}},
+          {"slot": "opp_cb", "side": "opponent", "start": {"x": 72, "y": 50}}
+        ],
+        "ball": {"holder_slot": "gk"},
+        "steps": [
+          {"n": 1, "caption": "The keeper or centre back launches long to the target man against a marking centre back.",
+           "moves": [], "ball_to": {"bind_slot": "target", "trajectory": "clipped"}},
+          {"n": 2, "caption": "A pre-set second-ball cage of midfielders and wide players is already in position before the ball lands.", "moves": []},
+          {"n": 3, "caption": "The second ball is won and played forward immediately.", "moves": []}
+        ],
+        "loop": false
+      },
+      "extras_json": null,
+      "source_ref": "bible:3C.C2",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "D1",
+      "name": "Pressing Triggers",
+      "category": "pressing",
+      "blurb": "A coordinated press is released by specific cues, such as a back pass, a bad touch, or a rolling ball.",
+      "when_to_use": "Teachable to any identity, with the most aggressive version defining gegenpressing teams.",
+      "coaching_points_json": [
+        "Press the pass, not the man: arrive as the ball arrives.",
+        "One player pressing alone is worse than nobody pressing at all."
+      ],
+      "youth_takeaway": "A good press is not about running fast, it is about running at the right moment.",
+      "age_hint": "U11+",
+      "roles_involved": ["false_9", "box_to_box_8"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "presser", "role_hint": "ST", "start": {"x": 65, "y": 50}},
+          {"slot": "opp_receiver", "side": "opponent", "start": {"x": 40, "y": 35}}
+        ],
+        "ball": {"holder_slot": "opp_receiver"},
+        "steps": [
+          {"n": 1, "caption": "The team holds a mid-block shape in a patient phase.", "moves": []},
+          {"n": 2, "caption": "A trigger event flashes, such as a back pass to the centre back.", "moves": []},
+          {"n": 3, "caption": "The whole unit jumps together: the nearest player curves his run to cut the return pass.",
+           "moves": [{"slot": "presser", "to": {"x": 45, "y": 38}, "arc": "inside"}]}
+        ],
+        "loop": false
+      },
+      "extras_json": null,
+      "source_ref": "bible:3D.D1",
+      "content_version": "1.0.0"
+    }
+  ]
+}

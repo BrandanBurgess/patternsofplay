@@ -1,0 +1,17 @@
+{
+  "content_version": "1.0.0",
+  "table": "position_codes",
+  "note": "Fixed vocabulary (doc 03 section 3): the ten position codes the roster and role catalog key off. No further columns, and no source_ref/content_version on this table per the doc 03 schema.",
+  "items": [
+    {"code": "GK"},
+    {"code": "CB"},
+    {"code": "FB"},
+    {"code": "WB"},
+    {"code": "DM"},
+    {"code": "CM"},
+    {"code": "AM"},
+    {"code": "W"},
+    {"code": "ST"},
+    {"code": "SS"}
+  ]
+}

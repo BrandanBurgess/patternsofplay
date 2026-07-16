@@ -1,0 +1,126 @@
+{
+  "content_version": "1.0.0",
+  "table": "library_items",
+  "item_type": "rotation",
+  "items": [
+    {
+      "code": "R1",
+      "name": "False-9 Drop & Wing Dive",
+      "category": "rotation",
+      "blurb": "The nine drops between the lines while both wingers dive diagonally into the channels he vacates.",
+      "when_to_use": "Triggered whenever the ball reaches a facing midfielder, the single most copied rotation of the modern era.",
+      "coaching_points_json": [
+        "The wingers move the instant the nine drops, not after.",
+        "The dilemma is the point: following the nine opens the channel, passing him off frees a man between the lines."
+      ],
+      "youth_takeaway": "One player dropping can create two runs somewhere else: movement is a team language, not a solo act.",
+      "age_hint": "U13+",
+      "roles_involved": ["false_9", "touchline_winger", "inside_forward", "advanced_8"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "nine", "role_hint": "ST", "start": {"x": 75, "y": 50}},
+          {"slot": "winger_L", "role_hint": "W", "start": {"x": 78, "y": 15}},
+          {"slot": "winger_R", "role_hint": "W", "start": {"x": 78, "y": 85}},
+          {"slot": "eight", "role_hint": "CM", "start": {"x": 55, "y": 45}},
+          {"slot": "opp_cb", "side": "opponent", "start": {"x": 70, "y": 50}}
+        ],
+        "ball": {"holder_slot": "eight"},
+        "steps": [
+          {"n": 1, "caption": "The ball reaches the six or eight facing forward.", "moves": []},
+          {"n": 2, "caption": "The nine drops between the lines to receive.",
+           "moves": [{"slot": "nine", "to": {"x": 55, "y": 50}}]},
+          {"n": 3, "caption": "Both wingers cut diagonal runs into the channels the instant he drops.",
+           "moves": [
+             {"slot": "winger_L", "to": {"x": 88, "y": 30}, "arc": "inside"},
+             {"slot": "winger_R", "to": {"x": 88, "y": 70}, "arc": "inside"}
+           ]},
+          {"n": 4, "caption": "The near eight pushes to occupy the vacated nine's space.",
+           "moves": [{"slot": "eight", "to": {"x": 75, "y": 50}}]}
+        ],
+        "loop": true
+      },
+      "extras_json": {
+        "trigger": "Ball reaches the six or eight facing forward.",
+        "creates": "A free receiver in the nine, plus two runners attacking the channels at once.",
+        "defenders_dilemma": "The centre back must either follow the nine and open the channel behind him, or pass him off and concede a free man between the lines."
+      },
+      "source_ref": "bible:5B.R1",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "R12",
+      "name": "The Strikers' Scissors",
+      "category": "rotation",
+      "blurb": "One striker drops short while the other crosses diagonally behind him, alternating roles every sequence.",
+      "when_to_use": "Any facing-forward receiver in midfield can trigger it, a staple of the 3-5-2's attacking shape.",
+      "coaching_points_json": [
+        "The two strikers must read each other, not run a script: one drops only if the other is already crossing.",
+        "Centre backs cannot hand off marks cleanly if the movement never stops."
+      ],
+      "youth_takeaway": "Two forwards who move off each other are harder to mark than two forwards who don't.",
+      "age_hint": "U13+",
+      "roles_involved": ["target_man", "second_striker", "runner_in_behind"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "striker_A", "role_hint": "ST", "start": {"x": 78, "y": 40}},
+          {"slot": "striker_B", "role_hint": "ST", "start": {"x": 78, "y": 60}},
+          {"slot": "receiver", "role_hint": "CM", "start": {"x": 55, "y": 50}}
+        ],
+        "ball": {"holder_slot": "receiver"},
+        "steps": [
+          {"n": 1, "caption": "One striker drops short to offer the bounce option.",
+           "moves": [{"slot": "striker_A", "to": {"x": 60, "y": 40}}]},
+          {"n": 2, "caption": "The other crosses behind him diagonally in the opposite direction.",
+           "moves": [{"slot": "striker_B", "to": {"x": 85, "y": 35}, "arc": "inside"}]},
+          {"n": 3, "caption": "The pair alternates roles again on the next sequence.", "moves": []}
+        ],
+        "loop": true
+      },
+      "extras_json": {
+        "trigger": "Any facing-forward receiver in midfield.",
+        "creates": "Constant bounce and in-behind availability from one strike partnership.",
+        "defenders_dilemma": "Centre backs must swap marks mid-action, endlessly: the whole attacking argument of the 3-5-2."
+      },
+      "source_ref": "bible:5B.R12",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "R13",
+      "name": "Overlapping CB",
+      "category": "rotation",
+      "blurb": "The outside centre back overlaps beyond his own wingback while the wingback tucks into the half-space.",
+      "when_to_use": "Best from a back three when the wingback is pinned inside and needs an unmarked outlet.",
+      "coaching_points_json": [
+        "The remaining two centre backs and the pivot must hold the rest-defence triangle behind the run.",
+        "This works because no opponent's marking scheme has an assignment for an overlapping centre back."
+      ],
+      "youth_takeaway": "Innovation in football often means finding the player nobody thought to mark.",
+      "age_hint": "U15+",
+      "roles_involved": ["wide_cb", "wingback", "single_pivot"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "wide_cb", "role_hint": "CB", "start": {"x": 55, "y": 88}},
+          {"slot": "wingback", "role_hint": "WB", "start": {"x": 70, "y": 80}},
+          {"slot": "pivot_cover", "role_hint": "DM", "start": {"x": 40, "y": 50}}
+        ],
+        "ball": {"holder_slot": "wingback"},
+        "steps": [
+          {"n": 1, "caption": "The wingback receives, pinned inside by his marker.", "moves": []},
+          {"n": 2, "caption": "The outside centre back overlaps beyond his own wingback.",
+           "moves": [{"slot": "wide_cb", "to": {"x": 85, "y": 95}, "arc": "outside"}]},
+          {"n": 3, "caption": "The wingback tucks into the half-space as the remaining defenders form the rest-defence triangle.",
+           "moves": [{"slot": "wingback", "to": {"x": 72, "y": 65}}],
+           "ball_to": {"bind_slot": "wide_cb", "trajectory": "ground"}}
+        ],
+        "loop": true
+      },
+      "extras_json": {
+        "trigger": "The wingback receives, pinned inside by his marker.",
+        "creates": "A crosser nobody's marking scheme accounts for.",
+        "defenders_dilemma": "There is no assignment for an overlapping centre back, so the run is effectively unmarkable by design."
+      },
+      "source_ref": "bible:5B.R13",
+      "content_version": "1.0.0"
+    }
+  ]
+}
