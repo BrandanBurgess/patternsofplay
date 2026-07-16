@@ -1,0 +1,35 @@
+/* Self-hosted font faces (bundled by Vite via @fontsource, not fetched
+   from a remote host) so the app renders offline-safe: no external font
+   request that could fail and trip the e2e clean-page check. */
+@import "@fontsource/oswald/400.css";
+@import "@fontsource/oswald/500.css";
+@import "@fontsource/oswald/600.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+
+@import "./tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--body-font);
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display-font);
+  font-weight: 500;
+}

@@ -1,0 +1,15 @@
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+playwright-report/
+test-results/
+*.db
+*.db-wal
+*.db-shm
+.DS_Store
+*.egg-info/
