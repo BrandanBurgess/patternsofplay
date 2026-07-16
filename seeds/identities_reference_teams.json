@@ -17,6 +17,7 @@
         {"role": "overlapping_fb", "note": "Alves, supplying all right-side width"}
       ],
       "youth_takeaway": "Positions before players: teach players to occupy zones and form triangles, and the free man appears by structure, not talent. The rondo is this entire identity in a ten-yard square.",
+      "age_hint": "U13+",
       "block": "high",
       "pass_risk_json": null,
       "shape_render": "animated",
@@ -58,6 +59,7 @@
         {"role": "box_to_box_8", "note": "Henderson and Fabinho supplying engine and anchoring"}
       ],
       "youth_takeaway": "Effort can be a system, not just a vibe: pressing has choreography, with curved runs and triggers, that can be trained like a passing drill. Width does not have to come from wingers.",
+      "age_hint": "U13+",
       "block": "high",
       "pass_risk_json": null,
       "shape_render": "animated",
@@ -101,6 +103,7 @@
         {"role": "stopper_cb", "note": "Ramos, the front-foot stopper"}
       ],
       "youth_takeaway": "Defending deep is a plan, not a surrender: the block's job is to choose where the opponent loses the ball, and a counter needs runners without the ball as much as the star with it.",
+      "age_hint": "U11+",
       "block": "mid",
       "pass_risk_json": null,
       "shape_render": "animated",
@@ -140,6 +143,7 @@
         {"role": "inside_forward", "note": "Mahrez, isolated on the far side"}
       ],
       "youth_takeaway": "A team that knows exactly what it is can beat eleven better players who don't.",
+      "age_hint": "U11+",
       "block": "mid",
       "pass_risk_json": null,
       "shape_render": "animated",
@@ -176,6 +180,7 @@
         {"role": "target_man", "note": "Costa, the outlet nine as a weapon"}
       ],
       "youth_takeaway": "A block is not passive: this team attacked opponents with its shape as much as with the ball.",
+      "age_hint": "U9+",
       "block": "mid",
       "pass_risk_json": null,
       "shape_render": "static",
@@ -213,6 +218,7 @@
         {"role": "advanced_8", "note": "De Bruyne, the half-space assassin"}
       ],
       "youth_takeaway": "Formations are just phone numbers: what matters is the shape in possession, and it can differ from the shape without the ball.",
+      "age_hint": "U15+",
       "block": null,
       "pass_risk_json": null,
       "shape_render": "static",
@@ -251,6 +257,7 @@
         {"role": "target_man", "note": "Giroud, target man as a function rather than a scorer"}
       ],
       "youth_takeaway": "A team does not need the ball to be in charge: asymmetry is legal, since one flank can defend while the other attacks.",
+      "age_hint": "U13+",
       "block": "mid",
       "pass_risk_json": null,
       "shape_render": "details_only",
@@ -271,6 +278,7 @@
         {"role": "advanced_8", "note": "Xavi as tempo dictator, Iniesta as the pressure-release dribbler in the half-spaces"}
       ],
       "youth_takeaway": "Patience can be a weapon: a team that never gives the ball away cannot lose its shape chasing it. The striker is optional, the free man is not.",
+      "age_hint": "U13+",
       "block": "high",
       "pass_risk_json": null,
       "shape_render": "details_only",
@@ -294,6 +302,7 @@
         {"role": "complete_forward", "note": "Lewandowski"}
       ],
       "youth_takeaway": "Bravery is structural: an aggressive high line only works if the keeper sweeps and someone on the back line has the recovery pace to cover for it.",
+      "age_hint": "U15+",
       "block": "high",
       "pass_risk_json": null,
       "shape_render": "details_only",
@@ -315,6 +324,7 @@
         {"role": "target_man", "note": "Gullit and van Basten pressing as the first defenders"}
       ],
       "youth_takeaway": "Compactness is measurable: give players the actual number of metres, not just an instruction to work harder.",
+      "age_hint": "U13+",
       "block": "high",
       "pass_risk_json": null,
       "shape_render": "details_only",
@@ -335,6 +345,7 @@
         {"role": "classic_10", "note": "Hernández, the release-valve ten"}
       ],
       "youth_takeaway": "Man-marking is the most teachable press for young players, since every job is clear, and it is the most physically honest system too.",
+      "age_hint": "U9+",
       "block": "high",
       "pass_risk_json": null,
       "shape_render": "details_only",
@@ -356,6 +367,7 @@
         {"role": "anchor_destroyer", "note": "Kanté"}
       ],
       "youth_takeaway": "Changing shape mid-season can rescue a team: it helps to teach players two shapes, not just one.",
+      "age_hint": "U13+",
       "block": "mid",
       "pass_risk_json": null,
       "shape_render": "details_only",
@@ -377,6 +389,7 @@
         {"role": "classic_10", "note": "Kaká, the transition-carrying ten"}
       ],
       "youth_takeaway": "A player's best position may be one nobody has tried yet: profile matters more than the label on the shirt.",
+      "age_hint": "U13+",
       "block": "mid",
       "pass_risk_json": null,
       "shape_render": "details_only",
@@ -398,6 +411,7 @@
         {"role": "false_9", "note": "Mertens, the micro false nine"}
       ],
       "youth_takeaway": "Scripting the first few passes removes decisions for developing players and frees their attention for the choices that matter most.",
+      "age_hint": "U11+",
       "block": "high",
       "pass_risk_json": null,
       "shape_render": "details_only",
@@ -420,6 +434,7 @@
         {"role": "defensive_fb", "note": "Eto'o, a star forward converted to auxiliary right back as the tactical sacrifice"}
       ],
       "youth_takeaway": "Defending with total commitment is a skill and an honour, not a failure: it is the cultural counterweight every possession-obsessed environment needs.",
+      "age_hint": "U15+",
       "block": "low",
       "pass_risk_json": null,
       "shape_render": "details_only",

@@ -7,9 +7,10 @@
 // render Details only (CLAUDE.md rule 6: no designed surface, no
 // invented one). Details follows the Section 6 five-part template
 // (Formation & shape, Core idea, Signature patterns, Keystone roles,
-// Youth takeaway); style archetypes additionally show the pass-risk
-// block (Bible 5.7) between Keystone roles and Youth takeaway. Copy rule
-// (doc 03 section 7): identities curate, never lock.
+// Youth takeaway), plus an Age hint row (Bible 8.2.4, T-012); style
+// archetypes additionally show the pass-risk block (Bible 5.7) between
+// Keystone roles and Youth takeaway. Copy rule (doc 03 section 7):
+// identities curate, never lock.
 
 import { useEffect, useMemo, useState } from "react";
 import type { Orientation } from "../board/coords";
@@ -150,7 +151,7 @@ export function IdentityPage({ orientation }: IdentityPageProps) {
           className="app-page-info"
           aria-hidden="true"
           data-testid="identity-info"
-          title="Identities curate, never lock. Pull up Browse identities to explore the great teams and style archetypes: pick one, and its signature idea plays on the board, with the formation, keystone roles, and youth takeaway in Details."
+          title="Identities curate, never lock. Pull up Browse identities to explore the great teams and style archetypes: pick one, and its signature idea plays on the board, with the formation, keystone roles, youth takeaway, and age hint in Details."
         >
           i
         </span>
@@ -285,6 +286,10 @@ export function IdentityPage({ orientation }: IdentityPageProps) {
                   <div className="identity-detail-row" data-testid="identity-detail-youth-takeaway">
                     <p className="patterns-details-kicker">Youth takeaway</p>
                     <p>{selection.youth_takeaway}</p>
+                  </div>
+                  <div className="identity-detail-row" data-testid="identity-detail-age-hint">
+                    <p className="patterns-details-kicker">Age hint</p>
+                    <p>{selection.age_hint}</p>
                   </div>
                 </div>
               </div>

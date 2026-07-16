@@ -80,7 +80,7 @@ ROLE_REQUIRED_FIELDS = [
 SYNERGY_REQUIRED_FIELDS = ["code", "name", "why_it_works", "source_ref", "content_version"]
 CLASH_REQUIRED_FIELDS = ["code", "name", "trigger_expression", "warning_copy", "source_ref", "content_version"]
 IDENTITY_REQUIRED_FIELDS = [
-    "code", "name", "tag_line", "core_idea", "youth_takeaway", "shape_render",
+    "code", "name", "tag_line", "core_idea", "youth_takeaway", "age_hint", "shape_render",
     "source_ref", "content_version",
 ]
 

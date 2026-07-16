@@ -76,6 +76,10 @@ class Identity(Base):
     signature_pattern_codes: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     keystone_roles_json: Mapped[dict | list | None] = mapped_column(JSON, nullable=True)
     youth_takeaway: Mapped[str] = mapped_column(Text, nullable=False)
+    # Bible 8.2.4 / doc 03 amendment (T-012, founder decision 2026-07-16):
+    # every identity carries an age-suitability hint alongside its youth
+    # takeaway, same rule and shape as library_items.age_hint.
+    age_hint: Mapped[str] = mapped_column(String(60), nullable=False)
     block: Mapped[str | None] = mapped_column(String(10), nullable=True)  # high|mid|low
     # style archetypes only (Bible 5.7 row): encouraged, tolerated,
     # discouraged, tempo_rule.
