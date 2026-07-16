@@ -1,0 +1,395 @@
+/* Patterns page (Brief step 17, PNG 05-10, 29-31, 15-18, 35). Colors come
+   only from the theme token variables; gold (var(--accent)/var(--glow)) is
+   the only interactive/active color, red never appears here as a call to
+   action. */
+
+.patterns-page {
+  max-width: 1100px;
+}
+
+.patterns-loading,
+.patterns-error {
+  font-family: var(--body-font);
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0 0 8px;
+}
+.patterns-error {
+  color: var(--text-red, var(--red));
+}
+.patterns-error-overlay {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 3;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.patterns-stage {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.patterns-board-area {
+  position: relative;
+}
+
+/* Meta bar (PNG 05, 09, 10): floats over the top-left of the pitch once a
+   pattern is selected. Details is the one emphasized (gold) action; Open on
+   whiteboard and Clear are neutral, reusing Board.css's .ctl-ghost. */
+.patterns-meta-bar {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  max-width: calc(100% - 100px);
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+.patterns-meta-title {
+  font-family: var(--display-font);
+  font-size: 14px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.patterns-meta-author {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.patterns-details-btn {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+  cursor: pointer;
+}
+
+/* Playing indicator (PNG 05, 09): top-right over the pitch, echoing the
+   ball's own gold glow (design README token table). Never red: red is
+   status/danger only, never used for a positive "in progress" state. */
+.patterns-playing-pill {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--accent);
+  font-family: var(--body-font);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.patterns-playing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--glow);
+  box-shadow: 0 0 6px var(--glow);
+}
+
+/* Details panel (PNG 10, 18, 31): a right-hand rail on desktop, per library
+   template (What it is + steps for Patterns; Delivery zone/Target corridor
+   for Deliveries; What it creates/The defender's dilemma for Rotations). */
+.patterns-details-panel {
+  position: absolute;
+  top: 54px;
+  right: 10px;
+  bottom: 10px;
+  width: 290px;
+  max-width: calc(100% - 20px);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px;
+  overflow-y: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+.patterns-details-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.patterns-details-head h3 {
+  margin: 0;
+  font-family: var(--display-font);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.patterns-details-close {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.patterns-details-body {
+  font-family: var(--body-font);
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+.patterns-details-body p {
+  margin: 0 0 8px;
+}
+.patterns-details-kicker {
+  margin: 0 0 4px;
+  font-family: var(--display-font);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.patterns-details-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.patterns-details-card {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+}
+.patterns-details-steps {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.patterns-details-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.patterns-details-step-n {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Bottom sheet (Brief step 17: "page-level swipe-up sheet"). The handle
+   sits in normal flow right under the pitch; a negative margin pulls it up
+   to overlap the pitch's bottom edge so opening it reads as sliding UP
+   over the board, matching PNG 07 vs PNG 06. */
+.patterns-sheet {
+  position: relative;
+  z-index: 5;
+  margin-top: -34px;
+}
+.patterns-sheet-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 999px;
+  background: var(--sidebar-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.patterns-sheet-grip {
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--text-secondary);
+  opacity: 0.5;
+}
+.patterns-sheet-chevron {
+  font-size: 12px;
+}
+
+.patterns-sheet-body {
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.patterns-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.patterns-tab {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.patterns-tab-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+}
+
+.patterns-search {
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-primary);
+  width: 100%;
+}
+.patterns-search::placeholder {
+  color: var(--text-secondary);
+}
+
+.patterns-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.patterns-chip {
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.patterns-chip-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+}
+
+.patterns-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.patterns-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--bg);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+.patterns-tile:hover,
+.patterns-tile:focus-visible {
+  border-color: var(--accent);
+}
+.patterns-tile-category {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.patterns-tile-name {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.patterns-empty-result {
+  grid-column: 1 / -1;
+  font-family: var(--body-font);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.tile-thumb {
+  width: 100%;
+  border-radius: 4px;
+  display: block;
+}
+.tile-thumb-bg {
+  fill: var(--bg-stripe);
+}
+.tile-thumb-token {
+  stroke: none;
+}
+.tile-thumb-home {
+  fill: var(--accent);
+}
+.tile-thumb-away {
+  fill: var(--red);
+}
+.tile-thumb-ball {
+  fill: var(--glow);
+}
+
+@media (max-width: 700px) {
+  .patterns-details-panel {
+    top: 54px;
+    left: 12px;
+    right: 12px;
+    bottom: auto;
+    width: auto;
+    max-width: none;
+    max-height: 60vh;
+  }
+  .patterns-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    max-height: 260px;
+  }
+  .patterns-meta-bar {
+    max-width: calc(100% - 80px);
+    padding: 6px 8px;
+  }
+  .patterns-meta-title {
+    font-size: 12px;
+  }
+}

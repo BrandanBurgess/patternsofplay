@@ -1,0 +1,29 @@
+/* PatternPreviewBoard: the read-only board-first surface shared by
+   pages that play a declarative spec or a recording without the
+   whiteboard's drag/record/toolbar chrome (Patterns page now; Formations
+   and Identity are the same shape per the design README and will reuse
+   this, Brief steps 18 and 20). Colors are theme tokens only. */
+
+.pattern-preview {
+  position: relative;
+}
+
+.pattern-empty-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 320px;
+  padding: 16px 20px;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-family: var(--body-font);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.pattern-empty-card strong {
+  color: var(--text-primary);
+}

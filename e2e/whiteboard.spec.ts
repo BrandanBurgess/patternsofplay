@@ -73,10 +73,12 @@ test.describe("whiteboard: record, save into My Patterns, replay, and reload res
   test("full coach journey", async ({ page, issues }) => {
     await registerCoach(page);
 
-    // --- App shell: Whiteboard is the active nav entry, the rest are
-    // present but inert until their own tickets land ---
+    // --- App shell: Whiteboard is the active nav entry. Patterns is live
+    // too (T-031); Formations/Roster/Identity stay inert until their own
+    // tickets land ---
     await expect(page.getByTestId("nav-whiteboard")).toHaveAttribute("aria-current", "page");
-    for (const key of ["patterns", "formations", "roster", "identity"]) {
+    await expect(page.getByTestId("nav-patterns")).not.toBeDisabled();
+    for (const key of ["formations", "roster", "identity"]) {
       const item = page.getByTestId(`nav-${key}`);
       await expect(item).toHaveAttribute("aria-disabled", "true");
       await expect(item).toBeDisabled();
