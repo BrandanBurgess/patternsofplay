@@ -4,7 +4,15 @@ from sqlalchemy.orm import Session
 from app.config import COOKIE_SECURE, JWT_TTL_SECONDS, SESSION_COOKIE_NAME
 from app.deps import get_current_user_optional, get_db
 from app.models import TeamMember, User
-from app.schemas import LoginRequest, MeOut, MembershipOut, RegisterRequest, TeamOut, UserOut
+from app.schemas import (
+    CoachMembershipOut,
+    CoachTeamOut,
+    LoginRequest,
+    MembershipOut,
+    RegisterRequest,
+    TeamOut,
+    UserOut,
+)
 from app.security import hash_password, verify_password
 from app.tokens import create_session_token
 
@@ -72,13 +80,19 @@ def logout(response: Response) -> dict[str, bool]:
     return {"ok": True}
 
 
-@router.get("/me", response_model=MeOut)
+@router.get("/me", response_model=None)
 def me(
     current_user: User | None = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
-) -> MeOut:
+) -> dict:
+    # response_model=None (see schemas.py MeOut docstring): each
+    # membership below is dumped through MembershipOut or
+    # CoachMembershipOut individually, picked per-row by that row's own
+    # role_on_team, so a coach's own team(s) carry both join codes and a
+    # player's carry neither key at all (T-043 decision 2). A single
+    # shared response_model cannot express that per-row split.
     if current_user is None:
-        return MeOut(user=None, memberships=[])
+        return {"user": None, "memberships": []}
 
     memberships = (
         db.query(TeamMember)
@@ -86,14 +100,24 @@ def me(
         .order_by(TeamMember.joined_at.asc())
         .all()
     )
-    return MeOut(
-        user=UserOut.model_validate(current_user),
-        memberships=[
-            MembershipOut(
+    membership_outs = []
+    for m in memberships:
+        membership_out: MembershipOut | CoachMembershipOut
+        if m.role_on_team == "coach":
+            membership_out = CoachMembershipOut(
+                team=CoachTeamOut.model_validate(m.team),
+                role_on_team=m.role_on_team,  # type: ignore[arg-type]
+                joined_at=m.joined_at,
+            )
+        else:
+            membership_out = MembershipOut(
                 team=TeamOut.model_validate(m.team),
                 role_on_team=m.role_on_team,  # type: ignore[arg-type]
                 joined_at=m.joined_at,
             )
-            for m in memberships
-        ],
-    )
+        membership_outs.append(membership_out.model_dump(mode="json"))
+
+    return {
+        "user": UserOut.model_validate(current_user).model_dump(mode="json"),
+        "memberships": membership_outs,
+    }

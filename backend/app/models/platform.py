@@ -48,7 +48,20 @@ class Team(Base):
     colors_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     age_group: Mapped[str | None] = mapped_column(String(50), nullable=True)
     level: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    # T-043 (founder decision 2026-07-16): role-scoped join codes. Two
+    # codes per team now, each resolving to a fixed role_on_team for
+    # whoever joins with it, independent of that account's own global
+    # `role`. `join_code` is the ORIGINAL column from T-003 (doc 03
+    # section 2), REPURPOSED in place rather than renamed or replaced, so
+    # every pre-existing team's code and every row referencing it survive
+    # the migration untouched: it is now specifically the PLAYER code.
+    # `coach_join_code` is new (migration 0004), generated the same way,
+    # and its uniqueness is checked against BOTH columns (see
+    # app/routers/teams.py _unique_code) so a submitted code can never
+    # match a row in one column and a different row in the other: any
+    # code that validates resolves to exactly one team and one role.
     join_code: Mapped[str] = mapped_column(String(12), unique=True, index=True, nullable=False)
+    coach_join_code: Mapped[str] = mapped_column(String(12), unique=True, index=True, nullable=False)
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, nullable=False
