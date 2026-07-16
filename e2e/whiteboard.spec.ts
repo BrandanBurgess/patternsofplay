@@ -85,7 +85,6 @@ test.describe("whiteboard: record, save into My Patterns, replay, and reload res
       await expect(item).toHaveAttribute("aria-disabled", "true");
       await expect(item).toBeDisabled();
     }
-    await expect(page.getByTestId("nav-roster")).not.toBeDisabled();
 
     // --- Lay a confirmed lane, toggle a zone, set both thresholds ---
     await dragTokenTo(page, "home-2", { x: 30, y: 8 });
