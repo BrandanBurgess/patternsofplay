@@ -173,6 +173,8 @@ test.describe("identity: five-part Section 6 template, pass-risk, cult corner", 
     await expect(panel.getByTestId("identity-detail-youth-takeaway")).toContainText(
       "Positions before players"
     );
+    // T-012: Bible 8.2.4's age-suitability hint, added after Youth takeaway.
+    await expect(panel.getByTestId("identity-detail-age-hint")).toContainText("U13+");
     // A reference team's own pass_risk_json is null: the block never renders.
     await expect(panel.getByTestId("identity-detail-pass-risk")).toHaveCount(0);
     // Order in the DOM matches the template's own order.
@@ -185,6 +187,7 @@ test.describe("identity: five-part Section 6 template, pass-risk, cult corner", 
       "identity-detail-signature-patterns",
       "identity-detail-keystone-roles",
       "identity-detail-youth-takeaway",
+      "identity-detail-age-hint",
     ]);
     await page.getByTestId("identity-details-close").click();
     await expect(page.getByTestId("identity-details-panel")).toHaveCount(0);
@@ -206,6 +209,7 @@ test.describe("identity: five-part Section 6 template, pass-risk, cult corner", 
     await page.getByTestId("identity-details-toggle").click();
     await expect(page.getByTestId("identity-detail-formation")).toContainText("4-2-3-1");
     await expect(page.getByTestId("identity-detail-youth-takeaway")).toBeVisible();
+    await expect(page.getByTestId("identity-detail-age-hint")).toContainText("U13+");
 
     await assertCleanPage(page, issues);
   });
@@ -229,6 +233,7 @@ test.describe("identity: five-part Section 6 template, pass-risk, cult corner", 
     // Style archetypes' core_idea has no "Formation:" leading sentence, so
     // the template does not fabricate a Formation & shape row for them.
     await expect(page.getByTestId("identity-detail-formation")).toHaveCount(0);
+    await expect(page.getByTestId("identity-detail-age-hint")).toContainText("U13+");
 
     await assertCleanPage(page, issues);
   });
@@ -251,6 +256,7 @@ test.describe("identity: five-part Section 6 template, pass-risk, cult corner", 
     await expect(page.getByTestId("identity-detail-keystone-roles")).toHaveCount(0);
     await expect(page.getByTestId("identity-detail-pass-risk")).toHaveCount(0);
     await expect(page.getByTestId("identity-detail-signature-patterns")).toHaveCount(0);
+    await expect(page.getByTestId("identity-detail-age-hint")).toContainText("U11+");
 
     await assertCleanPage(page, issues);
   });

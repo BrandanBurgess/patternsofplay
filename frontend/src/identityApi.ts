@@ -45,6 +45,7 @@ export interface IdentityOutWire {
   signature_pattern_codes: string[];
   keystone_roles: KeystoneRoleWire[] | null;
   youth_takeaway: string;
+  age_hint: string;
   block: "high" | "mid" | "low" | null;
   pass_risk: PassRiskWire | null;
   shape_render: "animated" | "static" | "details_only";

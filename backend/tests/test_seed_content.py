@@ -133,6 +133,10 @@ def test_identity_entries_carry_the_bible_youth_and_traceability_fields(fname: s
         assert _word_count(item["tag_line"]) <= 25, f"{fname} {code}: tag_line over 25 words"
         assert item["core_idea"], f"{fname} {code}: missing core_idea"
         assert item["youth_takeaway"], f"{fname} {code}: missing youth_takeaway"
+        # T-012 (Bible 8.2.4, founder decision 2026-07-16): every identity
+        # carries an age-suitability hint alongside its youth takeaway,
+        # same rule library_items already enforces (age_hint check above).
+        assert item["age_hint"], f"{fname} {code}: missing age_hint"
         assert item["source_ref"].startswith("bible:"), f"{fname} {code}: bad source_ref"
 
 

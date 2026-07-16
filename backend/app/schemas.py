@@ -194,6 +194,7 @@ class IdentityOut(BaseModel):
     # rather than a fixed model (mirrors LibraryItemOut.extras above).
     keystone_roles: list | None = Field(default=None, validation_alias="keystone_roles_json")
     youth_takeaway: str
+    age_hint: str
     block: Literal["high", "mid", "low"] | None
     # style archetypes only (Bible 5.7): encouraged/tolerated/discouraged/tempo_rule.
     pass_risk: dict | None = Field(default=None, validation_alias="pass_risk_json")
