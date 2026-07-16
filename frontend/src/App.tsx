@@ -1,21 +1,23 @@
 import { useCallback, useEffect, useState } from "react";
-import ThemeSwitcher from "./theme/ThemeSwitcher";
-import Board from "./board/Board";
+import type { ReactNode } from "react";
 import type { Orientation } from "./board/coords";
 import { MeOut, fetchMe, logout as apiLogout } from "./api";
 import { AuthForms } from "./AuthForms";
-import { TeamDashboard } from "./TeamDashboard";
+import { AppShell } from "./AppShell";
 import { TeamOnboarding } from "./TeamOnboarding";
+import { WhiteboardPage } from "./pages/WhiteboardPage";
+import ThemeSwitcher from "./theme/ThemeSwitcher";
 import "./App.css";
 
 // Portrait on phone-width viewports, landscape otherwise (design README: all
-// boards render portrait on phone). A manual toggle lets either orientation be
-// exercised on any device, which the round-trip verification relies on.
+// boards render portrait on phone). Derived purely from viewport width, no
+// manual override: this is how a real device actually decides it.
+const PORTRAIT_QUERY = "(max-width: 700px)";
+
 function usePreferredOrientation(): Orientation {
-  const query = "(max-width: 700px)";
   const initial: Orientation =
     typeof window !== "undefined" && typeof window.matchMedia === "function"
-      ? window.matchMedia(query).matches
+      ? window.matchMedia(PORTRAIT_QUERY).matches
         ? "portrait"
         : "landscape"
       : "landscape";
@@ -23,7 +25,7 @@ function usePreferredOrientation(): Orientation {
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
-    const mq = window.matchMedia(query);
+    const mq = window.matchMedia(PORTRAIT_QUERY);
     const onChange = () => setOrientation(mq.matches ? "portrait" : "landscape");
     onChange();
     mq.addEventListener("change", onChange);
@@ -33,11 +35,28 @@ function usePreferredOrientation(): Orientation {
   return orientation;
 }
 
+// The pre-team-ready chrome (loading / signed-out / onboarding): same
+// topbar shape as the full AppShell (T-002's theme switcher must work
+// before an account exists), just without the sidebar there is nothing yet
+// to navigate.
+function MinimalShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="app-shell">
+      <header className="app-topbar">
+        <h1 className="app-brand">
+          <span className="app-brand-dot" aria-hidden="true" />
+          Patterns of Play
+        </h1>
+        <ThemeSwitcher />
+      </header>
+      <main className="app-main">{children}</main>
+    </div>
+  );
+}
+
 export default function App() {
   const [me, setMe] = useState<MeOut | null>(null);
-  const preferred = usePreferredOrientation();
-  const [override, setOverride] = useState<Orientation | null>(null);
-  const orientation = override ?? preferred;
+  const orientation = usePreferredOrientation();
 
   const refreshMe = useCallback(async () => {
     setMe(await fetchMe());
@@ -52,40 +71,38 @@ export default function App() {
     await refreshMe();
   }, [refreshMe]);
 
+  if (me === null) {
+    return (
+      <MinimalShell>
+        <p className="app-status">Loading...</p>
+      </MinimalShell>
+    );
+  }
+
+  if (me.user === null) {
+    return (
+      <MinimalShell>
+        <AuthForms onAuthenticated={refreshMe} />
+      </MinimalShell>
+    );
+  }
+
+  if (me.memberships.length === 0) {
+    return (
+      <MinimalShell>
+        <TeamOnboarding role={me.user.role} onTeamReady={refreshMe} />
+      </MinimalShell>
+    );
+  }
+
+  const membership = me.memberships[0];
+
+  // The whiteboard is now an authenticated page (sign in to save; the PNGs
+  // assume a signed-in coach). Player recordings are still allowed
+  // (Brief section 3 table), just author-stamped with their own name.
   return (
-    <div className="app-shell">
-      <header className="app-topbar">
-        <h1 className="app-brand">Patterns of Play</h1>
-        <ThemeSwitcher />
-      </header>
-      <main className="app-main">
-        {/* Temporary board mount until the whiteboard page proper lands in
-            T-030. Kept outside the auth gate so the board journeys stay
-            exercisable without an account, and above the auth flow so its
-            content swaps never shift the board's layout mid-gesture. */}
-        <section className="whiteboard-dev" aria-label="Whiteboard">
-          <div className="board-toolbar">
-            <button
-              type="button"
-              onClick={() =>
-                setOverride(orientation === "landscape" ? "portrait" : "landscape")
-              }
-            >
-              Rotate board
-            </button>
-            <span data-testid="orientation-readout">Orientation: {orientation}</span>
-          </div>
-          <Board orientation={orientation} />
-        </section>
-        {me === null && <p className="app-status">Loading...</p>}
-        {me !== null && me.user === null && <AuthForms onAuthenticated={refreshMe} />}
-        {me !== null && me.user !== null && me.memberships.length === 0 && (
-          <TeamOnboarding role={me.user.role} onTeamReady={refreshMe} />
-        )}
-        {me !== null && me.user !== null && me.memberships.length > 0 && (
-          <TeamDashboard user={me.user} memberships={me.memberships} onLogout={handleLogout} />
-        )}
-      </main>
-    </div>
+    <AppShell user={me.user} membership={membership} active="whiteboard" onLogout={handleLogout}>
+      <WhiteboardPage orientation={orientation} role={membership.role_on_team} />
+    </AppShell>
   );
 }

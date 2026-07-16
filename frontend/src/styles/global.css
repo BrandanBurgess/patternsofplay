@@ -33,3 +33,41 @@ h3 {
   font-family: var(--display-font);
   font-weight: 500;
 }
+
+/* Base app chrome shared by every top-level App.tsx branch (loading,
+   signed-out, onboarding) AND the full AppShell (T-030): one definition so
+   the two never drift out of visual sync regardless of CSS import order. */
+.app-shell {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 12px 16px;
+  background: var(--sidebar-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--display-font);
+  font-weight: 600;
+  font-size: 15px;
+  margin: 0;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  padding: 16px;
+}

@@ -1,8 +1,13 @@
 // Board engine journey (T-020). Runs under both Playwright projects: desktop
 // (landscape default) and mobile iPhone 13 (portrait default). Covers the two
 // board-engine DoD lines from Brief section 5.
+//
+// T-030: the whiteboard is now an authenticated page, so every test signs in
+// a fresh coach first (registerCoach lands on the whiteboard once the team is
+// created). Orientation flips use a real viewport resize across the phone
+// breakpoint instead of the old dev-only "Rotate board" toggle.
 
-import { test, expect, assertCleanPage } from "./fixtures";
+import { test, expect, assertCleanPage, registerCoach, flipOrientationViewport } from "./fixtures";
 
 // Must match Board.tsx VIEWBOX exactly.
 const VB = {
@@ -38,8 +43,7 @@ async function currentOrientation(page: import("@playwright/test").Page): Promis
 }
 
 test("board renders 23 tokens in the viewport's orientation", async ({ page, issues }) => {
-  await page.goto("/");
-  await expect(page.getByTestId("board")).toBeVisible();
+  await registerCoach(page);
   await expect(page.locator("[data-token-id]")).toHaveCount(23); // 11 + 11 + ball
   await expect(page.locator('[data-token-side="ball"]')).toHaveCount(1);
 
@@ -55,7 +59,7 @@ test("board renders 23 tokens in the viewport's orientation", async ({ page, iss
 // stored landscape model coordinate; that coordinate renders correctly in both
 // orientations, proving orientation is render-only.
 test("stored model coords replay correctly in both orientations", async ({ page, issues }) => {
-  await page.goto("/");
+  await registerCoach(page);
   const token = page.locator('[data-token-id="home-9"]');
   await expect(token).toBeVisible();
 
@@ -78,8 +82,9 @@ test("stored model coords replay correctly in both orientations", async ({ page,
   expect(px.px).toBeCloseTo(exp.px, 1);
   expect(px.py).toBeCloseTo(exp.py, 1);
 
-  // Flip orientation. Same stored model coord, render-only change.
-  await page.getByRole("button", { name: "Rotate board" }).click();
+  // Flip orientation (resize across the phone breakpoint). Same stored model
+  // coord, render-only change.
+  await flipOrientationViewport(page);
   const after = await currentOrientation(page);
   expect(after).not.toBe(before);
 
@@ -99,7 +104,7 @@ test("stored model coords replay correctly in both orientations", async ({ page,
 // budget during a scripted drag: sample rAF deltas while dragging and assert
 // the median frame stays within budget. Actual numbers are logged as evidence.
 test("drag holds frame budget with 23 tokens", async ({ page, issues }) => {
-  await page.goto("/");
+  await registerCoach(page);
   const token = page.locator('[data-token-id="home-9"]');
   const box = (await token.boundingBox())!;
   const cx = box.x + box.width / 2;

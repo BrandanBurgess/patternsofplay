@@ -1,5 +1,7 @@
 // Pitch canvas + token rendering + drag pipeline (T-020) + lane graph and
-// marking rings (T-021) + zone overlays, animation player, and recorder (T-022).
+// marking rings (T-021) + zone overlays, animation player, and recorder (T-022)
+// + the whiteboard page chrome: toolbar, view menu, record/save flow into My
+// Patterns (T-030, PNG 01-05, 14, 34).
 //
 // Rendering choice: SVG behind a component boundary. The pitch is a static
 // backdrop; each token is a <g> transformed in viewBox user units. Orientation
@@ -20,9 +22,13 @@
 //     FrameLoop, so lanes and rings stay live during playback (T-021 handoff 1).
 //     It abstracts over declarative specs AND raw recordings via one Playback.
 //   - The recorder (recorder.ts) captures every drag on every token as
-//     timestamped model-space keyframes; saved recordings live in state (no
-//     backend, no localStorage) shaped as doc 03 4.2 and replay through the
-//     player immediately.
+//     timestamped model-space keyframes.
+//
+// T-030 owns persistence: this component takes an initial snapshot and reports
+// every change upward (onSnapshotChange) so the page can PUT it to the boards
+// row (doc 03 4.3); My Patterns is now server data (savedPatterns prop),
+// author-stamped by the API, with Delete rendered coach-only (README roles
+// table) and enforced again server-side regardless of what the UI hides.
 
 import { useCallback, useLayoutEffect, useMemo, useRef, useState, useEffect } from "react";
 import {
@@ -52,7 +58,10 @@ import { PlayerController } from "./player";
 import { Recorder } from "./recorder";
 import { buildDeclarativePlayback, buildKeyframePlayback, type Playback } from "./playback";
 import { DEMO_BINDING, DEMO_SPEC } from "./demoSpec";
-import type { BoardSnapshot, Keyframe, RecordedPattern } from "./animationTypes";
+import { fromWireSnapshot } from "./wire";
+import type { BoardSnapshot, Keyframe } from "./animationTypes";
+import type { Role } from "../api";
+import type { SavedPatternOutWire } from "../whiteboardApi";
 import "./Board.css";
 
 // Fixed viewBox per orientation. Aspect matches PITCH_ASPECT so the SVG scales
@@ -88,24 +97,106 @@ function snapshotToTokens(snap: BoardSnapshot): Token[] {
   }));
 }
 
-interface BoardProps {
-  orientation: Orientation;
-  initialTokens?: Token[];
+// ---- Minimal inline toolbar icons (currentColor only; no hardcoded hex). ----
+function IconSelect() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true">
+      <path d="M4 2 L4 17 L7.7 13.6 L10.4 18 L13 16.5 L10.3 12 L16 11.7 Z" fill="currentColor" />
+    </svg>
+  );
+}
+function IconRecord() {
+  return (
+    <svg viewBox="0 0 20 20" width="13" height="13" aria-hidden="true">
+      <circle cx="10" cy="10" r="7" fill="currentColor" />
+    </svg>
+  );
+}
+function IconPlay() {
+  return (
+    <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true">
+      <path d="M6 3 L17 10 L6 17 Z" fill="currentColor" />
+    </svg>
+  );
+}
+function IconReset() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true">
+      <path
+        d="M4 16 L15.5 4.5 M15.5 4.5 H9 M15.5 4.5 V11"
+        stroke="currentColor"
+        strokeWidth="2"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+function IconMenu() {
+  return (
+    <svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true">
+      <path
+        d="M3 5 H17 M3 10 H17 M3 15 H17"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 }
 
-export default function Board({ orientation, initialTokens }: BoardProps) {
-  const [tokens, setTokens] = useState<Token[]>(() => initialTokens ?? defaultBoardTokens());
+interface BoardProps {
+  orientation: Orientation;
+  role: Role;
+  /** Hydrates the board from the boards row (doc 03 4.3). Omit for a fresh,
+   * never-saved board, which starts from the default 4-3-3 shape. */
+  initialSnapshot?: BoardSnapshot;
+  /** Fired after every committed change (drag end, lane confirm, threshold
+   * or zone toggle) with the full current snapshot. NOT called for the
+   * initial hydration render. The page debounces this into a PUT. */
+  onSnapshotChange?: (snapshot: BoardSnapshot) => void;
+  /** My Patterns, server-owned (author-stamped, team-scoped). */
+  savedPatterns: SavedPatternOutWire[];
+  onSavePattern: (name: string, snapshot: BoardSnapshot, keyframes: Keyframe[]) => Promise<void>;
+  /** Absent (not just disabled) for players: the delete control never
+   * renders for a non-coach role (README roles table), and the API 403s a
+   * player's attempt independently of this. */
+  onDeletePattern?: (id: number) => Promise<void>;
+}
+
+export default function Board({
+  orientation,
+  role,
+  initialSnapshot,
+  onSnapshotChange,
+  savedPatterns,
+  onSavePattern,
+  onDeletePattern,
+}: BoardProps) {
+  const [tokens, setTokens] = useState<Token[]>(() =>
+    initialSnapshot ? snapshotToTokens(initialSnapshot) : defaultBoardTokens()
+  );
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Whiteboard lane state, shaped to doc 03 4.3 (boards row). No backend yet
-  // (T-004 / T-030) and no localStorage (Brief section 7): it lives here until
-  // persistence lands, then maps straight onto the row.
-  const [laneState, setLaneState] = useState<WhiteboardLaneState>(defaultLaneState);
+  // Whiteboard lane state, shaped to doc 03 4.3 (boards row): hydrated from
+  // the boards row when one exists, otherwise the engine defaults.
+  const [laneState, setLaneState] = useState<WhiteboardLaneState>(() =>
+    initialSnapshot
+      ? {
+          confirmedLanes: initialSnapshot.confirmed_lanes,
+          blockingThreshold: initialSnapshot.blocking_threshold,
+          markingThreshold: initialSnapshot.marking_threshold,
+        }
+      : defaultLaneState()
+  );
   // First token of an in-progress "click two players" confirm gesture.
   const [pairingId, setPairingId] = useState<string | null>(null);
 
   // Zone visibility (doc 03 4.3 zones_visible_json). Independent of lanes.
-  const [zonesVisible, setZonesVisible] = useState<Set<ZoneGroup>>(() => new Set());
+  const [zonesVisible, setZonesVisible] = useState<Set<ZoneGroup>>(
+    () => new Set((initialSnapshot?.zones_visible ?? []) as ZoneGroup[])
+  );
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
 
   // Player + recorder UI state. None of these mutate per frame (that would
@@ -115,7 +206,9 @@ export default function Board({ orientation, initialTokens }: BoardProps) {
   const [recording, setRecording] = useState(false);
   const [pendingKeyframes, setPendingKeyframes] = useState<Keyframe[] | null>(null);
   const [recordName, setRecordName] = useState("");
-  const [savedPatterns, setSavedPatterns] = useState<RecordedPattern[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   // Bumped to (re)start a playback after tokens have committed to their start.
   const [playToken, setPlayToken] = useState(0);
 
@@ -222,6 +315,41 @@ export default function Board({ orientation, initialTokens }: BoardProps) {
     }
   }, []);
 
+  // ---- Persistence: report the committed snapshot upward (T-030) -----------
+
+  const buildSnapshot = useCallback(
+    (): BoardSnapshot => ({
+      tokens: tokens.map((t) => ({
+        id: t.id,
+        side: t.side,
+        label: t.label,
+        x: t.pos.x,
+        y: t.pos.y,
+      })),
+      confirmed_lanes: laneState.confirmedLanes,
+      blocking_threshold: laneState.blockingThreshold,
+      marking_threshold: laneState.markingThreshold,
+      zones_visible: [...zonesVisible],
+    }),
+    [tokens, laneState, zonesVisible]
+  );
+
+  // Skip the very first run: that is the hydration render itself, already in
+  // sync with the server (or the untouched default), not a change to persist.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (!hydratedRef.current) {
+      hydratedRef.current = true;
+      return;
+    }
+    onSnapshotChange?.(buildSnapshot());
+    // buildSnapshot/onSnapshotChange intentionally excluded: buildSnapshot is
+    // a fresh function identity on every one of these same state changes (it
+    // closes over them), and onSnapshotChange is a stable useCallback from
+    // the page. Depending on tokens/laneState/zonesVisible alone is correct
+    // and avoids re-running this effect for reasons other than a real change.
+  }, [tokens, laneState, zonesVisible]);
+
   // ---- Animation player wiring ----------------------------------------------
 
   // Called every frame by the player with a sampled frame in model coords. Reads
@@ -311,38 +439,35 @@ export default function Board({ orientation, initialTokens }: BoardProps) {
   }, [beginPlayback]);
 
   const replaySaved = useCallback(
-    (pattern: RecordedPattern) => {
+    (pattern: SavedPatternOutWire) => {
       if (playing || recording) return;
-      const pb = buildKeyframePlayback(pattern.keyframes, pattern.board_snapshot);
-      beginPlayback(pb, snapshotToTokens(pattern.board_snapshot));
+      const snapshot = fromWireSnapshot(pattern.board_snapshot);
+      const pb = buildKeyframePlayback(pattern.keyframes, snapshot);
+      beginPlayback(pb, snapshotToTokens(snapshot));
     },
     [beginPlayback, playing, recording]
   );
 
   // ---- Recorder wiring ------------------------------------------------------
 
-  const buildSnapshot = useCallback(
-    (): BoardSnapshot => ({
-      tokens: tokens.map((t) => ({
-        id: t.id,
-        side: t.side,
-        label: t.label,
-        x: t.pos.x,
-        y: t.pos.y,
-      })),
-      confirmed_lanes: laneState.confirmedLanes,
-      blocking_threshold: laneState.blockingThreshold,
-      marking_threshold: laneState.markingThreshold,
-      zones_visible: [...zonesVisible],
-    }),
-    [tokens, laneState, zonesVisible]
-  );
-
   const startRecording = useCallback(() => {
     if (playing) return;
+    // Close the view menu before capturing anything: its panel floats above
+    // the toolbar at bottom-center and can overlap tokens near the middle of
+    // the board (e.g. the ball's default spot). Left open during a
+    // recording drag, a drag that starts or ends under the panel lands on a
+    // menu control instead of a token, and the browser fires a genuine
+    // click on that control (a checkbox's <label>, say), silently flipping
+    // a zone toggle the user never touched. Recording is a deliberate mode
+    // switch, the user is done adjusting view settings and wants a clear
+    // board, so this is the right moment to get the panel out of the way
+    // (unlike lane/threshold adjustments, which intentionally keep the menu
+    // open while dragging tokens elsewhere on the board).
+    setViewMenuOpen(false);
     recordSnapshotRef.current = buildSnapshot();
     recorderRef.current!.start();
     setPendingKeyframes(null);
+    setSaveError(null);
     setRecording(true);
   }, [buildSnapshot, playing]);
 
@@ -355,21 +480,42 @@ export default function Board({ orientation, initialTokens }: BoardProps) {
 
   const savePattern = useCallback(() => {
     if (!pendingKeyframes || !recordSnapshotRef.current) return;
-    const pattern: RecordedPattern = {
-      name: recordName.trim() || "Recorded pattern",
-      author_role: "coach",
-      board_snapshot: recordSnapshotRef.current,
-      keyframes: pendingKeyframes,
-    };
-    setSavedPatterns((prev) => [...prev, pattern]);
-    setPendingKeyframes(null);
-    setRecordName("");
-  }, [pendingKeyframes, recordName]);
+    const name = recordName.trim() || "Recorded pattern";
+    setSaving(true);
+    setSaveError(null);
+    onSavePattern(name, recordSnapshotRef.current, pendingKeyframes)
+      .then(() => {
+        setPendingKeyframes(null);
+        setRecordName("");
+      })
+      .catch(() => {
+        setSaveError("Could not save the pattern, try again.");
+      })
+      .finally(() => setSaving(false));
+  }, [pendingKeyframes, recordName, onSavePattern]);
 
   const discardRecording = useCallback(() => {
     setPendingKeyframes(null);
     setRecordName("");
+    setSaveError(null);
   }, []);
+
+  const handleDelete = useCallback(
+    (id: number) => {
+      if (!onDeletePattern) return;
+      setDeletingId(id);
+      onDeletePattern(id).finally(() => setDeletingId(null));
+    },
+    [onDeletePattern]
+  );
+
+  // Reset the board to the default starting shape. Position-only: lane
+  // confirmations, thresholds, and zone toggles are view/analysis settings,
+  // not part of "start over with a clean formation".
+  const resetPositions = useCallback(() => {
+    if (playing || recording) return;
+    setTokens(defaultBoardTokens());
+  }, [playing, recording]);
 
   // ---- Drag pipeline (T-020) ------------------------------------------------
 
@@ -517,97 +663,40 @@ export default function Board({ orientation, initialTokens }: BoardProps) {
       return next;
     });
 
+  const canDelete = role === "coach" && onDeletePattern !== undefined;
+
   return (
     <div className="board-root" data-playing={playing} data-recording={recording}>
-      <div className="board-view" role="group" aria-label="Board controls">
-        {/* View menu: zone overlays (Brief step 13). The full toolbar is T-030. */}
-        <div className="view-menu">
-          <button
-            type="button"
-            data-testid="view-menu"
-            aria-expanded={viewMenuOpen}
-            onClick={() => setViewMenuOpen((o) => !o)}
-          >
-            View
-          </button>
-          {viewMenuOpen && (
-            <div className="view-menu-panel" role="menu" aria-label="Zone overlays">
-              {ZONE_GROUPS.map((g) => (
-                <label key={g} className="view-menu-item">
-                  <input
-                    type="checkbox"
-                    data-testid={`zone-toggle-${g}`}
-                    checked={zonesVisible.has(g)}
-                    onChange={() => toggleZone(g)}
-                  />
-                  <span>{ZONE_GROUP_LABELS[g]}</span>
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Player controls (Brief step 14). */}
-        <button
-          type="button"
-          data-testid="play-demo"
-          className="ctl-play"
-          onClick={playDemoSpec}
-          disabled={playing || recording}
-        >
-          Play build out
-        </button>
-        <button
-          type="button"
-          data-testid="restart"
-          className="ctl-play"
-          onClick={restart}
-          disabled={playing || recording || !pbRef.current}
-        >
-          Restart
-        </button>
-
-        {/* Recorder controls (Brief step 15). Record state is red status. */}
-        {!recording ? (
-          <button
-            type="button"
-            data-testid="record"
-            className="ctl-record"
-            onClick={startRecording}
-            disabled={playing}
-          >
-            Record
-          </button>
-        ) : (
-          <button
-            type="button"
-            data-testid="stop-record"
-            className="ctl-record ctl-record-active"
-            onClick={stopRecording}
-          >
-            Stop
-          </button>
-        )}
-      </div>
-
+      {/* Save flow (PNG 04): captured, name it, save into My Patterns or discard. */}
       {pendingKeyframes && (
         <div className="save-bar" data-testid="save-bar">
+          <span className="save-bar-label">Recording captured</span>
           <label className="save-name">
-            <span>Name this pattern</span>
+            <span className="sr-only">Pattern name</span>
             <input
               type="text"
               data-testid="record-name"
               value={recordName}
-              placeholder="Build out right"
+              placeholder="Pattern name, e.g. Right-side overlap v2"
               onChange={(e) => setRecordName(e.target.value)}
             />
           </label>
-          <button type="button" data-testid="save-pattern" onClick={savePattern}>
-            Save to my patterns
+          <button
+            type="button"
+            data-testid="save-pattern"
+            onClick={savePattern}
+            disabled={saving}
+          >
+            {saving ? "Saving..." : "Save to My patterns"}
           </button>
-          <button type="button" className="ctl-ghost" onClick={discardRecording}>
+          <button type="button" className="ctl-ghost" onClick={discardRecording} disabled={saving}>
             Discard
           </button>
+          {saveError && (
+            <p role="alert" className="save-error">
+              {saveError}
+            </p>
+          )}
         </div>
       )}
 
@@ -673,9 +762,8 @@ export default function Board({ orientation, initialTokens }: BoardProps) {
           })}
         </svg>
 
-        {/* HUD over the board: red recording banner (status) and the step
-            caption. Both are set outside the per-frame path (banner via React
-            once, caption imperatively) so playback never re-renders tokens. */}
+        {/* HUD over the board: red recording banner (status, PNG 03) + step
+            caption + the floating toolbar (PNG 01-04 bottom-center pill). */}
         {recording && (
           <div className="record-banner" role="status" data-testid="record-banner">
             <span className="record-dot" aria-hidden="true" />
@@ -683,54 +771,174 @@ export default function Board({ orientation, initialTokens }: BoardProps) {
           </div>
         )}
         <div className="anim-caption" data-testid="anim-caption" ref={captionRef} aria-live="polite" />
-      </div>
 
-      <div className="lane-controls" role="group" aria-label="Lane thresholds">
-        <label className="lane-control">
-          <span>Blocking distance</span>
-          <input
-            type="range"
-            min={0}
-            max={THRESHOLD_MAX}
-            step={1}
-            value={laneState.blockingThreshold}
-            data-testid="blocking-threshold"
-            onChange={(e) => setBlocking(Number(e.target.value))}
-          />
-          <output data-testid="blocking-threshold-value">{laneState.blockingThreshold}</output>
-        </label>
-        <label className="lane-control">
-          <span>Marking distance</span>
-          <input
-            type="range"
-            min={0}
-            max={THRESHOLD_MAX}
-            step={1}
-            value={laneState.markingThreshold}
-            data-testid="marking-threshold"
-            onChange={(e) => setMarking(Number(e.target.value))}
-          />
-          <output data-testid="marking-threshold-value">{laneState.markingThreshold}</output>
-        </label>
-        <p className="lane-hint">Click two teammates to confirm a passing lane.</p>
+        {pbRef.current && !playing && !recording && (
+          <button type="button" data-testid="restart" className="restart-btn" onClick={restart}>
+            Restart
+          </button>
+        )}
+
+        <div className="board-toolbar-float" role="group" aria-label="Board tools">
+          <button
+            type="button"
+            data-testid="select-tool"
+            className="tool-btn tool-active"
+            aria-pressed="true"
+            aria-label="Select"
+            title="Select"
+            onClick={() => setPairingId(null)}
+          >
+            <IconSelect />
+          </button>
+
+          {!recording ? (
+            <button
+              type="button"
+              data-testid="record"
+              className="tool-btn"
+              aria-label="Record"
+              title="Record"
+              onClick={startRecording}
+              disabled={playing}
+            >
+              <IconRecord />
+            </button>
+          ) : (
+            <button
+              type="button"
+              data-testid="stop-record"
+              className="tool-btn tool-record-active"
+              aria-label="Stop recording"
+              title="Stop recording"
+              onClick={stopRecording}
+            >
+              <IconRecord />
+            </button>
+          )}
+
+          <button
+            type="button"
+            data-testid="play-demo"
+            className="tool-btn"
+            aria-label="Play"
+            title="Play"
+            onClick={playDemoSpec}
+            disabled={playing || recording}
+          >
+            <IconPlay />
+          </button>
+
+          <button
+            type="button"
+            data-testid="reset-board"
+            className="tool-btn"
+            aria-label="Reset positions"
+            title="Reset positions"
+            onClick={resetPositions}
+            disabled={playing || recording}
+          >
+            <IconReset />
+          </button>
+
+          <div className="view-menu">
+            <button
+              type="button"
+              data-testid="view-menu"
+              className={`tool-btn${viewMenuOpen ? " tool-active" : ""}`}
+              aria-expanded={viewMenuOpen}
+              aria-label="View menu"
+              title="View menu"
+              onClick={() => setViewMenuOpen((o) => !o)}
+            >
+              <IconMenu />
+            </button>
+          </div>
+        </div>
+
+        {/* Positioned against .board-wrap (not nested under the toolbar's own
+            .view-menu, T-030 follow-up), so its footprint is independent of
+            where the toolbar sits. Anchored above the toolbar on desktop,
+            where the wide pitch leaves the settings popover no default token
+            underneath it; pinned to the viewport's top edge on phone-width
+            viewports instead (Board.css media query), where the same
+            above-the-toolbar placement would blanket most of a narrow
+            portrait pitch (and even the toolbar itself) and make tokens
+            under it undraggable. */}
+        {viewMenuOpen && (
+          <div className="view-menu-panel" role="menu" aria-label="View settings">
+            <p className="view-menu-heading">Zones</p>
+            {ZONE_GROUPS.map((g) => (
+              <label key={g} className="view-menu-item">
+                <input
+                  type="checkbox"
+                  data-testid={`zone-toggle-${g}`}
+                  checked={zonesVisible.has(g)}
+                  onChange={() => toggleZone(g)}
+                />
+                <span>{ZONE_GROUP_LABELS[g]}</span>
+              </label>
+            ))}
+            <p className="view-menu-heading">Thresholds</p>
+            <label className="lane-control">
+              <span>Blocking distance</span>
+              <input
+                type="range"
+                min={0}
+                max={THRESHOLD_MAX}
+                step={1}
+                value={laneState.blockingThreshold}
+                data-testid="blocking-threshold"
+                onChange={(e) => setBlocking(Number(e.target.value))}
+              />
+              <output data-testid="blocking-threshold-value">{laneState.blockingThreshold}</output>
+            </label>
+            <label className="lane-control">
+              <span>Marking distance</span>
+              <input
+                type="range"
+                min={0}
+                max={THRESHOLD_MAX}
+                step={1}
+                value={laneState.markingThreshold}
+                data-testid="marking-threshold"
+                onChange={(e) => setMarking(Number(e.target.value))}
+              />
+              <output data-testid="marking-threshold-value">{laneState.markingThreshold}</output>
+            </label>
+            <p className="lane-hint">Click two teammates to confirm a passing lane.</p>
+          </div>
+        )}
       </div>
 
       {savedPatterns.length > 0 && (
         <div className="saved-patterns" data-testid="saved-patterns">
           <h2 className="saved-title">My patterns</h2>
           <ul>
-            {savedPatterns.map((pattern, i) => (
-              <li key={i} className="saved-pattern" data-testid="saved-pattern">
+            {savedPatterns.map((pattern) => (
+              <li key={pattern.id} className="saved-pattern" data-testid="saved-pattern">
                 <span className="saved-pattern-name">{pattern.name}</span>
-                <span className="saved-pattern-author">COACH</span>
+                <span className="saved-pattern-author" data-testid="saved-pattern-author">
+                  {pattern.author_label}
+                </span>
                 <button
                   type="button"
-                  data-testid={`replay-${i}`}
+                  data-testid={`replay-${pattern.id}`}
                   onClick={() => replaySaved(pattern)}
                   disabled={playing || recording}
                 >
                   Replay
                 </button>
+                {canDelete && (
+                  <button
+                    type="button"
+                    className="ctl-ghost"
+                    data-testid={`delete-pattern-${pattern.id}`}
+                    onClick={() => handleDelete(pattern.id)}
+                    disabled={deletingId === pattern.id}
+                  >
+                    {deletingId === pattern.id ? "Deleting..." : "Delete"}
+                  </button>
+                )}
               </li>
             ))}
           </ul>

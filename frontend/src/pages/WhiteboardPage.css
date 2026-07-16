@@ -1,0 +1,18 @@
+.whiteboard-page {
+  max-width: 1100px;
+}
+
+.whiteboard-loading,
+.save-status {
+  font-family: var(--body-font);
+  font-size: 12px;
+  color: var(--text-secondary);
+  min-height: 1.2em;
+  margin: 0 0 8px;
+}
+
+.whiteboard-error {
+  font-family: var(--body-font);
+  font-size: 13px;
+  color: var(--text-red, var(--red));
+}

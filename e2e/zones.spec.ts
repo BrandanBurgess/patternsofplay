@@ -2,8 +2,11 @@
 // projects (desktop landscape, iPhone 13 portrait): zones are model-space
 // geometry mapped through coords.ts, so the same toggles must work in either
 // orientation. Covers the view menu, per-group toggling, and independence.
+//
+// T-030: the whiteboard is now an authenticated page; registerCoach signs in
+// and lands on it.
 
-import { test, expect, assertCleanPage } from "./fixtures";
+import { test, expect, assertCleanPage, registerCoach } from "./fixtures";
 
 async function openViewMenu(page: import("@playwright/test").Page) {
   const btn = page.getByTestId("view-menu");
@@ -11,8 +14,7 @@ async function openViewMenu(page: import("@playwright/test").Page) {
 }
 
 test("view menu toggles each zone group independently", async ({ page, issues }) => {
-  await page.goto("/");
-  await expect(page.getByTestId("board")).toBeVisible();
+  await registerCoach(page);
 
   // Nothing is on by default (empty board, per the design README default).
   await expect(page.locator("[data-zone-group]")).toHaveCount(0);
