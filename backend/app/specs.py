@@ -126,11 +126,16 @@ class AnimationSpec(BaseModel):
 
 class Keyframe(BaseModel):
     """Doc 03 section 4.2: array of {t_ms, token_id, x, y} covering every
-    dragged token including opponents and the ball, exactly as recorded."""
+    dragged token including opponents and the ball, exactly as recorded.
+
+    t_ms is a float, not an int: the frontend recorder timestamps against
+    performance.now() (frontend/src/board/time.ts / recorder.ts), which is
+    sub-millisecond precision, and doc 03 says to "keep raw... exactly as
+    recorded" rather than round it on the way in."""
 
     model_config = ConfigDict(extra="forbid")
 
-    t_ms: int = Field(ge=0)
+    t_ms: float = Field(ge=0)
     token_id: str = Field(min_length=1)
     x: float = Field(ge=0, le=100)
     y: float = Field(ge=0, le=100)
