@@ -1,0 +1,11 @@
+{
+  "name": "patternsofplay",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "frontend"
+  ],
+  "devDependencies": {
+    "@playwright/test": "^1.61.1"
+  }
+}
