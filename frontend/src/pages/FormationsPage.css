@@ -1,0 +1,362 @@
+/* Formations page (Brief step 18, PNG 11, 19, 37-39, 43). Colors come only
+   from the theme token variables; gold (var(--accent)/var(--glow)) is the
+   only interactive/active color, red never appears here as a call to
+   action (the on-board tokens are all "home" side, gold, since a formation
+   shows one team's own shape, not an opponent). */
+
+.formations-page {
+  max-width: 1100px;
+}
+
+.formations-loading,
+.formations-error {
+  font-family: var(--body-font);
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0 0 8px;
+}
+.formations-error {
+  color: var(--text-red, var(--red));
+}
+
+.formations-stage {
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.formations-board-area {
+  position: relative;
+}
+
+/* Meta bar (PNG 37-39): formation name plus its natural identities, the
+   gold Details toggle, and the Rondo map toggle. Only Details is emphasized
+   gold; Rondo map is neutral until active, reusing Board.css's .ctl-ghost. */
+.formations-meta-bar {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  max-width: calc(100% - 20px);
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  /* The bar's own box is only as wide as its content, but flex-wrap can
+     still leave its transparent padding/gaps sitting over a keystone token
+     near the top of the pitch (portrait maps a high model-x slot, e.g. the
+     striker, up near the top edge). Only the bar's own children (title,
+     Details, Rondo map) should capture clicks; empty space passes through
+     to the board underneath. */
+  pointer-events: none;
+}
+.formations-meta-bar > * {
+  pointer-events: auto;
+}
+.formations-meta-title {
+  font-family: var(--display-font);
+  font-size: 14px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.formations-details-btn {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+  cursor: pointer;
+}
+
+/* Rondo map toggle, active state (PNG 32/36): the meta bar collapses to a
+   single gold instruction pill while zones are tappable. */
+.formations-rondo-pill {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+  cursor: pointer;
+}
+
+/* Keystone keycard / Rondo zone card (PNG 11/37 "6 -- keystone..."; PNG 32
+   "5v3 -- this zone is a rondo..."): a floating card near the bottom of the
+   pitch, one at a time. */
+.formations-card {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  max-width: 480px;
+  z-index: 4;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+.formations-card h3 {
+  margin: 0 0 6px;
+  font-family: var(--display-font);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.formations-card p {
+  margin: 0 0 6px;
+  font-family: var(--body-font);
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+.formations-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.formations-card-close {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.formations-card-kicker {
+  margin: 0 0 4px;
+  font-family: var(--display-font);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.formations-zone-patterns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.formations-pattern-chip {
+  font-family: var(--body-font);
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+/* Details panel (PNG 39): a right-hand rail on desktop, same shape as the
+   Patterns page's, listing strengths, danger areas conceded, and every
+   keystone blurb (design README: "Details (strengths, danger areas, every
+   keystone blurb)"). */
+.formations-details-panel {
+  position: absolute;
+  top: 54px;
+  right: 10px;
+  bottom: 10px;
+  width: 300px;
+  max-width: calc(100% - 20px);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px;
+  overflow-y: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+.formations-details-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.formations-details-head h3 {
+  margin: 0;
+  font-family: var(--display-font);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.formations-details-body {
+  font-family: var(--body-font);
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+.formations-details-body p {
+  margin: 0 0 8px;
+}
+.formations-details-body ul {
+  margin: 0 0 10px;
+  padding-left: 18px;
+}
+.formations-details-keystones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.formations-details-card {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+}
+.formations-details-card-title {
+  margin: 0 0 4px;
+  font-family: var(--display-font);
+  font-size: 12px;
+  color: var(--accent);
+}
+
+/* Bottom sheet (Brief step 18: "swipe-up sheet with shape thumbnails and
+   search"), same shape as the Patterns page's own sheet. */
+.formations-sheet {
+  position: relative;
+  z-index: 5;
+  margin-top: -34px;
+}
+.formations-sheet-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 999px;
+  background: var(--sidebar-bg);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.formations-sheet-grip {
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--text-secondary);
+  opacity: 0.5;
+}
+.formations-sheet-chevron {
+  font-size: 12px;
+}
+
+.formations-sheet-body {
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formations-search {
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-primary);
+  width: 100%;
+}
+.formations-search::placeholder {
+  color: var(--text-secondary);
+}
+
+.formations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+.formations-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--bg);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+.formations-tile:hover,
+.formations-tile:focus-visible {
+  border-color: var(--accent);
+}
+.formations-tile-code {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.formations-tile-name {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.formations-empty-result {
+  grid-column: 1 / -1;
+  font-family: var(--body-font);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.formations-tile-thumb {
+  width: 100%;
+  border-radius: 4px;
+  display: block;
+}
+.formations-tile-thumb-bg {
+  fill: var(--bg-stripe);
+}
+.formations-tile-thumb-token {
+  fill: var(--accent);
+  stroke: none;
+}
+
+@media (max-width: 700px) {
+  .formations-details-panel {
+    top: 54px;
+    left: 12px;
+    right: 12px;
+    bottom: auto;
+    width: auto;
+    max-width: none;
+    max-height: 60vh;
+  }
+  .formations-card {
+    left: 12px;
+    right: 12px;
+    max-width: none;
+  }
+  .formations-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    max-height: 260px;
+  }
+  .formations-meta-bar {
+    max-width: calc(100% - 20px);
+    padding: 6px 8px;
+  }
+  .formations-meta-title {
+    font-size: 12px;
+  }
+}

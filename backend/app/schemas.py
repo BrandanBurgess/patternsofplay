@@ -7,7 +7,15 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.specs import AnimationSpec, BoardSnapshot, BoardToken, ConfirmedLane, Keyframe, ZonesVisible
+from app.specs import (
+    AnimationSpec,
+    BoardSnapshot,
+    BoardToken,
+    ConfirmedLane,
+    Keyframe,
+    ModelPoint,
+    ZonesVisible,
+)
 
 RoleOnTeam = Literal["coach", "player"]
 
@@ -289,3 +297,59 @@ class CoachRosterOut(RosterOut):
     based on the caller's role_on_team, never both from one shared model."""
 
     fit_warnings: list[FitWarningOut]
+
+
+# ---------------------------------------------------------------------------
+# Formations, keystones, rondo map (doc 03 section 5, Bible 4/3G.2; Brief
+# step 18; T-032). Library-world content like LibraryItemOut above: no
+# team_id, visible to both roles, read-only to every team member.
+# ---------------------------------------------------------------------------
+
+
+class FormationPositionOut(BaseModel):
+    """One slot from Formation.positions_json (doc 03 section 5): a
+    landscape model coordinate plus the position_code the keystone lookup
+    and the board's on-token labels both key off of."""
+
+    slot: str
+    position_code: str
+    x: float
+    y: float
+
+
+class FormationKeystoneOut(BaseModel):
+    """One formation_keystones row (Bible Section 4 keystone copy): drives
+    both the on-board pulsing keycard (tap the token at this slot) and the
+    Details panel's "every keystone blurb" list (Brief step 18 DoD)."""
+
+    slot: str
+    title: str
+    blurb: str
+
+
+class RondoZoneOut(BaseModel):
+    """One rondo_zones row (Bible 3G.2): a tappable zone on the Rondo Map,
+    naming which rondo lives there and which library patterns it trains."""
+
+    zone_key: str
+    rondo_name: str
+    teaches: str
+    polygon: list[ModelPoint]
+    trains_pattern_codes: list[str]
+
+
+class FormationOut(BaseModel):
+    """GET /api/formations. Keystones and rondo zones are embedded per
+    formation (not separate endpoints): the Formations page's browse sheet
+    needs every preset's full detail up front, the same one-round-trip
+    shape the Patterns page's listLibraryItems already follows."""
+
+    code: str
+    name: str
+    shape_blurb: str
+    strengths: list[str]
+    vulnerabilities: list[str]
+    natural_identities: list[str]
+    positions: list[FormationPositionOut]
+    keystones: list[FormationKeystoneOut]
+    rondo_zones: list[RondoZoneOut]
