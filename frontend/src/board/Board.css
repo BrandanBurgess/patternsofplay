@@ -1,0 +1,51 @@
+/* Board styling. Colors come only from the T-002 theme token variables.
+   No hardcoded colors, no layout thrash during drag. */
+
+.board-wrap {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  background: var(--bg-stripe);
+  border: 1px solid var(--surface);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.board-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* the whole board is a drag surface: never let touch scroll steal the gesture */
+  touch-action: none;
+  user-select: none;
+}
+
+.token {
+  cursor: grab;
+  touch-action: none;
+}
+
+.token-active {
+  cursor: grabbing;
+}
+
+.token-face {
+  stroke-width: 3;
+  transition: none; /* transforms are driven per frame; no CSS transition lag */
+}
+
+.token-ball .token-face {
+  /* gold glow on the ball (design README: glowing gold dot) */
+  filter: drop-shadow(0 0 6px var(--glow));
+  stroke: none;
+}
+
+.token-active .token-face {
+  filter: drop-shadow(0 0 5px var(--accent));
+}
+
+.token-label {
+  font-family: var(--display-font);
+  font-weight: 600;
+  pointer-events: none;
+}

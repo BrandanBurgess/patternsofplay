@@ -32,3 +32,29 @@
   color: var(--text-secondary);
   font-size: 13px;
 }
+
+/* Temporary board frame until the whiteboard page proper lands in T-030. */
+.whiteboard-dev {
+  margin-top: 16px;
+}
+
+.board-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.board-toolbar button {
+  font: inherit;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+}
+
+.board-toolbar span {
+  color: var(--text-secondary);
+}
