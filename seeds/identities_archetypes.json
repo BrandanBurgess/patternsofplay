@@ -1,0 +1,157 @@
+{
+  "content_version": "1.0.0",
+  "table": "identities",
+  "kind": "style_archetype",
+  "items": [
+    {
+      "code": "positional_possession",
+      "name": "Positional Possession",
+      "tag_line": "Keep the ball to control the game, moving the opponent's shape until it breaks.",
+      "formation_code": "433",
+      "core_idea": "Keep the ball to control the game, move the opponent's shape until it breaks, and counterpress instantly on loss so the opponent never transitions. Build-up is short from the goalkeeper. The transition rule is a five-second swarm the moment the ball is lost. Player demands: passing range and positional discipline throughout, built around a true single pivot. Risk profile: vulnerable to elite counters if rest defence is sloppy.",
+      "signature_pattern_codes": ["B5", "A5", "B3"],
+      "keystone_roles_json": [
+        "sweeper_keeper", "ball_playing_cb", "overlapping_fb", "inverted_fb",
+        "single_pivot", "advanced_8", "false_9", "inside_forward", "touchline_winger"
+      ],
+      "youth_takeaway": "Teach the team to occupy zones and form triangles, and the free man appears from structure, not from individual talent.",
+      "block": "high",
+      "pass_risk_json": {
+        "encouraged": ["Short circulation", "line-breakers into feet", "F7 slide-rule through balls", "prepared B3 switches", "F1 cutbacks"],
+        "tolerated": ["Chips and reverse passes in the final third"],
+        "discouraged": ["Hopeful long balls", "unprepared long diagonals", "crossing for volume"],
+        "tempo_rule": "Slow-slow-fast: circulate patiently, and accelerate only through the gaps that open."
+      },
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:5.1",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "counter_attack_pace",
+      "name": "Counter-Attack Pace",
+      "tag_line": "Concede the ball on purpose, defend compactly, and win it back to attack in under ten seconds.",
+      "formation_code": "4231",
+      "core_idea": "Concede the ball on purpose, defend a compact mid-to-low block, and win it to go for the throat in under ten seconds. Build-up is direct and vertical with minimal passes. The transition rule: win it, then the first pass goes forward with at least two runners. Player demands: elite pace in the front three, a destroyer at six, and a transition ten. Risk profile: struggles to create when forced to hold the ball, since an organised opponent can simply park instead.",
+      "signature_pattern_codes": ["C1"],
+      "keystone_roles_json": [
+        "traditional_shot_stopper", "stopper_cb", "covering_cb", "defensive_fb",
+        "overlapping_fb", "anchor_destroyer", "classic_10", "wide_forward", "runner_in_behind"
+      ],
+      "youth_takeaway": "A team does not need the ball to be dangerous: know exactly who sprints and where the instant it is won back.",
+      "block": "mid",
+      "pass_risk_json": {
+        "encouraged": ["First pass forward", "F8 ball over the top", "F7 slide-rule through balls", "F2 early crosses"],
+        "tolerated": ["F13 channel balls to relieve pressure"],
+        "discouraged": ["Slow lateral circulation in transition, wasting the regain"],
+        "tempo_rule": "Fast on the regain, inside ten seconds; calm reset if the window closes."
+      },
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:5.2",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "gegenpress",
+      "name": "Gegenpress / High-Intensity",
+      "tag_line": "Suffocate opponents high up the pitch and score before they can reset.",
+      "formation_code": "433",
+      "core_idea": "The press is the playmaker: suffocate opponents high, win the ball thirty metres from goal, and score before they reset. Build-up is fast and forward, comfortable going direct to skip the press phase. The transition rule works both ways: counterpress on loss, instant vertical play on regain. Player demands: a high pressing engine across the front six, high work rate both ways, a high-line centre back pairing with recovery pace, and a sweeper keeper. Risk profile: physically brutal, and one broken press line means a one-against-one with the goalkeeper.",
+      "signature_pattern_codes": ["D1", "C1", "A1"],
+      "keystone_roles_json": [
+        "sweeper_keeper", "covering_cb", "overlapping_fb", "anchor_destroyer",
+        "box_to_box_8", "false_9", "inside_forward"
+      ],
+      "youth_takeaway": "Effort can be a system, not just a vibe: pressing has choreography, with curved runs and triggers, that can be trained like a passing drill.",
+      "block": "high",
+      "pass_risk_json": {
+        "encouraged": ["Vertical ground passes", "F3 driven crosses", "quick F7 through balls after regains"],
+        "tolerated": ["Direct F8 to skip a press phase"],
+        "discouraged": ["Square or back passes under no pressure"],
+        "tempo_rule": "Always forward-first: possession is a means, not a target to protect."
+      },
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:5.3",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "low_block_counter",
+      "name": "Low-Block Counter",
+      "tag_line": "Two disciplined banks with zero space between the lines, then release a sprinter into open grass.",
+      "formation_code": "541",
+      "core_idea": "Two banks, zero space between the lines, total positional discipline, then release one or two sprinters into sixty metres of grass. Player demands: discipline everywhere, an outlet striker, and at least one game-breaking runner. Risk profile: thin margins, where one set-piece concession can end the game plan.",
+      "signature_pattern_codes": ["C1", "C2"],
+      "keystone_roles_json": [
+        "traditional_shot_stopper", "stopper_cb", "covering_cb", "wingback",
+        "anchor_destroyer", "box_to_box_8", "target_man", "runner_in_behind"
+      ],
+      "youth_takeaway": "Defending deep is a plan, not a surrender: never send a block out without an outlet to break with.",
+      "block": "low",
+      "pass_risk_json": {
+        "encouraged": ["F13 channel outlets", "long clearances to the target", "F8 over the top when sprung"],
+        "tolerated": ["Anything that gains ten seconds of rest for the block"],
+        "discouraged": ["Risky short build-up near your own box"],
+        "tempo_rule": "Two speeds only: dead slow with the ball to kill tempo, and maximal on the break."
+      },
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:5.4",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "direct_second_ball",
+      "name": "Direct & Second Ball",
+      "tag_line": "Go long to a target early and structure the team around winning the second ball.",
+      "formation_code": "442",
+      "core_idea": "Play the percentages: go long to a target early, structure the team to win the second ball, and camp in the opponent's half. The approach is aggressive, physical, and front-foot, with a mid block that counterpresses second balls hard. Player demands: a target man, aerial eights, and pressing engine everywhere. Risk profile: low control, and vulnerable to a calm build-up team if the first press wave misses.",
+      "signature_pattern_codes": ["C2", "A4", "D1"],
+      "keystone_roles_json": [
+        "traditional_shot_stopper", "stopper_cb", "defensive_fb",
+        "box_to_box_8", "touchline_winger", "target_man", "second_striker"
+      ],
+      "youth_takeaway": "Winning the loose ball after a long pass is a team job that can be organised and drilled, not left to chance.",
+      "block": "mid",
+      "pass_risk_json": {
+        "encouraged": ["F13 channel balls", "long diagonals to the target", "F4 floated crosses", "forward throw-ins"],
+        "tolerated": ["F2 early crosses"],
+        "discouraged": ["Short goalkeeper build-up", "pivot-drop patterns"],
+        "tempo_rule": "High constant tempo: the ball goes forward, or it goes long."
+      },
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:5.5",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "hybrid_transition_control",
+      "name": "Hybrid / Transition Control",
+      "tag_line": "Comfortable in possession and in a defensive block, switching approach by opponent and game state.",
+      "formation_code": "4231",
+      "core_idea": "The modern winner's profile: comfortable in possession and in a block, choosing an approach per opponent and per game state. Baseline is a solid mid-block plus elite transitions, with the ball held to kill games when needed. Player demands: tactical intelligence over any single physical trait, and versatile roles, such as a ten who defends or a defensive fullback opposite an attacking one. Realistically the sanest default identity for a youth team.",
+      "signature_pattern_codes": ["B5", "C1", "A4", "B3"],
+      "keystone_roles_json": [
+        "stopper_cb", "covering_cb", "defensive_fb", "overlapping_fb",
+        "anchor_destroyer", "classic_10", "second_striker", "target_man"
+      ],
+      "youth_takeaway": "Teams do not have to pick a single lane: the sanest identity for most youth sides is one that can do both.",
+      "block": "mid",
+      "pass_risk_json": {
+        "encouraged": ["The possession menu when controlling the game", "the counter menu on transition"],
+        "tolerated": ["Everything, situationally"],
+        "discouraged": ["Nothing categorically: decision quality is the graded skill"],
+        "tempo_rule": "Game-state driven: winning uses the possession menu, chasing uses the counter menu."
+      },
+      "shape_render": "details_only",
+      "signature_animation_spec_json": null,
+      "static_shape_json": null,
+      "source_ref": "bible:5.6",
+      "content_version": "1.0.0"
+    }
+  ]
+}

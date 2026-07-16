@@ -9,12 +9,12 @@ Model: sonnet default; opus = hard ticket, never downgrade.
 | T-002 | Design tokens: 3 themes as CSS vars on html[data-theme], Oswald+Inter, switcher | 2 | screens | sonnet | T-001 | T-003, T-004 | done |
 | T-003 | Auth + teams: register, roles, team create, join code, join flow, minimal token-styled screens (Brief §8: invent nothing) | 3 | platform | sonnet | T-001 | T-002 | done |
 | T-004 | Scoped query layer + full schema from doc 03 + Alembic chain from zero + cross-team read test returns nothing | 4, 5 | platform | sonnet | T-001 | T-002 | done |
-| T-010 | Seed files: transcribe Bible per doc 03 §4-6 (12 patterns, 8 deliveries, 3 rotations, 6 formations+keystones, rondo 5 zones, 6 archetypes+pass-risk, 4 animated + 2 static ref teams, detail-only slots, cult corner, roles, synergies) | 6 | content-seeder | sonnet | T-004 | T-020 | doing |
+| T-010 | Seed files: transcribe Bible per doc 03 §4-6 (12 patterns, 8 deliveries, 3 rotations, 6 formations+keystones, rondo 5 zones, 6 archetypes+pass-risk, 4 animated + 2 static ref teams, detail-only slots, cult corner, roles, synergies) | 6 | content-seeder | sonnet | T-004 | T-020 | pr |
 | T-011 | Em-dash transform pass + CI copy scan + seed validator (required fields, blurb ≤25 words, banned identity phrases, slot refs resolve) | 7, 8 | content-seeder | sonnet | T-010 | T-020 | todo |
 | T-020 | Board core: pitch canvas, landscape model coords, token drag 60fps @23 tokens, portrait mapping (left=y, top=100-x) with lossless round-trip unit test FIRST | 9, 10 | board-engineer | opus | T-001 | T-010 | done |
 | T-021 | Lane graph: suggested/confirmed/blocked states, two independent thresholds, live recompute during drag, interception dot | 11, 12 | board-engineer | opus | T-020 | T-011 | done |
-| T-022 | Zones + animation player (declarative specs AND raw keyframes, ball waypoints chase bound player) + recorder (all tokens incl. opponents + ball) | 13, 14, 15 | board-engineer | opus | T-021 | none | pr |
-| T-030 | Whiteboard page (PNG 01-05, 14, 34): toolbar, view menu, record/save into My Patterns | 16 | screens | sonnet | T-022, T-004 | T-031 | todo |
+| T-022 | Zones + animation player (declarative specs AND raw keyframes, ball waypoints chase bound player) + recorder (all tokens incl. opponents + ball) | 13, 14, 15 | board-engineer | opus | T-021 | none | done |
+| T-030 | Whiteboard page (PNG 01-05, 14, 34): toolbar, view menu, record/save into My Patterns | 16 | screens | sonnet | T-022, T-004 | T-031 | doing |
 | T-031 | Patterns page (PNG 05-10, 29-31, 15-18, 35): sheet w/ 3 libraries, chips, search, meta bar, details panels | 17 | screens | sonnet | T-022, T-011 | T-030 | todo |
 | T-032 | Formations page (PNG 11, 19, 37-39, 43) + keystone pulse/keycards + Rondo Map (PNG 32, 36) | 18 | screens | sonnet | T-031 | T-033 | todo |
 | T-033 | Roster page (PNG 12, 20): CRUD, chips, 6 sliders, double-exposure warning coach-only | 19 | screens | sonnet | T-004, T-011 | T-032 | todo |

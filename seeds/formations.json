@@ -1,0 +1,180 @@
+{
+  "content_version": "1.0.0",
+  "table": "formations",
+  "items": [
+    {
+      "code": "433",
+      "name": "4-3-3",
+      "shape_blurb": "A back four with a single pivot behind two eights, and a striker flanked by two wide forwards.",
+      "strengths_json": [
+        "Natural triangles everywhere, built for wide overloads, third-man play, and a high press.",
+        "The default vehicle of positional-play identities."
+      ],
+      "vulnerabilities_json": [
+        "The space beside the single pivot: a diamond or a ten drifting into the half-space attacks where the lone six cannot reach.",
+        "Counters through the space behind attacking fullbacks."
+      ],
+      "natural_identities": ["positional_possession", "gegenpress"],
+      "positions_json": [
+        {"slot": "gk", "position_code": "GK", "x": 5, "y": 50},
+        {"slot": "cb_l", "position_code": "CB", "x": 20, "y": 35},
+        {"slot": "cb_r", "position_code": "CB", "x": 20, "y": 65},
+        {"slot": "fb_l", "position_code": "FB", "x": 22, "y": 12},
+        {"slot": "fb_r", "position_code": "FB", "x": 22, "y": 88},
+        {"slot": "six", "position_code": "DM", "x": 42, "y": 50},
+        {"slot": "eight_l", "position_code": "CM", "x": 55, "y": 30},
+        {"slot": "eight_r", "position_code": "CM", "x": 55, "y": 70},
+        {"slot": "w_l", "position_code": "W", "x": 78, "y": 15},
+        {"slot": "st", "position_code": "ST", "x": 85, "y": 50},
+        {"slot": "w_r", "position_code": "W", "x": 78, "y": 85}
+      ],
+      "source_ref": "bible:4.1",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "4231",
+      "name": "4-2-3-1",
+      "shape_blurb": "A back four with a double pivot, and a ten flanked by two wingers behind a lone nine.",
+      "strengths_json": [
+        "The most balanced modern shape: the double pivot gives counter-security and two build-up outlets.",
+        "The ten gets a protected creative station, and the shape converts cleanly to a 4-4-2 mid-block without the ball."
+      ],
+      "vulnerabilities_json": [
+        "The sides of the double pivot, in the half-spaces in front of the fullbacks.",
+        "A lone nine can get isolated if the ten and wingers do not support quickly."
+      ],
+      "natural_identities": ["counter_attack_pace", "gegenpress", "hybrid_transition_control"],
+      "positions_json": [
+        {"slot": "gk", "position_code": "GK", "x": 5, "y": 50},
+        {"slot": "cb_l", "position_code": "CB", "x": 20, "y": 35},
+        {"slot": "cb_r", "position_code": "CB", "x": 20, "y": 65},
+        {"slot": "fb_l", "position_code": "FB", "x": 22, "y": 12},
+        {"slot": "fb_r", "position_code": "FB", "x": 22, "y": 88},
+        {"slot": "dm_l", "position_code": "DM", "x": 38, "y": 40},
+        {"slot": "dm_r", "position_code": "DM", "x": 38, "y": 60},
+        {"slot": "am", "position_code": "AM", "x": 60, "y": 50},
+        {"slot": "w_l", "position_code": "W", "x": 72, "y": 15},
+        {"slot": "w_r", "position_code": "W", "x": 72, "y": 85},
+        {"slot": "st", "position_code": "ST", "x": 85, "y": 50}
+      ],
+      "source_ref": "bible:4.2",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "442",
+      "name": "4-4-2 (flat)",
+      "shape_blurb": "Two banks of four, and two strikers permanently occupying both centre backs.",
+      "strengths_json": [
+        "Simplest to teach, and the gold standard defensive shape: compact, with clear zones and jobs.",
+        "Two strikers permanently occupy both centre backs, ideal for counters and second balls."
+      ],
+      "vulnerabilities_json": [
+        "Outnumbered two against three in central midfield versus any three-man midfield.",
+        "The space between the lines behind the midfield four, Zone 14, if the banks stretch apart."
+      ],
+      "natural_identities": ["low_block_counter", "direct_second_ball"],
+      "positions_json": [
+        {"slot": "gk", "position_code": "GK", "x": 5, "y": 50},
+        {"slot": "cb_l", "position_code": "CB", "x": 20, "y": 35},
+        {"slot": "cb_r", "position_code": "CB", "x": 20, "y": 65},
+        {"slot": "fb_l", "position_code": "FB", "x": 22, "y": 12},
+        {"slot": "fb_r", "position_code": "FB", "x": 22, "y": 88},
+        {"slot": "wm_l", "position_code": "W", "x": 50, "y": 15},
+        {"slot": "cm_l", "position_code": "CM", "x": 50, "y": 38},
+        {"slot": "cm_r", "position_code": "CM", "x": 50, "y": 62},
+        {"slot": "wm_r", "position_code": "W", "x": 50, "y": 85},
+        {"slot": "st_l", "position_code": "ST", "x": 80, "y": 40},
+        {"slot": "st_r", "position_code": "ST", "x": 80, "y": 60}
+      ],
+      "source_ref": "bible:4.3",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "352",
+      "name": "3-5-2",
+      "shape_blurb": "Three centre backs, two wingbacks owning the flanks, three central midfielders, and two strikers.",
+      "strengths_json": [
+        "Central overload of three midfielders plus two strikers, plus a spare centre back in build-up.",
+        "Wingbacks give width without sacrificing back-line numbers."
+      ],
+      "vulnerabilities_json": [
+        "The space behind the wingbacks is the formation's known weakness.",
+        "Wide centre backs get dragged into unfamiliar one-against-ones in the channels."
+      ],
+      "natural_identities": ["counter_attack_pace", "positional_possession"],
+      "positions_json": [
+        {"slot": "gk", "position_code": "GK", "x": 5, "y": 50},
+        {"slot": "cb_l", "position_code": "CB", "x": 20, "y": 25},
+        {"slot": "cb_c", "position_code": "CB", "x": 18, "y": 50},
+        {"slot": "cb_r", "position_code": "CB", "x": 20, "y": 75},
+        {"slot": "wb_l", "position_code": "WB", "x": 35, "y": 10},
+        {"slot": "wb_r", "position_code": "WB", "x": 35, "y": 90},
+        {"slot": "cm_l", "position_code": "CM", "x": 50, "y": 35},
+        {"slot": "cm_c", "position_code": "CM", "x": 48, "y": 50},
+        {"slot": "cm_r", "position_code": "CM", "x": 50, "y": 65},
+        {"slot": "st_l", "position_code": "ST", "x": 82, "y": 40},
+        {"slot": "st_r", "position_code": "ST", "x": 82, "y": 60}
+      ],
+      "source_ref": "bible:4.4",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "343",
+      "name": "3-4-3",
+      "shape_blurb": "Three centre backs, two wingbacks, two central midfielders, and a front three.",
+      "strengths_json": [
+        "Ferocious in the press: the front three plus wingbacks jumping means five pressers.",
+        "Wide overloads from wingback and wide forward pairs, plus a spare man in build-up."
+      ],
+      "vulnerabilities_json": [
+        "Only two central midfielders, so a three-man midfield can overrun them.",
+        "The same behind-the-wingbacks exposure as 3-5-2."
+      ],
+      "natural_identities": ["gegenpress", "hybrid_transition_control"],
+      "positions_json": [
+        {"slot": "gk", "position_code": "GK", "x": 5, "y": 50},
+        {"slot": "cb_l", "position_code": "CB", "x": 20, "y": 25},
+        {"slot": "cb_c", "position_code": "CB", "x": 18, "y": 50},
+        {"slot": "cb_r", "position_code": "CB", "x": 20, "y": 75},
+        {"slot": "wb_l", "position_code": "WB", "x": 40, "y": 10},
+        {"slot": "wb_r", "position_code": "WB", "x": 40, "y": 90},
+        {"slot": "cm_l", "position_code": "CM", "x": 50, "y": 38},
+        {"slot": "cm_r", "position_code": "CM", "x": 50, "y": 62},
+        {"slot": "w_l", "position_code": "W", "x": 78, "y": 15},
+        {"slot": "st", "position_code": "ST", "x": 85, "y": 50},
+        {"slot": "w_r", "position_code": "W", "x": 78, "y": 85}
+      ],
+      "source_ref": "bible:4.5",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "541",
+      "name": "5-4-1 / 5-3-2",
+      "shape_blurb": "A back five, a midfield four or three, and a lone striker or two, the low-block reference shape.",
+      "strengths_json": [
+        "The park-the-bus reference shape: covers the full width of the box with five defenders.",
+        "Kills crosses and cutbacks, funnelling everything into low-value long shots."
+      ],
+      "vulnerabilities_json": [
+        "Almost no possession relief: without a functioning outlet the block faces ninety minutes of siege.",
+        "Second balls around the box become constant emergencies."
+      ],
+      "natural_identities": ["low_block_counter"],
+      "positions_json": [
+        {"slot": "gk", "position_code": "GK", "x": 5, "y": 50},
+        {"slot": "wb_l", "position_code": "WB", "x": 20, "y": 8},
+        {"slot": "cb_l", "position_code": "CB", "x": 15, "y": 28},
+        {"slot": "cb_c", "position_code": "CB", "x": 13, "y": 50},
+        {"slot": "cb_r", "position_code": "CB", "x": 15, "y": 72},
+        {"slot": "wb_r", "position_code": "WB", "x": 20, "y": 92},
+        {"slot": "cm_l", "position_code": "CM", "x": 45, "y": 25},
+        {"slot": "cm_cl", "position_code": "CM", "x": 43, "y": 42},
+        {"slot": "cm_cr", "position_code": "CM", "x": 43, "y": 58},
+        {"slot": "cm_r", "position_code": "CM", "x": 45, "y": 75},
+        {"slot": "st", "position_code": "ST", "x": 80, "y": 50}
+      ],
+      "source_ref": "bible:4.6",
+      "content_version": "1.0.0"
+    }
+  ]
+}

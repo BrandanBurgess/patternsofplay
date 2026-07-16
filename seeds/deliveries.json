@@ -1,0 +1,247 @@
+{
+  "content_version": "1.0.0",
+  "table": "library_items",
+  "item_type": "delivery",
+  "items": [
+    {
+      "code": "F1",
+      "name": "Byline Cutback",
+      "category": "crossing",
+      "blurb": "Reach the byline and pull the ball back low to the penalty spot against defenders facing their own goal.",
+      "when_to_use": "Best against a set low block, since defenders must turn to face their own goal to defend it.",
+      "coaching_points_json": [
+        "Statistically the highest value delivery in football: send one runner to the spot and one late to the edge.",
+        "Cross into the corridor, not to a man, so the runner's job is to meet it."
+      ],
+      "youth_takeaway": "The simplest cross is often the best one: pull it back low and let the runner arrive.",
+      "age_hint": "U9+",
+      "roles_involved": ["overlapping_fb", "touchline_winger", "poacher"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "crosser", "role_hint": "FB", "start": {"x": 95, "y": 92}},
+          {"slot": "runner_spot", "role_hint": "ST", "start": {"x": 75, "y": 50}},
+          {"slot": "runner_edge", "role_hint": "CM", "start": {"x": 65, "y": 60}}
+        ],
+        "ball": {"holder_slot": "crosser"},
+        "steps": [
+          {"n": 1, "caption": "The crosser reaches the byline before delivering.", "moves": []},
+          {"n": 2, "caption": "The ball is pulled back low to the penalty spot for the arriving runner.",
+           "moves": [], "ball_to": {"bind_slot": "runner_spot", "trajectory": "ground"}}
+        ],
+        "loop": false
+      },
+      "extras_json": {"trajectory": "ground", "delivery_zone": "byline", "target_corridor": "cutback_zone"},
+      "source_ref": "bible:3F.F1",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "F2",
+      "name": "Whipped Early Cross",
+      "category": "crossing",
+      "blurb": "Hit early from deep or wide with pace, curled into the corridor between the keeper and a retreating back line.",
+      "when_to_use": "Against a defence retreating at speed, since a defender facing his own goal cannot set his feet.",
+      "coaching_points_json": [
+        "No touch should be needed: the runner's movement alone should meet the ball.",
+        "A half beat early beats a perfect ball delivered late."
+      ],
+      "youth_takeaway": "Speed of delivery matters as much as accuracy: beat the defence back before it can reorganise.",
+      "age_hint": "U13+",
+      "roles_involved": ["overlapping_fb", "touchline_winger"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "crosser", "role_hint": "FB", "start": {"x": 70, "y": 90}},
+          {"slot": "runner", "role_hint": "W", "start": {"x": 80, "y": 50}}
+        ],
+        "ball": {"holder_slot": "crosser"},
+        "steps": [
+          {"n": 1, "caption": "The ball is struck before the defensive block can set.", "moves": []},
+          {"n": 2, "caption": "Curled with pace into the corridor between the keeper and the retreating line.",
+           "moves": [], "ball_to": {"bind_slot": "runner", "trajectory": "whipped"}}
+        ],
+        "loop": false
+      },
+      "extras_json": {"trajectory": "whipped", "delivery_zone": "wide_early", "target_corridor": "corridor_of_uncertainty"},
+      "source_ref": "bible:3F.F2",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "F3",
+      "name": "Low Driven Cross / Flash Ball",
+      "category": "crossing",
+      "blurb": "A flat, hard ball is driven across the six-yard box so nobody needs to win a header, only make contact.",
+      "when_to_use": "Fits pressing and vertical identities, since even a missed touch becomes a live second ball.",
+      "coaching_points_json": [
+        "Weight the ball so any contact redirects it goal-ward.",
+        "Runners arrive at pace and never stand waiting for it."
+      ],
+      "youth_takeaway": "A hard, flat cross turns a difficult header into an easy touch.",
+      "age_hint": "U11+",
+      "roles_involved": ["inside_forward", "wide_forward"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "crosser", "role_hint": "W", "start": {"x": 82, "y": 70}},
+          {"slot": "runner", "role_hint": "ST", "start": {"x": 80, "y": 30}}
+        ],
+        "ball": {"holder_slot": "crosser"},
+        "steps": [
+          {"n": 1, "caption": "The ball is struck flat and hard across the six-yard box.",
+           "moves": [], "ball_to": {"bind_slot": "runner", "trajectory": "driven"}}
+        ],
+        "loop": false
+      },
+      "extras_json": {"trajectory": "driven", "delivery_zone": "half_space", "target_corridor": "near_post"},
+      "source_ref": "bible:3F.F3",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "F4",
+      "name": "Floated Back-Post Cross",
+      "category": "crossing",
+      "blurb": "The ball is hung up high toward the far post for an aerial mismatch or a ghosting late arrival.",
+      "when_to_use": "When there is an aerial mismatch to isolate away from the goalkeeper, or a ghosting run to exploit.",
+      "coaching_points_json": [
+        "Aim for the far-post corridor, beyond the far centre back's vision.",
+        "Pairs naturally with a target man and a big-and-little strike partnership."
+      ],
+      "youth_takeaway": "Not every cross should go to the near post: the far post is often unguarded.",
+      "age_hint": "U11+",
+      "roles_involved": ["target_man", "raumdeuter", "wingback"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "crosser", "role_hint": "W", "start": {"x": 78, "y": 15}},
+          {"slot": "runner", "role_hint": "ST", "start": {"x": 82, "y": 85}}
+        ],
+        "ball": {"holder_slot": "crosser"},
+        "steps": [
+          {"n": 1, "caption": "The ball is floated up and toward the far post.",
+           "moves": [], "ball_to": {"bind_slot": "runner", "trajectory": "floated"}}
+        ],
+        "loop": false
+      },
+      "extras_json": {"trajectory": "floated", "delivery_zone": "deep", "target_corridor": "back_post"},
+      "source_ref": "bible:3F.F4",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "F5",
+      "name": "In-swinger vs Out-swinger",
+      "category": "crossing",
+      "blurb": "An inverted player curls the cross in toward goal, while a natural-side player curls it away and safer for headers.",
+      "when_to_use": "Read from the crosser's preferred foot and side, a coaching detail already sitting in the roster data.",
+      "coaching_points_json": [
+        "An in-swinger is attackable in stride but risks the keeper claiming it.",
+        "An out-swinger curls away from goal, safer for the keeper but ideal for arriving headers."
+      ],
+      "youth_takeaway": "Which foot a player favours changes what kind of cross they should hit from each side.",
+      "age_hint": "U13+",
+      "roles_involved": ["inside_forward", "touchline_winger"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "crosser", "role_hint": "W", "start": {"x": 80, "y": 15}},
+          {"slot": "runner", "role_hint": "ST", "start": {"x": 80, "y": 50}}
+        ],
+        "ball": {"holder_slot": "crosser"},
+        "steps": [
+          {"n": 1, "caption": "An inverted crosser curls the ball in toward goal, dangerous but attackable in stride.",
+           "moves": [], "ball_to": {"bind_slot": "runner", "trajectory": "whipped"}}
+        ],
+        "loop": false
+      },
+      "extras_json": {
+        "trajectory": "whipped",
+        "delivery_zone": "wide_early",
+        "target_corridor": "near_post",
+        "footedness_rule": "An inverted crosser (opposite foot to side) delivers in-swinging; a natural-side crosser delivers out-swinging. Card copy only, no automatic logic in this build."
+      },
+      "source_ref": "bible:3F.F5",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "F6",
+      "name": "Deep Diagonal Cross",
+      "category": "crossing",
+      "blurb": "A switch of play is aimed directly into the box rather than to feet, for a far-post winger or wingback.",
+      "when_to_use": "The home of back-three identities, where a far-side wingback attacks the ball directly.",
+      "coaching_points_json": [
+        "This is a switch of play aimed at the box, not at feet.",
+        "The far-side runner must already be moving to attack the ball in the air."
+      ],
+      "youth_takeaway": "A switch does not have to land at feet: sometimes the best target is the box itself.",
+      "age_hint": "U13+",
+      "roles_involved": ["ball_playing_cb", "wingback"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "switcher", "role_hint": "CB", "start": {"x": 40, "y": 30}},
+          {"slot": "runner", "role_hint": "WB", "start": {"x": 82, "y": 88}}
+        ],
+        "ball": {"holder_slot": "switcher"},
+        "steps": [
+          {"n": 1, "caption": "A long diagonal switch is aimed directly into the box rather than to feet.",
+           "moves": [], "ball_to": {"bind_slot": "runner", "trajectory": "floated"}}
+        ],
+        "loop": false
+      },
+      "extras_json": {"trajectory": "floated", "delivery_zone": "deep", "target_corridor": "back_post"},
+      "source_ref": "bible:3F.F6",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "F7",
+      "name": "Slide-Rule Through Ball",
+      "category": "through_ball",
+      "blurb": "A flat ball is threaded into the channel between fullback and centre back, weighted to the runner's stride.",
+      "when_to_use": "The bread and butter of the feeder and finisher pairing, needing real passing range from the passer.",
+      "coaching_points_json": [
+        "Weight the ball to the runner's stride, not to a fixed spot.",
+        "The runner times his run off the passer's body shape, not the ball's release."
+      ],
+      "youth_takeaway": "A perfectly weighted pass into space is worth more than a perfectly weighted pass to feet.",
+      "age_hint": "U11+",
+      "roles_involved": ["classic_10", "runner_in_behind"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "passer", "role_hint": "AM", "start": {"x": 55, "y": 50}},
+          {"slot": "runner", "role_hint": "ST", "start": {"x": 70, "y": 65}}
+        ],
+        "ball": {"holder_slot": "passer"},
+        "steps": [
+          {"n": 1, "caption": "A flat pass is threaded into the channel between fullback and centre back.",
+           "moves": [], "ball_to": {"bind_slot": "runner", "trajectory": "ground"}}
+        ],
+        "loop": false
+      },
+      "extras_json": {"trajectory": "ground", "delivery_zone": "half_space", "target_corridor": "channel"},
+      "source_ref": "bible:3F.F7",
+      "content_version": "1.0.0"
+    },
+    {
+      "code": "F8",
+      "name": "Ball Over the Top",
+      "category": "through_ball",
+      "blurb": "An aerial ball is clipped over a high defensive line into space, the counter identity's forty-yard dagger.",
+      "when_to_use": "The punishment for a bad press, and the counter identity's signature long-range weapon.",
+      "coaching_points_json": [
+        "The pass must be airborne before the defensive shape has turned to face it.",
+        "The runner's timing beats the defender's recovery pace, not the other way around."
+      ],
+      "youth_takeaway": "A ball played early into space beats a ball played late to a marked player.",
+      "age_hint": "U11+",
+      "roles_involved": ["single_pivot", "runner_in_behind", "wide_forward"],
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "passer", "role_hint": "DM", "start": {"x": 40, "y": 50}},
+          {"slot": "runner", "role_hint": "ST", "start": {"x": 75, "y": 55}}
+        ],
+        "ball": {"holder_slot": "passer"},
+        "steps": [
+          {"n": 1, "caption": "The ball is clipped high over the defensive line before the back line's shape can turn.",
+           "moves": [], "ball_to": {"bind_slot": "runner", "trajectory": "clipped"}}
+        ],
+        "loop": false
+      },
+      "extras_json": {"trajectory": "clipped", "delivery_zone": "deep", "target_corridor": "channel"},
+      "source_ref": "bible:3F.F8",
+      "content_version": "1.0.0"
+    }
+  ]
+}
