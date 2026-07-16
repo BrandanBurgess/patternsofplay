@@ -19,6 +19,7 @@ import importlib.util
 import json
 import pathlib
 import re
+import subprocess
 import sys
 
 import pytest
@@ -44,6 +45,23 @@ IDENTITY_FILES = [
     "identities_reference_teams.json",
     "identities_cult_corner.json",
 ]
+
+
+def test_validate_seeds_script_passes() -> None:
+    """T-011: shells the real CI gate (scripts/validate_seeds.py, also run
+    by `make check-copy`) so a validator regression fails `make test` too,
+    not only CI. This is deliberately a subprocess call rather than an
+    import: it proves the script's own __main__ entry point and exit code
+    behave correctly, which an import of its functions would not."""
+    result = subprocess.run(
+        [sys.executable, str(REPO_ROOT / "scripts" / "validate_seeds.py")],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, (
+        f"scripts/validate_seeds.py exited {result.returncode}:\n{result.stdout}\n{result.stderr}"
+    )
+    assert "all checks passed" in result.stdout
 
 
 def test_seeds_directory_has_every_file_the_ticket_inventory_requires() -> None:
