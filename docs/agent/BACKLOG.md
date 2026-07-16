@@ -11,8 +11,8 @@ Model: sonnet default; opus = hard ticket, never downgrade.
 | T-004 | Scoped query layer + full schema from doc 03 + Alembic chain from zero + cross-team read test returns nothing | 4, 5 | platform | sonnet | T-001 | T-002 | todo |
 | T-010 | Seed files: transcribe Bible per doc 03 §4-6 (12 patterns, 8 deliveries, 3 rotations, 6 formations+keystones, rondo 5 zones, 6 archetypes+pass-risk, 4 animated + 2 static ref teams, detail-only slots, cult corner, roles, synergies) | 6 | content-seeder | sonnet | T-004 | T-020 | todo |
 | T-011 | Em-dash transform pass + CI copy scan + seed validator (required fields, blurb ≤25 words, banned identity phrases, slot refs resolve) | 7, 8 | content-seeder | sonnet | T-010 | T-020 | todo |
-| T-020 | Board core: pitch canvas, landscape model coords, token drag 60fps @23 tokens, portrait mapping (left=y, top=100-x) with lossless round-trip unit test FIRST | 9, 10 | board-engineer | opus | T-001 | T-010 | doing |
-| T-021 | Lane graph: suggested/confirmed/blocked states, two independent thresholds, live recompute during drag, interception dot | 11, 12 | board-engineer | opus | T-020 | T-011 | todo |
+| T-020 | Board core: pitch canvas, landscape model coords, token drag 60fps @23 tokens, portrait mapping (left=y, top=100-x) with lossless round-trip unit test FIRST | 9, 10 | board-engineer | opus | T-001 | T-010 | pr |
+| T-021 | Lane graph: suggested/confirmed/blocked states, two independent thresholds, live recompute during drag, interception dot | 11, 12 | board-engineer | opus | T-020 | T-011 | doing |
 | T-022 | Zones + animation player (declarative specs AND raw keyframes, ball waypoints chase bound player) + recorder (all tokens incl. opponents + ball) | 13, 14, 15 | board-engineer | opus | T-021 | none | todo |
 | T-030 | Whiteboard page (PNG 01-05, 14, 34): toolbar, view menu, record/save into My Patterns | 16 | screens | sonnet | T-022, T-004 | T-031 | todo |
 | T-031 | Patterns page (PNG 05-10, 29-31, 15-18, 35): sheet w/ 3 libraries, chips, search, meta bar, details panels | 17 | screens | sonnet | T-022, T-011 | T-030 | todo |
