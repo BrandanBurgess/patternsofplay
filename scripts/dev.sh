@@ -19,16 +19,18 @@ export POP_WEB_PORT="$WEB_PORT"
 .venv/bin/alembic -c backend/alembic.ini upgrade head
 
 # Seed library content (patterns/deliveries/rotations/formations/identities,
-# the T-010 loader) on every boot, not just once by hand. Run from this same
-# repo-root cwd so scripts/seed.py resolves DATABASE_URL the exact same way
-# alembic and uvicorn just did above, and lands in the same SQLite file
-# rather than a second one. The loader is idempotent (upsert by natural key,
-# doc 03 section 8.4), so reseeding on every dev/e2e boot is safe and cheap,
-# and it is what makes a screens ticket's e2e journey (e.g. T-031 Patterns,
-# which browses library_items) pass on a FRESH database: CI's ci.yml points
-# DATABASE_URL at a brand-new sqlite file and never calls `make seed`
-# itself, so without this line library_items is empty on every fresh
-# checkout and in CI, even though a hand-seeded local dev.db hides it.
+# roles, role_clashes: the T-010 loader) on every boot, not just once by
+# hand. Run from this same repo-root cwd so scripts/seed.py resolves
+# DATABASE_URL the exact same way alembic and uvicorn just did above, and
+# lands in the same SQLite file rather than a second one. The loader is
+# idempotent (upsert by natural key, doc 03 section 8.4) and never touches
+# team-scoped tables, so reseeding on every dev/e2e boot is safe and cheap,
+# and it is what makes a screens ticket's e2e journey (T-031 Patterns
+# browsing library_items, T-033 Roster's role picker and warning copy) pass
+# on a FRESH database: CI's ci.yml points DATABASE_URL at a brand-new
+# sqlite file and never calls `make seed` itself, so without this line the
+# library tables are empty on every fresh checkout and in CI, even though a
+# hand-seeded local dev.db hides it.
 .venv/bin/python scripts/seed.py
 
 .venv/bin/uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port "$API_PORT" &

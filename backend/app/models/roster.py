@@ -117,6 +117,13 @@ class Player(Base):
     role_code: Mapped[str | None] = mapped_column(ForeignKey("roles.code"), nullable=True)
     awr: Mapped[str] = mapped_column(String(10), nullable=False)  # low | med | high
     dwr: Mapped[str] = mapped_column(String(10), nullable=False)  # low | med | high
+    # Not in doc 03 section 3's players column list either (same
+    # reconciliation as playstyle_note below): the double-exposure rule in
+    # that same section reads "the fullback or wingback behind them on the
+    # same side", which needs a queryable notion of side that nothing else
+    # in the schema carries. left | right | center, nullable (unassigned
+    # until a coach sets it). T-033 migration 0003.
+    flank: Mapped[str | None] = mapped_column(String(10), nullable=True)
     # Not in doc 03 section 3's players column list, but doc 03 itself
     # names this exact field when describing playstyle_suggestions just
     # below it ("approved text merges into players.playstyle_note"), so it

@@ -160,3 +160,132 @@ class LibraryItemOut(BaseModel):
     # here (app/models/library.py comment).
     animation_spec: AnimationSpec | None = Field(default=None, validation_alias="animation_spec_json")
     extras: dict | None = Field(default=None, validation_alias="extras_json")
+
+
+# ---------------------------------------------------------------------------
+# Roster (doc 03 section 3, Bible sections 1-2; Brief step 19; T-033).
+# ---------------------------------------------------------------------------
+
+WorkRate = Literal["low", "med", "high"]
+PreferredFoot = Literal["L", "R", "B"]
+Flank = Literal["left", "right", "center"]
+# Bible 1.3's six-attribute vocabulary (app/models/roster.py PlayerAttribute).
+AttributeKey = Literal[
+    "pace",
+    "passing_range",
+    "carrying_1v1",
+    "positional_discipline",
+    "aerial_physical",
+    "pressing_engine",
+]
+
+ATTRIBUTE_KEYS: tuple[AttributeKey, ...] = (
+    "pace",
+    "passing_range",
+    "carrying_1v1",
+    "positional_discipline",
+    "aerial_physical",
+    "pressing_engine",
+)
+
+
+class PlayerAttributesIn(BaseModel):
+    """All six sliders, coach-rated 1-5 (Bible 1.3). Every player always
+    carries all six, so create/update both require the full set rather
+    than a partial patch."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    pace: int = Field(ge=1, le=5)
+    passing_range: int = Field(ge=1, le=5)
+    carrying_1v1: int = Field(ge=1, le=5)
+    positional_discipline: int = Field(ge=1, le=5)
+    aerial_physical: int = Field(ge=1, le=5)
+    pressing_engine: int = Field(ge=1, le=5)
+
+
+class PlayerWriteRequest(BaseModel):
+    """Shared body shape for POST (create) and PUT (full update) of a
+    roster entry. No team_id or user_id field on purpose (CLAUDE.md rule 4
+    / doc 03 4.2 author-stamping precedent): team_id is stamped by
+    TeamScope.add from the caller's own membership, and user_id (row
+    claiming) is not part of this ticket's scope."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=120)
+    jersey_number: int | None = Field(default=None, ge=1, le=99)
+    preferred_foot: PreferredFoot = "R"
+    role_code: str | None = None
+    flank: Flank | None = None
+    awr: WorkRate
+    dwr: WorkRate
+    attributes: PlayerAttributesIn
+
+
+class RoleCatalogOut(BaseModel):
+    """GET /api/roster/roles: the library role catalog (doc 03 section 3
+    Role table), read-only, for populating the role picker. Not
+    team-scoped: library content, same as patterns/formations/identities."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    code: str
+    position_code: str
+    name: str
+    description: str
+
+
+class PlayerOut(BaseModel):
+    id: int
+    name: str
+    jersey_number: int | None
+    preferred_foot: PreferredFoot
+    position_code: str | None
+    role_code: str | None
+    # Resolved server-side from the role catalog (Role.name), same pattern
+    # as SavedPatternOut.author_label, so the frontend never re-derives it.
+    role_name: str | None
+    role_description: str | None
+    flank: Flank | None
+    awr: WorkRate
+    dwr: WorkRate
+    attributes: PlayerAttributesIn
+    # True when this row belongs to the calling user (README roles table:
+    # player's "own row marked (you)"). Always false until a roster row is
+    # claimed by a player account, which is out of this ticket's scope
+    # (see T-033 final report).
+    is_you: bool
+
+
+class FitWarningOut(BaseModel):
+    """One fired role_clashes row (doc 03 section 3: "the designed
+    double-exposure warning reads from here"). Coach-only: never appears
+    on a player-role payload (CLAUDE.md rule 5), enforced by RosterOut
+    below having no field for it at all, not just an empty list."""
+
+    code: str
+    name: str
+    flank: Flank
+    message: str
+    wide_player_id: int
+    wide_player_name: str
+    back_player_id: int
+    back_player_name: str
+
+
+class RosterOut(BaseModel):
+    """GET /api/roster response for a player caller. Deliberately has no
+    fit_warnings field (see CoachRosterOut): the route returns this model
+    (response_model=None, manual model_dump) so the JSON body a player
+    receives has no such key at all, not a null or empty one."""
+
+    players: list[PlayerOut]
+
+
+class CoachRosterOut(RosterOut):
+    """GET /api/roster response for a coach caller. Adds fit_warnings on
+    top of RosterOut; the route picks this model or the plain RosterOut
+    based on the caller's role_on_team, never both from one shared model."""
+
+    fit_warnings: list[FitWarningOut]

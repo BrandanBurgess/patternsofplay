@@ -1,0 +1,335 @@
+/* Roster page (PNG 12 desktop / 20 phone). Tokens only, no hardcoded
+   colors: red is status-only here (the FIT banner), never a call to
+   action; gold is the only interactive color (the active row's border,
+   the Save/Add-player buttons, the slider thumbs via accent-color). */
+
+.roster-page {
+  max-width: 1200px;
+}
+
+.roster-loading,
+.roster-error {
+  font-family: var(--body-font);
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+.roster-error {
+  color: var(--text-red, var(--red));
+}
+
+/* FIT warning banner: red border/tag, coach-only (see RosterPage.tsx).
+   Status only, never clickable, so it carries no interactive styling. */
+.fit-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid var(--red);
+  background: var(--bg-red, transparent);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-family: var(--body-font);
+}
+.fit-warning-tag {
+  flex-shrink: 0;
+  font-family: var(--display-font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-red, var(--red));
+  border: 1px solid var(--red);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+.fit-warning-body {
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.fit-warning-body strong {
+  color: var(--text-red, var(--red));
+  font-weight: 600;
+}
+.fit-warning-body p {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+}
+
+.roster-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.roster-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.roster-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+/* Selection state: gold border is the only interactive-color cue here. */
+.roster-row-active {
+  border-color: var(--accent);
+}
+.roster-row-number {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--display-font);
+  font-size: 12px;
+}
+.roster-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+.roster-row-name {
+  font-size: 14px;
+}
+.roster-you {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.roster-row-role {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.roster-row-chip {
+  flex-shrink: 0;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.roster-add {
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.roster-detail-col {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px;
+  min-height: 160px;
+  font-family: var(--body-font);
+}
+.roster-placeholder {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Reusable neutral button (design README: red is status only, never a
+   call to action, so Delete/Cancel never use it; same convention as
+   board/Board.css's .ctl-ghost). */
+.roster-page .ctl-ghost {
+  font: inherit;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--text-secondary);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.roster-page .ctl-ghost:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.player-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.player-detail-title {
+  font-family: var(--display-font);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+.player-detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.player-detail-note {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 10px 0 18px;
+  line-height: 1.5;
+}
+.player-detail-block {
+  margin-bottom: 18px;
+}
+.player-detail-label {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 0 0 8px;
+}
+.view-only-tag {
+  text-transform: none;
+  letter-spacing: normal;
+  font-style: italic;
+}
+.player-detail-value {
+  font-size: 14px;
+  margin: 0;
+}
+
+.attribute-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+.attribute-label {
+  flex: 0 0 130px;
+  font-size: 13px;
+}
+.attribute-bar {
+  flex: 1;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+.attribute-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: inherit;
+}
+.attribute-value {
+  width: 18px;
+  text-align: right;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Player form: add/edit (Brief step 19 "roster CRUD"). */
+.player-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.player-form h3 {
+  margin: 0;
+  font-size: 15px;
+}
+/* Scoped to a dedicated class rather than the bare `label` selector on
+   purpose: `.attribute-slider-row` below is also a <label> (for its
+   native range input's implicit a11y association), and a bare `label`
+   selector here would out-specificity that rule's `display: grid` (both
+   are effectively one-class-plus-context selectors, and `.player-form
+   label` wins as class+type over `.attribute-slider-row`'s class alone),
+   collapsing every slider row into a full-height flex column and
+   inflating the whole page far past the viewport. */
+.player-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex: 1;
+}
+.player-form input,
+.player-form select {
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-primary);
+}
+.player-form-row {
+  display: flex;
+  gap: 12px;
+}
+.player-form-attributes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.attribute-slider-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 22px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.attribute-slider-row input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.player-form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.player-form-actions button[type="submit"] {
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+  cursor: pointer;
+}
+.player-form-actions button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Phone: single column, list above detail (design README: grids stack). */
+@media (max-width: 700px) {
+  .roster-layout {
+    grid-template-columns: 1fr;
+  }
+  .player-form-row {
+    flex-direction: column;
+  }
+}
