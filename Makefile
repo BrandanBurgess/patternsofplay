@@ -1,4 +1,4 @@
-.PHONY: bootstrap dev lint typecheck test e2e verify seed check-copy
+.PHONY: bootstrap dev migrate lint typecheck test e2e verify seed check-copy
 
 VENV := .venv
 PY := $(VENV)/bin/python
@@ -11,6 +11,9 @@ bootstrap:
 
 dev:
 	bash scripts/dev.sh
+
+migrate:
+	$(PY) -m alembic -c backend/alembic.ini upgrade head
 
 lint:
 	$(VENV)/bin/ruff check backend

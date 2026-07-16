@@ -1,7 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ThemeSwitcher from "./theme/ThemeSwitcher";
 import Board from "./board/Board";
 import type { Orientation } from "./board/coords";
+import { MeOut, fetchMe, logout as apiLogout } from "./api";
+import { AuthForms } from "./AuthForms";
+import { TeamDashboard } from "./TeamDashboard";
+import { TeamOnboarding } from "./TeamOnboarding";
 import "./App.css";
 
 // Portrait on phone-width viewports, landscape otherwise (design README: all
@@ -30,25 +34,23 @@ function usePreferredOrientation(): Orientation {
 }
 
 export default function App() {
-  const [apiStatus, setApiStatus] = useState("checking");
+  const [me, setMe] = useState<MeOut | null>(null);
   const preferred = usePreferredOrientation();
   const [override, setOverride] = useState<Orientation | null>(null);
   const orientation = override ?? preferred;
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/health")
-      .then((r) => r.json())
-      .then((d: { status: string }) => {
-        if (!cancelled) setApiStatus(d.status);
-      })
-      .catch(() => {
-        if (!cancelled) setApiStatus("unreachable");
-      });
-    return () => {
-      cancelled = true;
-    };
+  const refreshMe = useCallback(async () => {
+    setMe(await fetchMe());
   }, []);
+
+  useEffect(() => {
+    refreshMe();
+  }, [refreshMe]);
+
+  const handleLogout = useCallback(async () => {
+    await apiLogout();
+    await refreshMe();
+  }, [refreshMe]);
 
   return (
     <div className="app-shell">
@@ -57,7 +59,10 @@ export default function App() {
         <ThemeSwitcher />
       </header>
       <main className="app-main">
-        <p className="app-status">API status: {apiStatus}</p>
+        {/* Temporary board mount until the whiteboard page proper lands in
+            T-030. Kept outside the auth gate so the board journeys stay
+            exercisable without an account, and above the auth flow so its
+            content swaps never shift the board's layout mid-gesture. */}
         <section className="whiteboard-dev" aria-label="Whiteboard">
           <div className="board-toolbar">
             <button
@@ -72,6 +77,14 @@ export default function App() {
           </div>
           <Board orientation={orientation} />
         </section>
+        {me === null && <p className="app-status">Loading...</p>}
+        {me !== null && me.user === null && <AuthForms onAuthenticated={refreshMe} />}
+        {me !== null && me.user !== null && me.memberships.length === 0 && (
+          <TeamOnboarding role={me.user.role} onTeamReady={refreshMe} />
+        )}
+        {me !== null && me.user !== null && me.memberships.length > 0 && (
+          <TeamDashboard user={me.user} memberships={me.memberships} onLogout={handleLogout} />
+        )}
       </main>
     </div>
   );

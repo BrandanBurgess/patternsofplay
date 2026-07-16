@@ -6,6 +6,10 @@ from sqlalchemy import engine_from_config, pool
 
 from app.db import Base
 
+# Models must be imported so they register on Base.metadata before
+# autogenerate or create_all/drop_all inspects it.
+import app.models  # noqa: F401
+
 config = context.config
 
 if config.config_file_name is not None:
