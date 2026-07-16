@@ -53,7 +53,9 @@ function matchesSearch(haystack: (string | undefined)[], query: string): boolean
   return haystack.some((h) => h?.toLowerCase().includes(q));
 }
 
-function TileThumb({ tokens }: { tokens: { id: string; side: TokenSide; pos: { x: number; y: number } }[] }) {
+// Exported so the Identity page (T-034) can reuse this exact mini-pitch
+// thumbnail for its own browse tiles instead of redefining it.
+export function TileThumb({ tokens }: { tokens: { id: string; side: TokenSide; pos: { x: number; y: number } }[] }) {
   const W = 105;
   const H = 68;
   return (
