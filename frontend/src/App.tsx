@@ -3,9 +3,10 @@ import type { ReactNode } from "react";
 import type { Orientation } from "./board/coords";
 import { MeOut, fetchMe, logout as apiLogout } from "./api";
 import { AuthForms } from "./AuthForms";
-import { AppShell } from "./AppShell";
+import { AppShell, type NavKey } from "./AppShell";
 import { TeamOnboarding } from "./TeamOnboarding";
 import { WhiteboardPage } from "./pages/WhiteboardPage";
+import { RosterPage } from "./pages/RosterPage";
 import ThemeSwitcher from "./theme/ThemeSwitcher";
 import "./App.css";
 
@@ -57,6 +58,7 @@ function MinimalShell({ children }: { children: ReactNode }) {
 export default function App() {
   const [me, setMe] = useState<MeOut | null>(null);
   const orientation = usePreferredOrientation();
+  const [activeNav, setActiveNav] = useState<NavKey>("whiteboard");
 
   const refreshMe = useCallback(async () => {
     setMe(await fetchMe());
@@ -101,8 +103,18 @@ export default function App() {
   // assume a signed-in coach). Player recordings are still allowed
   // (Brief section 3 table), just author-stamped with their own name.
   return (
-    <AppShell user={me.user} membership={membership} active="whiteboard" onLogout={handleLogout}>
-      <WhiteboardPage orientation={orientation} role={membership.role_on_team} />
+    <AppShell
+      user={me.user}
+      membership={membership}
+      active={activeNav}
+      onNavigate={setActiveNav}
+      onLogout={handleLogout}
+    >
+      {activeNav === "roster" ? (
+        <RosterPage role={membership.role_on_team} />
+      ) : (
+        <WhiteboardPage orientation={orientation} role={membership.role_on_team} />
+      )}
     </AppShell>
   );
 }

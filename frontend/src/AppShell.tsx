@@ -71,16 +71,22 @@ const NAV_ITEMS = [
 
 export type NavKey = (typeof NAV_ITEMS)[number]["key"];
 
+// Entries with a real page behind them; the rest stay inert (present in
+// the rail, no destination yet) until their own ticket lands (T-031..034).
+const LIVE_NAV_KEYS: readonly NavKey[] = ["whiteboard", "roster"];
+
 export function AppShell({
   user,
   membership,
   active,
+  onNavigate,
   onLogout,
   children,
 }: {
   user: UserOut;
   membership: MembershipOut;
   active: NavKey;
+  onNavigate: (key: NavKey) => void;
   onLogout: () => void;
   children: ReactNode;
 }) {
@@ -100,6 +106,7 @@ export function AppShell({
         <nav className="app-sidebar" aria-label="Primary">
           {NAV_ITEMS.map((item) => {
             const isActive = item.key === active;
+            const isLive = LIVE_NAV_KEYS.includes(item.key);
             return (
               <button
                 key={item.key}
@@ -107,10 +114,9 @@ export function AppShell({
                 className={`app-nav-item${isActive ? " app-nav-item-active" : ""}`}
                 data-testid={`nav-${item.key}`}
                 aria-current={isActive ? "page" : undefined}
-                // Every entry but Whiteboard is inert until its ticket lands
-                // (T-031..T-034): present in the rail, no destination yet.
-                aria-disabled={isActive ? undefined : "true"}
-                disabled={!isActive}
+                aria-disabled={isLive ? undefined : "true"}
+                disabled={!isLive}
+                onClick={isLive ? () => onNavigate(item.key) : undefined}
               >
                 {item.icon}
                 <span className="app-nav-label">{item.label}</span>
