@@ -13,8 +13,8 @@ Model: sonnet default; opus = hard ticket, never downgrade.
 | T-011 | Em-dash transform pass + CI copy scan + seed validator (required fields, blurb ≤25 words, banned identity phrases, slot refs resolve) | 7, 8 | content-seeder | sonnet | T-010 | T-020 | todo |
 | T-020 | Board core: pitch canvas, landscape model coords, token drag 60fps @23 tokens, portrait mapping (left=y, top=100-x) with lossless round-trip unit test FIRST | 9, 10 | board-engineer | opus | T-001 | T-010 | done |
 | T-021 | Lane graph: suggested/confirmed/blocked states, two independent thresholds, live recompute during drag, interception dot | 11, 12 | board-engineer | opus | T-020 | T-011 | done |
-| T-022 | Zones + animation player (declarative specs AND raw keyframes, ball waypoints chase bound player) + recorder (all tokens incl. opponents + ball) | 13, 14, 15 | board-engineer | opus | T-021 | none | pr |
-| T-030 | Whiteboard page (PNG 01-05, 14, 34): toolbar, view menu, record/save into My Patterns | 16 | screens | sonnet | T-022, T-004 | T-031 | todo |
+| T-022 | Zones + animation player (declarative specs AND raw keyframes, ball waypoints chase bound player) + recorder (all tokens incl. opponents + ball) | 13, 14, 15 | board-engineer | opus | T-021 | none | done |
+| T-030 | Whiteboard page (PNG 01-05, 14, 34): toolbar, view menu, record/save into My Patterns | 16 | screens | sonnet | T-022, T-004 | T-031 | doing |
 | T-031 | Patterns page (PNG 05-10, 29-31, 15-18, 35): sheet w/ 3 libraries, chips, search, meta bar, details panels | 17 | screens | sonnet | T-022, T-011 | T-030 | todo |
 | T-032 | Formations page (PNG 11, 19, 37-39, 43) + keystone pulse/keycards + Rondo Map (PNG 32, 36) | 18 | screens | sonnet | T-031 | T-033 | todo |
 | T-033 | Roster page (PNG 12, 20): CRUD, chips, 6 sliders, double-exposure warning coach-only | 19 | screens | sonnet | T-004, T-011 | T-032 | todo |
