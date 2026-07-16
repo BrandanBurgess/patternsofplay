@@ -113,3 +113,20 @@ def require_role_on_team(*allowed: str):
         return ctx
 
     return _dependency
+
+
+def require_head_coach(
+    ctx: CurrentMembership = Depends(get_current_membership),
+) -> CurrentMembership:
+    """T-043 decision 3: head-coach-only routes (remove a member, change a
+    member's role_on_team). The head coach is the team's CREATOR
+    (Team.created_by), a separate concept from role_on_team, so this is
+    its own dependency rather than another require_role_on_team() value:
+    a non-creator coach and a player both get 403 here, on exactly the
+    same terms (CLAUDE.md rule 5: enforced in the API, independent of
+    which role_on_team the caller otherwise holds)."""
+    if ctx.team.created_by != ctx.user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Only the head coach can do this"
+        )
+    return ctx

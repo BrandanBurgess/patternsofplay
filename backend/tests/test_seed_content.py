@@ -253,6 +253,7 @@ def test_seed_loader_is_idempotent_and_never_touches_team_tables() -> None:
         age_group="U12",
         level="rec",
         join_code="SENT01",
+        coach_join_code="SENT02",
         created_by=sentinel_user.id,
     )
     session.add(sentinel_team)
