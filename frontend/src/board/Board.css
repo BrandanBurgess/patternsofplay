@@ -49,3 +49,106 @@
   font-weight: 600;
   pointer-events: none;
 }
+
+/* Selected first token while confirming a lane (click two players). Gold is the
+   only interactive color (design README), so the pairing cue is a gold pulse. */
+.token-pairing .token-face {
+  filter: drop-shadow(0 0 6px var(--accent));
+}
+
+/* Lane graph (T-021). Stroke widths and dashes are in viewBox user units so
+   they scale with the board. Colors are theme tokens only: gold for suggested
+   and confirmed lanes, red for blocked. Red is status only, never interactive. */
+.lane-layer .lane,
+.mark-layer .mark-ring {
+  fill: none;
+  pointer-events: none;
+}
+
+.lane {
+  stroke-linecap: round;
+}
+
+/* Suggested: dashed dim gold (auto passing option within range). */
+.lane-suggested {
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-dasharray: 3 9;
+  opacity: 0.45;
+}
+
+/* Confirmed: solid bright gold, coach-locked. */
+.lane-confirmed {
+  stroke: var(--accent);
+  stroke-width: 4.5;
+  opacity: 1;
+  filter: drop-shadow(0 0 4px var(--glow));
+}
+
+/* Blocked: dashed red (a suggested or confirmed lane an opponent sits in). */
+.lane-blocked {
+  stroke: var(--red);
+  stroke-width: 3.5;
+  stroke-dasharray: 8 7;
+  opacity: 0.95;
+}
+
+/* Interception dot: red, sits on the closest point of the pass segment. */
+.lane-dot {
+  fill: var(--red);
+  stroke: none;
+  pointer-events: none;
+}
+
+/* Marking rings: thin when marked, thick + glow when tightly marked. */
+.mark-ring {
+  stroke: var(--red);
+}
+.mark-loose {
+  stroke-width: 2.5;
+  opacity: 0.85;
+}
+.mark-tight {
+  stroke-width: 5;
+  opacity: 1;
+  filter: drop-shadow(0 0 5px var(--red));
+}
+
+/* Threshold controls. Two independent sliders, stored per board (doc 03 4.3). */
+.board-root {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.lane-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+  font-family: var(--body-font);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.lane-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lane-control input[type="range"] {
+  accent-color: var(--accent);
+}
+
+.lane-control output {
+  min-width: 1.5em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.lane-hint {
+  margin: 0;
+  flex-basis: 100%;
+}
