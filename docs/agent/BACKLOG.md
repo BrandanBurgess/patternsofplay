@@ -7,8 +7,8 @@ Model: sonnet default; opus = hard ticket, never downgrade.
 |---|---|---|---|---|---|---|---|
 | T-001 | Scaffold: FastAPI+SQLAlchemy+Alembic+SQLite(WAL), React+Vite, Makefile (bootstrap/dev/lint/typecheck/test/e2e/verify/seed), CI workflow, e2e harness from e2e/fixtures.ts | 1 | platform | sonnet | none | none (solo, first) | pr |
 | T-002 | Design tokens: 3 themes as CSS vars on html[data-theme], Oswald+Inter, switcher | 2 | screens | sonnet | T-001 | T-003, T-004 | pr |
-| T-003 | Auth + teams: register, roles, team create, join code, join flow, minimal token-styled screens (Brief §8: invent nothing) | 3 | platform | sonnet | T-001 | T-002 | doing |
-| T-004 | Scoped query layer + full schema from doc 03 + Alembic chain from zero + cross-team read test returns nothing | 4, 5 | platform | sonnet | T-001 | T-002 | todo |
+| T-003 | Auth + teams: register, roles, team create, join code, join flow, minimal token-styled screens (Brief §8: invent nothing) | 3 | platform | sonnet | T-001 | T-002 | pr |
+| T-004 | Scoped query layer + full schema from doc 03 + Alembic chain from zero + cross-team read test returns nothing | 4, 5 | platform | sonnet | T-001 | T-002 | doing |
 | T-010 | Seed files: transcribe Bible per doc 03 §4-6 (12 patterns, 8 deliveries, 3 rotations, 6 formations+keystones, rondo 5 zones, 6 archetypes+pass-risk, 4 animated + 2 static ref teams, detail-only slots, cult corner, roles, synergies) | 6 | content-seeder | sonnet | T-004 | T-020 | todo |
 | T-011 | Em-dash transform pass + CI copy scan + seed validator (required fields, blurb ≤25 words, banned identity phrases, slot refs resolve) | 7, 8 | content-seeder | sonnet | T-010 | T-020 | todo |
 | T-020 | Board core: pitch canvas, landscape model coords, token drag 60fps @23 tokens, portrait mapping (left=y, top=100-x) with lossless round-trip unit test FIRST | 9, 10 | board-engineer | opus | T-001 | T-010 | pr |
