@@ -55,6 +55,24 @@ export interface PlayerWire {
   dwr: WorkRate;
   attributes: PlayerAttributesWire;
   is_you: boolean;
+  // Approved playstyle suggestion text merged onto the profile (doc 03
+  // section 3; T-041). Visible to both roles; null until a coach approves
+  // one of this player's suggestions.
+  playstyle_note: string | null;
+}
+
+// Playstyle suggestion flow (Brief step 22, PNG 24/25/27; T-041).
+export type SuggestionStatus = "pending" | "approved" | "dismissed";
+
+export interface SuggestionWire {
+  id: number;
+  player_id: number;
+  player_name: string;
+  author_user_id: number;
+  text: string;
+  status: SuggestionStatus;
+  created_at: string;
+  reviewed_at: string | null;
 }
 
 export interface FitWarningWire {
@@ -109,6 +127,39 @@ export function updatePlayer(id: number, payload: PlayerWriteWire): Promise<Play
 
 export function deletePlayer(id: number): Promise<void> {
   return request<void>(`/roster/players/${id}`, { method: "DELETE" });
+}
+
+// Playstyle suggestion flow (Brief step 22, PNG 24/25/27; T-041). Mirrors
+// backend/app/routers/suggestions.py field for field.
+
+export function fetchPlayerSuggestions(playerId: number): Promise<SuggestionWire[]> {
+  return request<SuggestionWire[]>(`/roster/players/${playerId}/suggestions`);
+}
+
+export function submitSuggestion(playerId: number, text: string): Promise<SuggestionWire> {
+  return request<SuggestionWire>(`/roster/players/${playerId}/suggestions`, {
+    method: "POST",
+    body: JSON.stringify({ text }),
+  });
+}
+
+// Coach-only (API-enforced, 403 for a player token): the team-wide pending
+// review queue, which backs both the roster row's gold badge and the
+// review card on a selected player's profile.
+export function fetchPendingSuggestions(): Promise<SuggestionWire[]> {
+  return request<SuggestionWire[]>("/roster/suggestions/pending");
+}
+
+export function approveSuggestion(suggestionId: number): Promise<SuggestionWire> {
+  return request<SuggestionWire>(`/roster/suggestions/${suggestionId}/approve`, {
+    method: "POST",
+  });
+}
+
+export function dismissSuggestion(suggestionId: number): Promise<SuggestionWire> {
+  return request<SuggestionWire>(`/roster/suggestions/${suggestionId}/dismiss`, {
+    method: "POST",
+  });
 }
 
 // Re-exported so callers of this module never need to import ./api just
