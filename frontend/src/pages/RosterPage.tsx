@@ -12,10 +12,15 @@ import type { FormEvent } from "react";
 import {
   ATTRIBUTE_KEYS,
   ATTRIBUTE_LABELS,
+  approveSuggestion,
   createPlayer,
   deletePlayer,
+  dismissSuggestion,
+  fetchPendingSuggestions,
+  fetchPlayerSuggestions,
   fetchRoleCatalog,
   fetchRoster,
+  submitSuggestion,
   updatePlayer,
   type AttributeKey,
   type FitWarningWire,
@@ -26,6 +31,7 @@ import {
   type PreferredFoot,
   type Role,
   type RoleCatalogWire,
+  type SuggestionWire,
   type WorkRate,
 } from "../rosterApi";
 import { ApiError } from "../api";
@@ -110,6 +116,16 @@ export function RosterPage({ role }: { role: Role }) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Playstyle suggestion flow (Brief step 22, PNG 24/25/27; T-041).
+  // pendingSuggestions is the coach-only team-wide queue (README: "coach
+  // sees a gold badge on the row"); ownPendingSuggestion is a player's own
+  // latest pending submission for whichever profile they're viewing.
+  const [pendingSuggestions, setPendingSuggestions] = useState<SuggestionWire[]>([]);
+  const [ownPendingSuggestion, setOwnPendingSuggestion] = useState<SuggestionWire | null>(null);
+  const [suggestionText, setSuggestionText] = useState("");
+  const [suggestionSaving, setSuggestionSaving] = useState(false);
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
+
   // Re-reads just the roster (not the role catalog, not the page loading
   // flag) after a create/update/delete: fit warnings can shift with any
   // roster edit, and re-fetching keeps them correct without duplicating
@@ -146,6 +162,64 @@ export function RosterPage({ role }: { role: Role }) {
     () => players.find((p) => p.id === selectedId) ?? null,
     [players, selectedId]
   );
+
+  const isCoach = role === "coach";
+
+  const pendingPlayerIds = useMemo(
+    () => new Set(pendingSuggestions.map((s) => s.player_id)),
+    [pendingSuggestions]
+  );
+
+  const pendingSuggestionForSelected = useMemo(
+    () =>
+      selectedPlayer
+        ? pendingSuggestions.find((s) => s.player_id === selectedPlayer.id) ?? null
+        : null,
+    [pendingSuggestions, selectedPlayer]
+  );
+
+  // Coach-only team-wide pending queue: backs the roster row badge and,
+  // filtered by selectedPlayer below, the review card. 403s for a player
+  // caller (README: suggestion review is coach-only), so this never runs
+  // for one.
+  const refreshPendingSuggestions = useCallback(async () => {
+    if (!isCoach) return;
+    try {
+      setPendingSuggestions(await fetchPendingSuggestions());
+    } catch {
+      // Non-fatal: the roster itself already loaded; leave the queue as-is
+      // rather than failing the whole page over a secondary fetch.
+    }
+  }, [isCoach]);
+
+  useEffect(() => {
+    refreshPendingSuggestions();
+  }, [refreshPendingSuggestions]);
+
+  // A player's own suggestion history, only ever fetched for their own
+  // claimed row (README: "free text on own profile"). Re-runs whenever the
+  // selection changes so switching away from, then back to, your own row
+  // reflects the latest state.
+  useEffect(() => {
+    setSuggestionError(null);
+    setSuggestionText("");
+    if (isCoach || !selectedPlayer?.is_you) {
+      setOwnPendingSuggestion(null);
+      return;
+    }
+    let cancelled = false;
+    fetchPlayerSuggestions(selectedPlayer.id)
+      .then((rows) => {
+        if (cancelled) return;
+        setOwnPendingSuggestion(rows.find((r) => r.status === "pending") ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setOwnPendingSuggestion(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isCoach, selectedPlayer]);
 
   const rolesByPosition = useMemo(() => {
     const grouped = new Map<string, RoleCatalogWire[]>();
@@ -225,7 +299,60 @@ export function RosterPage({ role }: { role: Role }) {
     setForm((prev) => ({ ...prev, attributes: { ...prev.attributes, [key]: value } }));
   }
 
-  const isCoach = role === "coach";
+  // Brief step 22 DoD: "player submits, sees pending". Only reachable for a
+  // player viewing their own claimed row (see PlayerDetail below), so
+  // selectedPlayer here is always the caller's own row when this runs.
+  async function handleSubmitSuggestion(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedPlayer) return;
+    setSuggestionSaving(true);
+    setSuggestionError(null);
+    try {
+      const created = await submitSuggestion(selectedPlayer.id, suggestionText.trim());
+      setOwnPendingSuggestion(created);
+      setSuggestionText("");
+    } catch (err) {
+      setSuggestionError(
+        err instanceof ApiError ? err.message : "Could not send suggestion, try again."
+      );
+    } finally {
+      setSuggestionSaving(false);
+    }
+  }
+
+  // "coach approves; note appears merged on the profile": re-reads the
+  // roster so the merged playstyle_note and the cleared queue both land.
+  async function handleApproveSuggestion(suggestionId: number) {
+    setSuggestionSaving(true);
+    setSuggestionError(null);
+    try {
+      await approveSuggestion(suggestionId);
+      await Promise.all([refreshRoster(), refreshPendingSuggestions()]);
+    } catch (err) {
+      setSuggestionError(
+        err instanceof ApiError ? err.message : "Could not approve, try again."
+      );
+    } finally {
+      setSuggestionSaving(false);
+    }
+  }
+
+  // "dismiss clears it": no roster re-read needed (no note is merged), just
+  // the queue.
+  async function handleDismissSuggestion(suggestionId: number) {
+    setSuggestionSaving(true);
+    setSuggestionError(null);
+    try {
+      await dismissSuggestion(suggestionId);
+      await refreshPendingSuggestions();
+    } catch (err) {
+      setSuggestionError(
+        err instanceof ApiError ? err.message : "Could not dismiss, try again."
+      );
+    } finally {
+      setSuggestionSaving(false);
+    }
+  }
 
   return (
     <section className="roster-page">
@@ -290,6 +417,20 @@ export function RosterPage({ role }: { role: Role }) {
                         <span className="roster-row-name">
                           {player.name}
                           {player.is_you && <span className="roster-you"> (you)</span>}
+                          {/* README: "coach sees a gold badge on the row"
+                              for a pending playstyle suggestion. Absent
+                              from the DOM for a player, not just hidden:
+                              pendingSuggestions is only ever populated for
+                              a coach caller (refreshPendingSuggestions
+                              above). */}
+                          {isCoach && pendingPlayerIds.has(player.id) && (
+                            <span
+                              className="suggestion-badge"
+                              data-testid={`suggestion-badge-${player.id}`}
+                              title="Playstyle suggestion pending review"
+                              aria-hidden="true"
+                            />
+                          )}
                         </span>
                         <span className="roster-row-role">{player.role_name ?? "Unassigned"}</span>
                       </span>
@@ -318,6 +459,15 @@ export function RosterPage({ role }: { role: Role }) {
                   onEdit={() => startEdit(selectedPlayer)}
                   onDelete={handleDelete}
                   saving={saving}
+                  ownPendingSuggestion={ownPendingSuggestion}
+                  suggestionText={suggestionText}
+                  onSuggestionTextChange={setSuggestionText}
+                  onSubmitSuggestion={handleSubmitSuggestion}
+                  pendingSuggestion={pendingSuggestionForSelected}
+                  onApproveSuggestion={handleApproveSuggestion}
+                  onDismissSuggestion={handleDismissSuggestion}
+                  suggestionSaving={suggestionSaving}
+                  suggestionError={suggestionError}
                 />
               )}
               {mode === "view" && !selectedPlayer && (
@@ -350,12 +500,30 @@ function PlayerDetail({
   onEdit,
   onDelete,
   saving,
+  ownPendingSuggestion,
+  suggestionText,
+  onSuggestionTextChange,
+  onSubmitSuggestion,
+  pendingSuggestion,
+  onApproveSuggestion,
+  onDismissSuggestion,
+  suggestionSaving,
+  suggestionError,
 }: {
   player: PlayerWire;
   isCoach: boolean;
   onEdit: () => void;
   onDelete: () => void;
   saving: boolean;
+  ownPendingSuggestion: SuggestionWire | null;
+  suggestionText: string;
+  onSuggestionTextChange: (value: string) => void;
+  onSubmitSuggestion: (event: FormEvent<HTMLFormElement>) => void;
+  pendingSuggestion: SuggestionWire | null;
+  onApproveSuggestion: (suggestionId: number) => void;
+  onDismissSuggestion: (suggestionId: number) => void;
+  suggestionSaving: boolean;
+  suggestionError: string | null;
 }) {
   return (
     <div className="player-detail">
@@ -383,6 +551,17 @@ function PlayerDetail({
         )}
       </div>
       {player.role_description && <p className="player-detail-note">{player.role_description}</p>}
+
+      {/* Approved playstyle suggestion, merged onto the profile (doc 03
+          section 3; Brief step 22 DoD: "note appears merged on the
+          profile"). Visible to both roles, same as the rest of the
+          profile. */}
+      {player.playstyle_note && (
+        <div className="player-detail-block" data-testid="playstyle-note">
+          <p className="player-detail-label">Playstyle note</p>
+          <p className="player-detail-value">{player.playstyle_note}</p>
+        </div>
+      )}
 
       <div className="player-detail-block">
         <p className="player-detail-label">
@@ -414,6 +593,91 @@ function PlayerDetail({
           </div>
         ))}
       </div>
+
+      {/* Brief step 22 / PNG 24-25: a player suggests a change to their own
+          playstyle, then sees it pending. Only ever rendered for a player
+          viewing their own claimed row: absent from the DOM entirely for a
+          coach (this whole block) and absent for a player viewing a
+          teammate's row (player.is_you false there). */}
+      {!isCoach && player.is_you && (
+        <>
+          {ownPendingSuggestion ? (
+            <div
+              className="suggestion-card suggestion-pending"
+              data-testid="suggestion-pending-card"
+            >
+              <p className="suggestion-card-label">Your suggestion, pending coach review</p>
+              <p className="suggestion-card-text">&ldquo;{ownPendingSuggestion.text}&rdquo;</p>
+            </div>
+          ) : (
+            <form
+              className="suggestion-card suggestion-composer"
+              data-testid="suggestion-composer"
+              onSubmit={onSubmitSuggestion}
+            >
+              <p className="suggestion-card-label">Suggest a change to your playstyle</p>
+              <p className="suggestion-card-hint">
+                Tell your coach how you see your game: role, runs, what you want to work on. The
+                coach reviews before anything changes.
+              </p>
+              <textarea
+                data-testid="suggestion-text"
+                value={suggestionText}
+                onChange={(e) => onSuggestionTextChange(e.target.value)}
+                placeholder="e.g. I feel more dangerous starting wider right and cutting in. Could we try me as a touchline winger for a session?"
+                required
+                minLength={1}
+              />
+              {suggestionError && (
+                <p role="alert" className="roster-error">
+                  {suggestionError}
+                </p>
+              )}
+              <button type="submit" data-testid="suggestion-send" disabled={suggestionSaving}>
+                Send suggestion
+              </button>
+            </form>
+          )}
+        </>
+      )}
+
+      {/* PNG 27: coach review card for this player's pending suggestion.
+          Approve/Dismiss are coach-only controls, API-enforced (403 for a
+          player, backend/app/routers/suggestions.py), and absent from the
+          DOM here for a player since pendingSuggestion is only ever
+          populated by the coach-only pending-queue fetch. */}
+      {isCoach && pendingSuggestion && (
+        <div className="suggestion-card suggestion-review" data-testid="suggestion-review-card">
+          <p className="suggestion-card-label">
+            Playstyle suggestion from {pendingSuggestion.player_name}
+          </p>
+          <p className="suggestion-card-text">&ldquo;{pendingSuggestion.text}&rdquo;</p>
+          {suggestionError && (
+            <p role="alert" className="roster-error">
+              {suggestionError}
+            </p>
+          )}
+          <div className="suggestion-card-actions">
+            <button
+              type="button"
+              data-testid="suggestion-approve"
+              disabled={suggestionSaving}
+              onClick={() => onApproveSuggestion(pendingSuggestion.id)}
+            >
+              Approve, add to profile
+            </button>
+            <button
+              type="button"
+              className="ctl-ghost"
+              data-testid="suggestion-dismiss"
+              disabled={suggestionSaving}
+              onClick={() => onDismissSuggestion(pendingSuggestion.id)}
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

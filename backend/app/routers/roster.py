@@ -77,7 +77,38 @@ def _player_to_out(
         dwr=player.dwr,  # type: ignore[arg-type]
         attributes=_attrs_to_schema(attrs),
         is_you=player.user_id is not None and player.user_id == caller_user_id,
+        playstyle_note=player.playstyle_note,
     )
+
+
+def _claim_matching_row(scope: TeamScope, players: list[Player], ctx: CurrentMembership) -> None:
+    """T-041: no "claim your row" surface is designed (PNGs 24/25/27 show
+    none), so a player's account links to their roster row implicitly
+    instead of through a new UI. Players are added to the roster by name
+    before they ever log in (Brief step 19 CRUD is coach-only), so on a
+    player's own GET /api/roster, if this team has exactly one row that is
+    both unclaimed (user_id IS NULL) and name-matches their display_name
+    (case/whitespace-insensitive), and they hold no other claimed row on
+    this team yet (doc 03 section 2: "a player user maps to at most one
+    roster entry per team"), that row becomes theirs.
+
+    This is the minimal linkage the suggestion flow (Brief step 22) needs
+    to know which row is "your own profile": a player can only submit a
+    suggestion, and only sees the composer/pending card, on a row they
+    have claimed this way. A name that matches zero or more than one row
+    leaves every row unclaimed exactly as before (T-033's documented gap),
+    so this never guesses. Idempotent and safe to call on every request:
+    it is a no-op once a row is claimed or when no unique match exists.
+    """
+    if ctx.role_on_team != "player":
+        return
+    if any(p.user_id == ctx.user.id for p in players):
+        return
+    target = ctx.user.display_name.strip().casefold()
+    matches = [p for p in players if p.user_id is None and p.name.strip().casefold() == target]
+    if len(matches) == 1:
+        matches[0].user_id = ctx.user.id
+        scope.commit()
 
 
 def _compute_fit_warnings(players: list[Player], clash: RoleClash | None) -> list[FitWarningOut]:
@@ -180,6 +211,7 @@ def get_roster(
     db: Session = Depends(get_db),
 ) -> dict:
     players = scope.query(Player).order_by(Player.jersey_number.asc().nulls_last()).all()
+    _claim_matching_row(scope, players, ctx)
     attrs_by_player = _attrs_by_player(scope)
     roles = _role_map(db)
     player_outs = [
