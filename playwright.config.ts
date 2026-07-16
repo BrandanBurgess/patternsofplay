@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const webPort = process.env.POP_WEB_PORT ?? "5173";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -7,7 +9,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: "http://127.0.0.1:5173",
+    baseURL: `http://127.0.0.1:${webPort}`,
     trace: "on-first-retry",
   },
   projects: [
@@ -25,7 +27,7 @@ export default defineConfig({
   ],
   webServer: {
     command: "make dev",
-    url: "http://127.0.0.1:5173",
+    url: `http://127.0.0.1:${webPort}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
