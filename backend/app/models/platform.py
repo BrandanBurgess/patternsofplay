@@ -1,8 +1,9 @@
 """Platform tenancy tables (doc 03 section 2): users, teams, team_members.
 
-This is the T-003 slice of the schema only. Content-domain tables
-(roster, players, library content, etc.) belong to T-004 and later
-tickets and are not defined here.
+This is the T-003 slice of the schema. Content-domain tables (roster,
+library content, formations, board/session content, etc.) are the T-004
+slice and live in the sibling modules in this package: roster.py,
+library.py, formations.py, team_content.py, sessions.py.
 
 role_on_team is stored as a plain string, not a DB-level enum or CHECK
 constraint, specifically so a future 'club_admin' value is an
