@@ -2,6 +2,7 @@
    No hardcoded colors, no layout thrash during drag. */
 
 .board-wrap {
+  position: relative;
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
@@ -151,4 +152,285 @@
 .lane-hint {
   margin: 0;
   flex-basis: 100%;
+}
+
+/* -------------------------------------------------------------------------
+   Zone overlays (T-022, Brief step 13). Zones are informational geometry, so
+   they use gold (the interactive/accent family) at low opacity and never red
+   (red is status only). They paint behind lanes, rings, and tokens.
+   ------------------------------------------------------------------------- */
+.zone-rect {
+  fill: var(--accent);
+  fill-opacity: 0.08;
+  stroke: var(--accent);
+  stroke-opacity: 0.5;
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+  pointer-events: none;
+}
+/* Half-spaces read as quieter channels than the named pockets. */
+.zone-rect.zone-halfspaces {
+  fill-opacity: 0.05;
+  stroke-dasharray: 3 7;
+}
+.zone-divider {
+  stroke: var(--accent);
+  stroke-opacity: 0.4;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 8;
+  pointer-events: none;
+}
+.zone-label {
+  fill: var(--accent);
+  fill-opacity: 0.8;
+  font-family: var(--display-font, sans-serif);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------------------
+   Animation trace (T-022, Brief step 14): glowing gold ball trail + numbered
+   gold route badges. Gold only.
+   ------------------------------------------------------------------------- */
+.ball-trail {
+  fill: none;
+  stroke: var(--glow);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 5px var(--glow));
+  pointer-events: none;
+}
+/* Trajectory-driven trail styles (design README: ground flat, floated arced). */
+.ball-trail.trail-ground {
+  stroke-dasharray: none;
+}
+.ball-trail.trail-floated,
+.ball-trail.trail-whipped {
+  stroke-dasharray: 2 8;
+  opacity: 0.75;
+}
+.ball-trail.trail-recorded {
+  opacity: 0.8;
+}
+.route-badge {
+  fill: var(--accent);
+  stroke: var(--glow);
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+.route-badge-num {
+  fill: var(--accent-ink, #1b1b1b);
+  font-family: var(--display-font, sans-serif);
+  font-weight: 700;
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------------------
+   Board HUD: recording banner (red status) + step caption.
+   ------------------------------------------------------------------------- */
+.record-banner {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-family: var(--body-font);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.record-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 6px var(--red);
+}
+.anim-caption {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 80%;
+  text-align: center;
+  padding: 4px 12px;
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: var(--body-font);
+  font-size: 13px;
+  pointer-events: none;
+}
+.anim-caption:empty {
+  display: none;
+}
+
+/* -------------------------------------------------------------------------
+   Control clusters (dev board surface; the real toolbar is T-030).
+   ------------------------------------------------------------------------- */
+.board-view {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  max-width: 1100px;
+  margin: 0 auto 12px;
+}
+.board-view button {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+  cursor: pointer;
+}
+.board-view button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+/* Record is status, not a call to action: red outline, surface fill. */
+.board-view .ctl-record {
+  background: var(--surface);
+  border-color: var(--red);
+  color: var(--red);
+}
+.board-view .ctl-record-active {
+  background: var(--red);
+  color: var(--surface);
+}
+.view-menu {
+  position: relative;
+}
+.view-menu-panel {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 6px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  min-width: 160px;
+}
+.view-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--body-font);
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.view-menu-item input {
+  accent-color: var(--accent);
+}
+
+.save-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  max-width: 1100px;
+  margin: 0 auto 12px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+}
+.save-name {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--body-font);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.save-name input {
+  font: inherit;
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--bg);
+  color: var(--text-primary);
+}
+.save-bar button {
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+  cursor: pointer;
+}
+.save-bar .ctl-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--text-secondary);
+}
+
+.saved-patterns {
+  max-width: 1100px;
+  margin: 16px auto 0;
+  font-family: var(--body-font);
+}
+.saved-title {
+  font-family: var(--display-font, sans-serif);
+  font-size: 15px;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+.saved-patterns ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.saved-pattern {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border-radius: 8px;
+}
+.saved-pattern-name {
+  color: var(--text-primary);
+  font-size: 14px;
+  flex: 1;
+}
+.saved-pattern-author {
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+.saved-pattern button {
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+  cursor: pointer;
+}
+.saved-pattern button:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
