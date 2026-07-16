@@ -5,8 +5,14 @@
 // The raw-recording half is covered in recorder.spec.ts; here we prove the
 // DECLARATIVE demo spec runs and its bound ball waypoint lands on the moving
 // runner (home-2) at that runner's final position.
+//
+// T-030: the whiteboard is now an authenticated page; registerCoach signs in
+// and lands on it. The toolbar's Play button runs this same demo spec (see
+// Board.tsx's doc comment on that interpretation); Restart is a small
+// secondary control shown once a playback exists, not part of the 5-icon
+// PNG toolbar.
 
-import { test, expect, assertCleanPage } from "./fixtures";
+import { test, expect, assertCleanPage, registerCoach } from "./fixtures";
 import type { Page, Locator } from "@playwright/test";
 
 // The demo's overlapping fullback (home-2) finishes here (demoSpec.ts).
@@ -29,8 +35,7 @@ test("plays the declarative demo spec and connects the pass to the moving runner
   page,
   issues,
 }) => {
-  await page.goto("/");
-  await expect(page.getByTestId("board")).toBeVisible();
+  await registerCoach(page);
 
   await page.getByTestId("play-demo").click();
 
@@ -55,7 +60,7 @@ test("plays the declarative demo spec and connects the pass to the moving runner
 });
 
 test("restart replays the spec from the top", async ({ page, issues }) => {
-  await page.goto("/");
+  await registerCoach(page);
   await page.getByTestId("play-demo").click();
   await waitPlaybackDone(page);
 

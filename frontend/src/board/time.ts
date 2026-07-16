@@ -33,8 +33,16 @@ export class FrameLoop {
       const t = now();
       const delta = t - this.last;
       this.last = t;
-      this.cb(t, delta);
+      // Schedule the NEXT frame BEFORE running the callback, not after: the
+      // callback (PlayerController.tick) may itself call stop() when a
+      // playback finishes, and stop() only has anything to cancel if the
+      // next frame's handle has already been recorded. Scheduling after the
+      // callback would silently overwrite stop()'s handle = null with a
+      // fresh handle every time, so the loop could never actually stop
+      // itself from inside its own callback (it would keep re-running, and
+      // re-firing onEnd, forever at 60fps after the animation ended).
       this.handle = requestAnimationFrame(tick);
+      this.cb(t, delta);
     };
     this.handle = requestAnimationFrame(tick);
   }

@@ -1,60 +1,9 @@
-.app-shell {
-  min-height: 100%;
-  background: var(--bg);
-  color: var(--text-primary);
-  display: flex;
-  flex-direction: column;
-}
-
-.app-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 12px 16px;
-  background: var(--sidebar-bg);
-  border-bottom: 1px solid var(--border);
-}
-
-.app-brand {
-  font-family: var(--display-font);
-  font-weight: 600;
-  font-size: 15px;
-  margin: 0;
-}
-
-.app-main {
-  padding: 16px;
-}
+/* App.tsx-specific extras. Shared shell/topbar/brand/main chrome lives in
+   styles/global.css so the pre-auth branches and the full AppShell (T-030)
+   never drift out of sync. */
 
 .app-status {
   font-family: var(--body-font);
   color: var(--text-secondary);
   font-size: 13px;
-}
-
-/* Temporary board frame until the whiteboard page proper lands in T-030. */
-.whiteboard-dev {
-  margin-top: 16px;
-}
-
-.board-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.board-toolbar button {
-  font: inherit;
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--accent-ink);
-  cursor: pointer;
-}
-
-.board-toolbar span {
-  color: var(--text-secondary);
 }

@@ -95,6 +95,13 @@ class TeamScope:
         self._db.add(obj)
         return obj
 
+    def delete(self, obj: Any) -> None:
+        """Stages a delete on this scope's session. Callers must obtain
+        `obj` via this same scope (get()/query()) first, never via a raw
+        db.get/db.query, so a row from another team can never reach here
+        (T-030: coach-only delete of a saved pattern)."""
+        self._db.delete(obj)
+
     def commit(self) -> None:
         self._db.commit()
 

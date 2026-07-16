@@ -115,31 +115,26 @@
   filter: drop-shadow(0 0 5px var(--red));
 }
 
-/* Threshold controls. Two independent sliders, stored per board (doc 03 4.3). */
 .board-root {
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
 }
 
-.lane-controls {
+/* Threshold controls (T-030: folded into the view menu, doc 03 4.3's two
+   independent stored thresholds). */
+.lane-control {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
-  margin-top: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
   font-family: var(--body-font);
   color: var(--text-secondary);
-  font-size: 13px;
-}
-
-.lane-control {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 12px;
 }
 
 .lane-control input[type="range"] {
+  width: 100%;
   accent-color: var(--accent);
 }
 
@@ -150,8 +145,11 @@
 }
 
 .lane-hint {
-  margin: 0;
-  flex-basis: 100%;
+  margin: 4px 0 0;
+  max-width: 190px;
+  font-family: var(--body-font);
+  font-size: 11px;
+  color: var(--text-secondary);
 }
 
 /* -------------------------------------------------------------------------
@@ -274,48 +272,67 @@
 }
 
 /* -------------------------------------------------------------------------
-   Control clusters (dev board surface; the real toolbar is T-030).
+   Toolbar: a floating pill pinned to the bottom-center of the pitch (PNG
+   01-04). Select is the permanent default tool (gold, always active); record
+   is status, never a call to action (surface fill, red only once active);
+   play/reset/view-menu are neutral until acted on. Gold is the only
+   interactive color (design README).
    ------------------------------------------------------------------------- */
-.board-view {
+.board-toolbar-float {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  max-width: 1100px;
-  margin: 0 auto 12px;
-}
-.board-view button {
-  font: inherit;
-  font-size: 13px;
-  padding: 6px 14px;
+  gap: 6px;
+  padding: 6px;
+  background: var(--surface);
   border-radius: 999px;
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--accent-ink, #1b1b1b);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
   cursor: pointer;
 }
-.board-view button:disabled {
-  opacity: 0.5;
+.tool-btn:disabled {
+  opacity: 0.4;
   cursor: default;
 }
-/* Record is status, not a call to action: red outline, surface fill. */
-.board-view .ctl-record {
-  background: var(--surface);
-  border-color: var(--red);
-  color: var(--red);
+.tool-btn.tool-active {
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
 }
-.board-view .ctl-record-active {
+/* Record is status, not a call to action: neutral until recording, then a
+   solid red dot (red is never interactive, only status, design README). */
+.tool-btn.tool-record-active {
   background: var(--red);
   color: var(--surface);
 }
 .view-menu {
   position: relative;
+  display: flex;
 }
+/* Positioned against .board-wrap, not the toolbar's own small .view-menu
+   button (T-030 follow-up: it renders as board-wrap's child now, see
+   Board.tsx), so its footprint is independent of exactly where the toolbar
+   sits. Centered above the toolbar on desktop, where the pitch is wide
+   enough that this compact popover has no default token underneath it. */
 .view-menu-panel {
   position: absolute;
   z-index: 5;
-  top: calc(100% + 6px);
-  left: 0;
+  bottom: 58px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -323,7 +340,54 @@
   background: var(--surface);
   border: 1px solid var(--accent);
   border-radius: 10px;
-  min-width: 160px;
+  /* Fixed, bounded footprint: a range input's flex-item width:100% has no
+     intrinsic cap, so without an explicit width here the panel grows to fit
+     the sliders and can blanket most of the pitch on a phone-width board,
+     blocking drags/clicks on tokens underneath it (T-030). A small popover
+     that scrolls internally if it ever runs out of vertical room stays
+     usable at every viewport instead. */
+  width: 220px;
+  max-width: calc(100vw - 32px);
+  max-height: min(340px, 60vh);
+  overflow-y: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+/* On phone-width boards the pitch is too narrow for a popover this size to
+   float above the toolbar without covering a large share of it (a phone
+   board is barely wider than the popover itself, and the default formation
+   plus every drag target this app's own journeys use fills the pitch top to
+   bottom), which would leave tokens, and even the toolbar's own buttons,
+   undraggable/unclickable under it. There is no sliver of the pitch or its
+   toolbar that is reliably clear on every phone: the toolbar sits at the
+   board's bottom edge, and the board itself commonly runs taller than the
+   viewport, so anchoring the popover to any edge of the board or the
+   viewport's own bottom collides with one or the other. Docking it to the
+   viewport's TOP instead (fixed, independent of the board's box entirely)
+   puts it above the pitch, in the app header's own area, which nothing in
+   this menu's own journeys touches while it is open. */
+@media (max-width: 700px) {
+  .view-menu-panel {
+    position: fixed;
+    top: 8px;
+    left: 12px;
+    right: 12px;
+    bottom: auto;
+    transform: none;
+    width: auto;
+    max-width: none;
+    max-height: 170px;
+  }
+}
+.view-menu-heading {
+  margin: 4px 0 0;
+  font-family: var(--display-font, sans-serif);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.view-menu-heading:first-child {
+  margin-top: 0;
 }
 .view-menu-item {
   display: flex;
@@ -338,10 +402,39 @@
   accent-color: var(--accent);
 }
 
+/* Restart: a small secondary control shown only once a playback exists, not
+   part of the persistent 5-icon PNG toolbar. */
+.restart-btn {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--surface);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Save flow (PNG 04): full-width banner above the pitch. */
 .save-bar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   gap: 12px;
   max-width: 1100px;
   margin: 0 auto 12px;
@@ -350,7 +443,15 @@
   border: 1px solid var(--accent);
   border-radius: 10px;
 }
+.save-bar-label {
+  font-family: var(--body-font);
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
 .save-name {
+  flex: 1;
+  min-width: 160px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -366,6 +467,7 @@
   border: 1px solid var(--accent);
   background: var(--bg);
   color: var(--text-primary);
+  width: 100%;
 }
 .save-bar button {
   font: inherit;
@@ -377,10 +479,24 @@
   color: var(--accent-ink, #1b1b1b);
   cursor: pointer;
 }
-.save-bar .ctl-ghost {
+.save-bar button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+/* Reusable neutral button: never red (red is status only, never a call to
+   action, design README), used for Discard and for Delete on saved patterns. */
+.save-bar .ctl-ghost,
+.saved-pattern .ctl-ghost {
   background: transparent;
   color: var(--text-secondary);
   border-color: var(--text-secondary);
+}
+.save-error {
+  flex-basis: 100%;
+  margin: 0;
+  font-family: var(--body-font);
+  font-size: 12px;
+  color: var(--text-red, var(--red));
 }
 
 .saved-patterns {

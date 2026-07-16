@@ -5,8 +5,12 @@
 // Covers the board-engine DoD line verbatim: "Lanes recompute live during drags;
 // confirmed lanes persist; blocked-lane dot sits on the interception point; the
 // two thresholds adjust independently."
+//
+// T-030: the whiteboard is now an authenticated page (registerCoach signs in
+// and lands on it), and the threshold sliders moved into the toolbar's view
+// menu (folded in alongside the zone toggles).
 
-import { test, expect, assertCleanPage } from "./fixtures";
+import { test, expect, assertCleanPage, registerCoach } from "./fixtures";
 import type { Locator, Page } from "@playwright/test";
 
 const VB = {
@@ -83,11 +87,14 @@ test("confirm a lane, block it, and adjust both thresholds independently", async
   page,
   issues,
 }) => {
-  await page.goto("/");
-  await expect(page.getByTestId("board")).toBeVisible();
+  await registerCoach(page);
 
   // Lay a clean horizontal lane near the top touchline (y = 8), a region clear of
-  // opponents, so the confirmed lane starts unblocked.
+  // opponents, so the confirmed lane starts unblocked. The view menu (thresholds
+  // live there, T-030) stays closed for these drags/clicks: on a phone-width
+  // board its popover has no gap in the pitch it can sit in without covering
+  // some token (Board.css), so it only opens for the threshold adjustments
+  // below and closes again before the board is touched.
   await dragTokenTo(page, "home-2", { x: 30, y: 8 });
   await dragTokenTo(page, "home-9", { x: 70, y: 8 });
 
@@ -110,6 +117,7 @@ test("confirm a lane, block it, and adjust both thresholds independently", async
   expect(Number(await dot(page).getAttribute("cy"))).toBeCloseTo(expectDot.py, 0);
 
   // --- Blocking threshold responds only to the blocking slider ---
+  await page.getByTestId("view-menu").click();
   await setThreshold(page, "blocking-threshold", 4); // 6 > 4: no longer blocked
   await expect(lane(page)).toHaveAttribute("data-blocked", "false");
   await expect(dot(page)).toHaveCount(0);
@@ -119,6 +127,8 @@ test("confirm a lane, block it, and adjust both thresholds independently", async
 
   // No marking yet on home-9.
   await expect(ring(page, "home-9")).toHaveCount(0);
+  // Done with the sliders for now: close the menu before the next drag.
+  await page.getByTestId("view-menu").click();
 
   // Mark home-9: a defender 6 model units away (loose ring, tight band is 5).
   await dragTokenTo(page, "away-9", { x: 76, y: 8 });
@@ -126,6 +136,7 @@ test("confirm a lane, block it, and adjust both thresholds independently", async
   await expect(ring(page, "home-9")).toHaveAttribute("data-mark-level", "loose");
 
   // --- Independence, both directions ---
+  await page.getByTestId("view-menu").click();
   // Changing the BLOCKING threshold must not disturb the marking ring.
   await setThreshold(page, "blocking-threshold", 20);
   await expect(ring(page, "home-9")).toHaveCount(1);

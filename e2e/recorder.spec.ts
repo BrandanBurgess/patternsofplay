@@ -4,8 +4,13 @@
 // and the Brief cross-orientation DoD: record in one orientation, replay in the
 // other, and the mapped positions still match (everything is stored in landscape
 // model coordinates; orientation is render only).
+//
+// T-030: saving now round-trips through the API (My Patterns is server data,
+// author-stamped and id-keyed, so replay buttons are found by role within a
+// saved-pattern tile rather than a hardcoded "replay-0" index), and the
+// whiteboard is an authenticated page.
 
-import { test, expect, assertCleanPage } from "./fixtures";
+import { test, expect, assertCleanPage, registerCoach, flipOrientationViewport } from "./fixtures";
 import type { Page, Locator } from "@playwright/test";
 
 const VB = {
@@ -66,12 +71,18 @@ async function waitPlaybackDone(page: Page) {
   await expect(root).toHaveAttribute("data-playing", "false", { timeout: 15000 });
 }
 
+// The saved-pattern tile's Replay button, found by role within the tile
+// rather than a hardcoded index/id: My Patterns is server data (T-030), so
+// database-assigned ids are not predictable literals.
+function replayButton(page: Page): Locator {
+  return page.getByTestId("saved-pattern").getByRole("button", { name: "Replay" });
+}
+
 test("records a teammate, an opponent, and the ball, then replays them", async ({
   page,
   issues,
 }) => {
-  await page.goto("/");
-  await expect(page.getByTestId("board")).toBeVisible();
+  await registerCoach(page);
 
   await page.getByTestId("record").click();
   await expect(page.getByTestId("record-banner")).toBeVisible();
@@ -93,15 +104,17 @@ test("records a teammate, an opponent, and the ball, then replays them", async (
   await page.getByTestId("record-name").fill("Defensive shift");
   await page.getByTestId("save-pattern").click();
 
-  // The saved pattern is author-stamped and lands in My patterns (doc 03 4.2).
+  // The saved pattern is author-stamped (COACH) and lands in My patterns
+  // (doc 03 4.2), round-tripped through the API.
   await expect(page.getByTestId("saved-pattern")).toHaveCount(1);
   await expect(page.getByTestId("saved-pattern")).toContainText("Defensive shift");
+  await expect(page.getByTestId("saved-pattern-author")).toHaveText("COACH");
 
   // Nudge everything away so replay has to move the tokens back.
   await dragTokenTo(page, "home-9", { x: 20, y: 20 });
   await dragTokenTo(page, "away-3", { x: 80, y: 20 });
 
-  await page.getByTestId("replay-0").click();
+  await replayButton(page).click();
   await waitPlaybackDone(page);
 
   for (const [id, m] of Object.entries(want)) {
@@ -115,8 +128,7 @@ test("records a teammate, an opponent, and the ball, then replays them", async (
 });
 
 test("record in one orientation, replay correctly in the other", async ({ page, issues }) => {
-  await page.goto("/");
-  await expect(page.getByTestId("board")).toBeVisible();
+  await registerCoach(page);
 
   const recordedIn = await orientationOf(page);
 
@@ -129,13 +141,15 @@ test("record in one orientation, replay correctly in the other", async ({ page, 
   };
   await page.getByTestId("stop-record").click();
   await page.getByTestId("save-pattern").click();
+  await expect(page.getByTestId("saved-pattern")).toHaveCount(1);
 
-  // Flip the board. Same stored model coordinates, render-only change.
-  await page.getByRole("button", { name: "Rotate board" }).click();
+  // Flip the board (viewport resize across the phone breakpoint). Same
+  // stored model coordinates, render-only change.
+  await flipOrientationViewport(page);
   const replayIn = await orientationOf(page);
   expect(replayIn).not.toBe(recordedIn);
 
-  await page.getByTestId("replay-0").click();
+  await replayButton(page).click();
   await waitPlaybackDone(page);
 
   // Model coordinates are orientation-independent: they replay to the same values.
