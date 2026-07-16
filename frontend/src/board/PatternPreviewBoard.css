@@ -27,3 +27,47 @@
 .pattern-empty-card strong {
   color: var(--text-primary);
 }
+
+/* Formations keystones (Brief step 18, design README: "Pulsing gold dot
+   (formations): keystone position, tap for its blurb"). Gold is the only
+   interactive color, so the pulse and the tap affordance both read off
+   --glow/--accent, never a new hardcoded color. */
+.token-keystone {
+  cursor: pointer;
+}
+.token-keystone .token-face {
+  animation: keystone-pulse 1.8s ease-in-out infinite;
+}
+@keyframes keystone-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px var(--glow));
+    opacity: 1;
+  }
+  50% {
+    filter: drop-shadow(0 0 10px var(--glow));
+    opacity: 0.75;
+  }
+}
+
+/* Rondo Map overlay (Brief step 18, PNG 32/36): dashed gold zones, tappable.
+   Sits behind tokens (paint order in PatternPreviewBoard.tsx); red never
+   appears here, this is a navigation/teaching aid, not a status. */
+.rondo-zone-poly {
+  fill: var(--accent);
+  fill-opacity: 0.08;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+  cursor: pointer;
+}
+.rondo-zone-active .rondo-zone-poly {
+  fill-opacity: 0.22;
+  stroke-width: 3;
+}
+.rondo-zone-label {
+  font-family: var(--display-font);
+  font-size: 13px;
+  fill: var(--accent);
+  pointer-events: none;
+}
