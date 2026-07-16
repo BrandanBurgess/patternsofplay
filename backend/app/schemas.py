@@ -7,7 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.specs import BoardSnapshot, BoardToken, ConfirmedLane, Keyframe, ZonesVisible
+from app.specs import AnimationSpec, BoardSnapshot, BoardToken, ConfirmedLane, Keyframe, ZonesVisible
 
 RoleOnTeam = Literal["coach", "player"]
 
@@ -130,3 +130,33 @@ class SavedPatternOut(BaseModel):
     board_snapshot: BoardSnapshot
     keyframes: list[Keyframe]
     created_at: datetime
+
+
+# ---------------------------------------------------------------------------
+# Library content (doc 03 section 4, Bible 3/3F/5B; Brief step 17): the three
+# browsable libraries (patterns, deliveries, rotations), read-only to every
+# team member, seeded by scripts/seed.py from seeds/*.json. No team_id: this
+# is library-world content, not a team's own data (app/models/library.py).
+# ---------------------------------------------------------------------------
+
+
+class LibraryItemOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    code: str
+    item_type: Literal["pattern", "delivery", "rotation"]
+    name: str
+    category: str
+    blurb: str
+    when_to_use: str
+    coaching_points: list[str] = Field(validation_alias="coaching_points_json")
+    youth_takeaway: str
+    age_hint: str
+    roles_involved: list[str]
+    # extras_json shape depends on item_type (delivery: trajectory/
+    # delivery_zone/target_corridor; rotation: trigger/creates/
+    # defenders_dilemma), so it stays a free dict rather than a fixed model
+    # here (app/models/library.py comment).
+    animation_spec: AnimationSpec | None = Field(default=None, validation_alias="animation_spec_json")
+    extras: dict | None = Field(default=None, validation_alias="extras_json")

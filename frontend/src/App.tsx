@@ -3,11 +3,17 @@ import type { ReactNode } from "react";
 import type { Orientation } from "./board/coords";
 import { MeOut, fetchMe, logout as apiLogout } from "./api";
 import { AuthForms } from "./AuthForms";
-import { AppShell } from "./AppShell";
+import { AppShell, type NavKey } from "./AppShell";
 import { TeamOnboarding } from "./TeamOnboarding";
 import { WhiteboardPage } from "./pages/WhiteboardPage";
+import { PatternsPage } from "./pages/PatternsPage";
 import ThemeSwitcher from "./theme/ThemeSwitcher";
 import "./App.css";
+
+// Nav entries live so far (T-031 activates Patterns alongside T-030's
+// Whiteboard); Formations/Roster/Identity join this list as their own
+// tickets land, without AppShell.tsx itself needing another edit.
+const ENABLED_NAV_KEYS: readonly NavKey[] = ["whiteboard", "patterns"];
 
 // Portrait on phone-width viewports, landscape otherwise (design README: all
 // boards render portrait on phone). Derived purely from viewport width, no
@@ -56,6 +62,7 @@ function MinimalShell({ children }: { children: ReactNode }) {
 
 export default function App() {
   const [me, setMe] = useState<MeOut | null>(null);
+  const [page, setPage] = useState<NavKey>("whiteboard");
   const orientation = usePreferredOrientation();
 
   const refreshMe = useCallback(async () => {
@@ -101,8 +108,19 @@ export default function App() {
   // assume a signed-in coach). Player recordings are still allowed
   // (Brief section 3 table), just author-stamped with their own name.
   return (
-    <AppShell user={me.user} membership={membership} active="whiteboard" onLogout={handleLogout}>
-      <WhiteboardPage orientation={orientation} role={membership.role_on_team} />
+    <AppShell
+      user={me.user}
+      membership={membership}
+      active={page}
+      enabledKeys={ENABLED_NAV_KEYS}
+      onNavigate={setPage}
+      onLogout={handleLogout}
+    >
+      {page === "patterns" ? (
+        <PatternsPage orientation={orientation} onOpenOnWhiteboard={() => setPage("whiteboard")} />
+      ) : (
+        <WhiteboardPage orientation={orientation} role={membership.role_on_team} />
+      )}
     </AppShell>
   );
 }

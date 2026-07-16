@@ -1,9 +1,10 @@
 // The app shell: topbar + sidebar nav (desktop PNGs) / 52px icon rail (phone,
-// design README "Screens & interaction conventions"). T-030 is the first real
-// page, so this is the minimal navigation the handoff shows: five entries,
-// only Whiteboard live. The rest render present but inert (no onClick, no
-// href) until their own tickets (T-031..T-034) land, per this ticket's brief:
-// "do not invent surfaces beyond what the PNGs show."
+// design README "Screens & interaction conventions"). Five entries; which
+// ones are live is the caller's call (enabledKeys), so each screen ticket
+// (T-031..T-034) only has to grow the list it passes from App.tsx instead of
+// editing this shared file. An entry not in enabledKeys renders present but
+// inert (no click handler reaches it, aria-disabled), per the Brief: "do not
+// invent surfaces beyond what the PNGs show."
 
 import type { ReactNode } from "react";
 import ThemeSwitcher from "./theme/ThemeSwitcher";
@@ -75,12 +76,17 @@ export function AppShell({
   user,
   membership,
   active,
+  enabledKeys,
+  onNavigate,
   onLogout,
   children,
 }: {
   user: UserOut;
   membership: MembershipOut;
   active: NavKey;
+  /** Which nav entries are live; the rest render present but inert. */
+  enabledKeys: readonly NavKey[];
+  onNavigate: (key: NavKey) => void;
   onLogout: () => void;
   children: ReactNode;
 }) {
@@ -100,6 +106,7 @@ export function AppShell({
         <nav className="app-sidebar" aria-label="Primary">
           {NAV_ITEMS.map((item) => {
             const isActive = item.key === active;
+            const isEnabled = enabledKeys.includes(item.key);
             return (
               <button
                 key={item.key}
@@ -107,10 +114,11 @@ export function AppShell({
                 className={`app-nav-item${isActive ? " app-nav-item-active" : ""}`}
                 data-testid={`nav-${item.key}`}
                 aria-current={isActive ? "page" : undefined}
-                // Every entry but Whiteboard is inert until its ticket lands
-                // (T-031..T-034): present in the rail, no destination yet.
-                aria-disabled={isActive ? undefined : "true"}
-                disabled={!isActive}
+                // Entries whose ticket hasn't landed yet stay inert: present
+                // in the rail, no destination.
+                aria-disabled={isEnabled ? undefined : "true"}
+                disabled={!isEnabled}
+                onClick={() => onNavigate(item.key)}
               >
                 {item.icon}
                 <span className="app-nav-label">{item.label}</span>
