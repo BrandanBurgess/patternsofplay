@@ -29,11 +29,39 @@ function tokenRadius(side: TokenSide, vb: Size): number {
   return side === "ball" ? base * 0.7 : base;
 }
 
+// Model-space bounding-box area of a zone's corners. Rondo Map zones can
+// nest (seeds/rondo_zones.json: the counterpress zone encloses the smaller
+// midfield_box zone), so zones paint largest-first, smallest-last: the
+// smaller, fully-enclosed zone ends up on top of the DOM and stays
+// independently clickable instead of the larger zone swallowing every tap.
+function zoneArea(zone: PreviewZone): number {
+  const xs = zone.corners.map((c) => c.x);
+  const ys = zone.corners.map((c) => c.y);
+  return (Math.max(...xs) - Math.min(...xs)) * (Math.max(...ys) - Math.min(...ys));
+}
+
 export interface PreviewToken {
   id: string;
   side: TokenSide;
   label: string;
   pos: ModelPoint;
+  /** Formations page keystones (Brief step 18, design README: "Pulsing gold
+   * dot (formations): keystone position, tap for its blurb"). Adds the gold
+   * pulse animation and, when `onTokenClick` is provided, makes the token a
+   * tap target; plain tokens (Patterns page, non-keystone formation slots)
+   * are never clickable regardless of `onTokenClick`. */
+  pulsing?: boolean;
+}
+
+/** A tappable Rondo Map zone (Brief step 18, PNG 32/36): an arbitrary
+ * model-space polygon: rondo_zones.polygon_json is a rectangle today, but
+ * nothing here assumes four points or axis alignment. Sits behind tokens,
+ * same paint-order rule as the whiteboard's own ZoneOverlay. */
+export interface PreviewZone {
+  key: string;
+  label: string;
+  corners: ModelPoint[];
+  active?: boolean;
 }
 
 interface Props {
@@ -48,6 +76,12 @@ interface Props {
   /** Fired whenever playback starts/stops, so the page's meta bar can show
    * the "Playing" pill (PNG 05, 09) without duplicating player state. */
   onPlayingChange?: (playing: boolean) => void;
+  /** Fired when a `pulsing` token is tapped (Formations keystones). Tokens
+   * without `pulsing: true` never receive a click handler. */
+  onTokenClick?: (tokenId: string) => void;
+  /** Rondo Map overlay (Formations page only; absent/empty elsewhere). */
+  zones?: PreviewZone[];
+  onZoneClick?: (zoneKey: string) => void;
 }
 
 export default function PatternPreviewBoard({
@@ -56,6 +90,9 @@ export default function PatternPreviewBoard({
   playback,
   emptyMessage,
   onPlayingChange,
+  onTokenClick,
+  zones,
+  onZoneClick,
 }: Props) {
   const vb = VIEWBOX[orientation];
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -162,10 +199,47 @@ export default function PatternPreviewBoard({
         aria-label="Pattern preview"
       >
         <PitchMarkings orientation={orientation} vb={vb} />
+        {/* Rondo Map zones (Brief step 18, PNG 32/36): behind everything
+            else, same paint-order rule as the whiteboard's ZoneOverlay. */}
+        {zones && zones.length > 0 && (
+          <g className="rondo-zone-layer" data-testid="rondo-zone-layer">
+            {[...zones]
+              .sort((a, b) => zoneArea(b) - zoneArea(a))
+              .map((zone) => {
+              const pts = zone.corners
+                .map((c) => modelToPixel(c, orientation, vb))
+                .map((p) => `${p.px},${p.py}`)
+                .join(" ");
+              const anchor = modelToPixel(zone.corners[0], orientation, vb);
+              return (
+                <g
+                  key={zone.key}
+                  className={`rondo-zone${zone.active ? " rondo-zone-active" : ""}`}
+                >
+                  <polygon
+                    points={pts}
+                    className="rondo-zone-poly"
+                    data-testid="rondo-zone"
+                    data-zone-key={zone.key}
+                    onClick={() => onZoneClick?.(zone.key)}
+                  />
+                  <text
+                    x={anchor.px + vb.width * 0.01}
+                    y={anchor.py + vb.height * 0.03}
+                    className="rondo-zone-label"
+                  >
+                    {zone.label}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        )}
         <g className="anim-layer" ref={animLayerRef} aria-hidden="true" />
         {tokens.map((token) => {
           const p = modelToPixel(token.pos, orientation, vb);
           const r = tokenRadius(token.side, vb);
+          const clickable = Boolean(token.pulsing && onTokenClick);
           return (
             <g
               key={token.id}
@@ -173,10 +247,14 @@ export default function PatternPreviewBoard({
                 if (el) groupRefs.current.set(token.id, el);
                 else groupRefs.current.delete(token.id);
               }}
-              className={`token token-${token.side}`}
+              className={`token token-${token.side}${token.pulsing ? " token-keystone" : ""}`}
               data-token-id={token.id}
               data-token-side={token.side}
+              data-keystone={token.pulsing ? "true" : undefined}
               transform={`translate(${p.px} ${p.py})`}
+              onClick={clickable ? () => onTokenClick!(token.id) : undefined}
+              role={clickable ? "button" : undefined}
+              tabIndex={clickable ? 0 : undefined}
             >
               <circle
                 className="token-face"
