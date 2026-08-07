@@ -73,18 +73,21 @@ test.describe("formations: board-first shape, keystone keycards, details, rondo 
     await page.getByTestId("formations-details-close").click();
     await expect(page.getByTestId("formations-details-panel")).toHaveCount(0);
 
-    // --- Rondo Map: toggle, six tappable zones, each shows its rondo and
-    // linked patterns (Brief step 18 DoD; seeds/rondo_zones.json; six not
-    // five since T-101/migration 0006 split flank_corridor into
-    // flank_corridor_left and flank_corridor_right, and T-103 replaced
-    // counterpress with doc 06's ball-relative counterpress_ring) ---
+    // --- Rondo Map: toggle, five tappable zones, each shows its rondo and
+    // linked patterns (Brief step 18 DoD; seeds/rondo_zones.json).
+    // FIVE, not the six seeded rows: T-106 stopped drawing
+    // counterpress_ring, which doc 06 section 5.1 says renders only when a
+    // ball is placed, and whose seeded polygon is a BOUND on where the
+    // ball-relative circle may sit (half the pitch) rather than a zone.
+    // The zone TITLE is now the name alone: T-106 moved the ratio out of
+    // it so a seeded ratio can never be read as a computed one. ---
     await page.getByTestId("formations-rondo-toggle").click();
     await expect(page.getByTestId("formations-rondo-active-toggle")).toBeVisible();
-    await expect(page.getByTestId("rondo-zone")).toHaveCount(6);
+    await expect(page.getByTestId("rondo-zone")).toHaveCount(5);
 
     await page.locator('[data-zone-key="midfield_box"]').click();
     await expect(page.getByTestId("formations-zone-card")).toBeVisible();
-    await expect(page.getByTestId("formations-zone-title")).toHaveText("5v3 (the midfield box)");
+    await expect(page.getByTestId("formations-zone-title")).toHaveText("The midfield box");
     await expect(page.getByTestId("formations-zone-teaches")).toContainText("split-pass and pause logic");
     const linkedPatterns = page.getByTestId("formations-linked-pattern");
     await expect(linkedPatterns).toHaveCount(2);
@@ -94,7 +97,7 @@ test.describe("formations: board-first shape, keystone keycards, details, rondo 
     // Switching zones swaps the card, not stacks it.
     await page.locator('[data-zone-key="last_line"]').click();
     await expect(page.getByTestId("formations-zone-card")).toHaveCount(1);
-    await expect(page.getByTestId("formations-zone-title")).toHaveText("2v2 (+1 keeper) (the last line)");
+    await expect(page.getByTestId("formations-zone-title")).toHaveText("The last line");
 
     // Exiting rondo mode restores the normal meta bar (Details/Rondo map).
     await page.getByTestId("formations-rondo-active-toggle").click();
@@ -111,21 +114,15 @@ test.describe("formations: board-first shape, keystone keycards, details, rondo 
     await expect(page.getByTestId("formations-meta-bar")).toContainText("3-4-3");
 
     // T-103 seeded the rondo map on all six formations (doc 06 section 2.3),
-    // so the 3-4-3 now carries its own six zones with its own polygons
-    // rather than leaving the toggle disabled.
+    // so the 3-4-3 now carries its own zones with its own polygons rather
+    // than leaving the toggle disabled.
     await expect(page.getByTestId("formations-rondo-toggle")).toBeEnabled();
     await page.getByTestId("formations-rondo-toggle").click();
-    await expect(page.getByTestId("rondo-zone")).toHaveCount(6);
+    await expect(page.getByTestId("rondo-zone")).toHaveCount(5);
     // The 3-4-3's own polygon, not the 4-3-3's: a back three's zones are
     // geometrically different from a back four's (doc 06 section 2.3).
-    // counterpress_ring is deliberately not the zone clicked here. It is a
-    // ball-relative circle whose polygon bounds their whole half, so it
-    // sits underneath the last-line polygon in the current overlay; the
-    // renderer that reads zone_kind is a later ticket's job.
     await page.locator('[data-zone-key="midfield_box"]').click();
-    await expect(page.getByTestId("formations-zone-title")).toHaveText(
-      "5v3 (the midfield box)",
-    );
+    await expect(page.getByTestId("formations-zone-title")).toHaveText("The midfield box");
     await expect(page.getByTestId("formations-zone-teaches")).toContainText(
       "Two central midfielders holding the middle",
     );
