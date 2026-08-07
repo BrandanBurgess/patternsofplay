@@ -29,7 +29,19 @@
     },
     {
       "formation_code": "433",
-      "zone_key": "flank_corridor",
+      "zone_key": "flank_corridor_left",
+      "rondo_name": "2v1 to 2v2 (the flank corridor)",
+      "teaches": "Winger and fullback against their fullback, with a tracking winger: every overlap or underlap decision is this corridor rondo in its pure form.",
+      "polygon_json": [
+        {"x": 20, "y": 0}, {"x": 90, "y": 0}, {"x": 90, "y": 25}, {"x": 20, "y": 25}
+      ],
+      "trains_pattern_codes": ["A1", "A2", "F1"],
+      "source_ref": "bible:3G.2",
+      "content_version": "1.0.0"
+    },
+    {
+      "formation_code": "433",
+      "zone_key": "flank_corridor_right",
       "rondo_name": "2v1 to 2v2 (the flank corridor)",
       "teaches": "Winger and fullback against their fullback, with a tracking winger: every overlap or underlap decision is this corridor rondo in its pure form.",
       "polygon_json": [
