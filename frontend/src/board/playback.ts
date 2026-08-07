@@ -61,9 +61,22 @@ function clamp(v: number, lo: number, hi: number): number {
   return v < lo ? lo : v > hi ? hi : v;
 }
 
-function lerp(a: ModelPoint, b: ModelPoint, p: number): ModelPoint {
+/**
+ * The board's ONE interpolation primitive, shared by every builder that
+ * produces a Playback (declarative specs, raw keyframes, and the phase morph in
+ * phaseMorph.ts). Exported so a new builder reuses this arithmetic rather than
+ * growing a second, subtly different one.
+ *
+ * Note the form: `a + (b - a) * p`, not `a * (1 - p) + b * p`. When a and b are
+ * the same point, `b - a` is exactly 0 and the result is exactly `a` for every
+ * p, so a token whose coordinates do not change between two phases cannot drift
+ * or jitter by a floating-point ulp while the rest of the shape moves.
+ */
+export function lerpModel(a: ModelPoint, b: ModelPoint, p: number): ModelPoint {
   return { x: a.x + (b.x - a.x) * p, y: a.y + (b.y - a.y) * p };
 }
+
+const lerp = lerpModel;
 
 // ---------------------------------------------------------------------------
 // Declarative specs (doc 03 4.1)

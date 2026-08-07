@@ -82,6 +82,17 @@ interface Props {
   /** Rondo Map overlay (Formations page only; absent/empty elsewhere). */
   zones?: PreviewZone[];
   onZoneClick?: (zoneKey: string) => void;
+  /**
+   * Whether the Restart control appears once a playback settles. Defaults to
+   * true, which is right for a pattern, a delivery, a rotation or a saved
+   * recording: those are things you watch again.
+   *
+   * A formation phase morph (T-105) is not. It is a transition into a state the
+   * coach then reads, so a Restart button under it would offer to replay a
+   * 600ms walk that has already told its story, and would sit on the board for
+   * as long as the phase is selected. The Formations page passes false.
+   */
+  showRestart?: boolean;
 }
 
 export default function PatternPreviewBoard({
@@ -93,6 +104,7 @@ export default function PatternPreviewBoard({
   onTokenClick,
   zones,
   onZoneClick,
+  showRestart = true,
 }: Props) {
   const vb = VIEWBOX[orientation];
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -287,7 +299,7 @@ export default function PatternPreviewBoard({
         </div>
       )}
 
-      {playback && !playing && (
+      {showRestart && playback && !playing && (
         <button
           type="button"
           data-testid="pattern-restart"
