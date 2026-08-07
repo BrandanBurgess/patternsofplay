@@ -2,11 +2,12 @@
 has team scoping; a cross-team read attempt in tests returns nothing."
 
 Exercises app/scoped.py's TeamScope directly against two teams' worth of
-content, for every team-scoped table in doc 03: the five that carry
-team_id directly (Player, PlaystyleSuggestion, SavedPattern, Board,
-TrainingSession) via .query()/.get(), and the three that scope
-transitively through a parent FK (PlayerAttribute, SessionItem,
-SessionReceipt) via .query_via(). For each table: team A's scope sees
+content, for every team-scoped table in doc 03 plus doc 06 section 3.2's
+Tactics Lab additions (T-101): the six that carry team_id directly
+(Player, PlaystyleSuggestion, SavedPattern, Board, TrainingSession,
+TeamFormation) via .query()/.get(), and the four that scope transitively
+through a parent FK (PlayerAttribute, SessionItem, SessionReceipt,
+TeamFormationSlot) via .query_via(). For each table: team A's scope sees
 only team A's row, team B's scope sees only team B's row, and a direct id
 guess across teams (.get()) returns None rather than the other team's row.
 """
@@ -19,6 +20,7 @@ from sqlalchemy.orm import Session
 from app.db import SessionLocal
 from app.models import (
     Board,
+    Formation,
     Player,
     PlayerAttribute,
     PlaystyleSuggestion,
@@ -26,6 +28,8 @@ from app.models import (
     SessionItem,
     SessionReceipt,
     Team,
+    TeamFormation,
+    TeamFormationSlot,
     TeamMember,
     TrainingSession,
     User,
@@ -221,6 +225,41 @@ def test_sessions_cross_team_read_returns_nothing(
     assert scope_b.get(TrainingSession, session_a.id) is None
 
 
+def test_team_formations_cross_team_read_returns_nothing(
+    db: Session, two_teams: tuple[Team, User, Team, User]
+) -> None:
+    """doc 06 section 3.2 (T-101): team_formations carries team_id
+    directly, same scoping shape as saved_patterns/boards/sessions."""
+    team_a, coach_a, team_b, coach_b = two_teams
+    db.add(Formation(code="433", name="4-3-3", shape_blurb="test", positions_json=[]))
+    db.flush()
+
+    tf_a = TeamFormation(
+        team_id=team_a.id,
+        name="Formation A",
+        base_formation_code="433",
+        active_phase_variant="in_possession",
+        created_by_user_id=coach_a.id,
+    )
+    tf_b = TeamFormation(
+        team_id=team_b.id,
+        name="Formation B",
+        base_formation_code="433",
+        active_phase_variant="in_possession",
+        created_by_user_id=coach_b.id,
+    )
+    db.add_all([tf_a, tf_b])
+    db.commit()
+
+    scope_a = TeamScope(db=db, team_id=team_a.id)
+    scope_b = TeamScope(db=db, team_id=team_b.id)
+
+    assert {f.name for f in scope_a.query(TeamFormation).all()} == {"Formation A"}
+    assert {f.name for f in scope_b.query(TeamFormation).all()} == {"Formation B"}
+    assert scope_a.get(TeamFormation, tf_b.id) is None
+    assert scope_b.get(TeamFormation, tf_a.id) is None
+
+
 # ---------------------------------------------------------------------------
 # Transitively-scoped tables (no team_id column; scope through a parent FK)
 # ---------------------------------------------------------------------------
@@ -348,6 +387,66 @@ def test_session_receipts_cross_team_read_returns_nothing(
             SessionReceipt, TrainingSession, SessionReceipt.session_id == TrainingSession.id
         )
         .filter(SessionReceipt.session_id == session_b.id)
+        .first()
+        is None
+    )
+
+
+def test_team_formation_slots_cross_team_read_returns_nothing(
+    db: Session, two_teams: tuple[Team, User, Team, User]
+) -> None:
+    """doc 06 section 3.2 (T-101): team_formation_slots carries no
+    team_id of its own, scoping transitively through team_formation_id ->
+    team_formations.team_id, the same shape player_attributes already
+    uses through player_id -> players.team_id."""
+    team_a, coach_a, team_b, coach_b = two_teams
+    db.add(Formation(code="433", name="4-3-3", shape_blurb="test", positions_json=[]))
+    db.flush()
+
+    tf_a = TeamFormation(
+        team_id=team_a.id,
+        name="Formation A",
+        base_formation_code="433",
+        active_phase_variant="in_possession",
+        created_by_user_id=coach_a.id,
+    )
+    tf_b = TeamFormation(
+        team_id=team_b.id,
+        name="Formation B",
+        base_formation_code="433",
+        active_phase_variant="in_possession",
+        created_by_user_id=coach_b.id,
+    )
+    db.add_all([tf_a, tf_b])
+    db.flush()
+
+    db.add_all(
+        [
+            TeamFormationSlot(team_formation_id=tf_a.id, slot="gk"),
+            TeamFormationSlot(team_formation_id=tf_b.id, slot="gk"),
+        ]
+    )
+    db.commit()
+
+    scope_a = TeamScope(db=db, team_id=team_a.id)
+    scope_b = TeamScope(db=db, team_id=team_b.id)
+
+    slots_a = scope_a.query_via(
+        TeamFormationSlot, TeamFormation, TeamFormationSlot.team_formation_id == TeamFormation.id
+    ).all()
+    slots_b = scope_b.query_via(
+        TeamFormationSlot, TeamFormation, TeamFormationSlot.team_formation_id == TeamFormation.id
+    ).all()
+
+    assert {s.team_formation_id for s in slots_a} == {tf_a.id}
+    assert {s.team_formation_id for s in slots_b} == {tf_b.id}
+    assert (
+        scope_a.query_via(
+            TeamFormationSlot,
+            TeamFormation,
+            TeamFormationSlot.team_formation_id == TeamFormation.id,
+        )
+        .filter(TeamFormationSlot.team_formation_id == tf_b.id)
         .first()
         is None
     )

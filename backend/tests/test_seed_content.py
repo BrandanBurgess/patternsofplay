@@ -280,7 +280,7 @@ def test_seed_loader_is_idempotent_and_never_touches_team_tables() -> None:
         "library_items": 23,
         "formations": 6,
         "formation_keystones": 13,
-        "rondo_zones": 5,
+        "rondo_zones": 6,  # T-101/migration 0006 split flank_corridor into left/right
         "identities": 27,
     }
 

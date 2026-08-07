@@ -3,7 +3,7 @@ Bible 4, 3G.2, 5, 5.7, 6). Library world: seeded, read-only to teams, no
 team_id anywhere in this module.
 """
 
-from sqlalchemy import ForeignKey, JSON, String, Text
+from sqlalchemy import ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -41,12 +41,19 @@ class FormationKeystone(Base):
 class RondoZone(Base):
     """Bible 3G.2 rondo map; 3G.1 rondo table seeds the metadata even
     though the session planner itself is deferred. No id in doc 03;
-    (formation_code, zone_key) is the natural key."""
+    (formation_code, zone_key) is the natural key.
+
+    doc 06 section 3.1 amendment (T-101, migration 0006): three new
+    columns, plus a data migration that splits the single 4-3-3
+    `flank_corridor` row into `flank_corridor_left` and
+    `flank_corridor_right` so every formation can eventually carry both
+    flanks instead of one polygon standing in for both sides."""
 
     __tablename__ = "rondo_zones"
 
     formation_code: Mapped[str] = mapped_column(ForeignKey("formations.code"), primary_key=True)
-    # first_line | midfield_box | flank_corridor | last_line | counterpress
+    # first_line | midfield_box | flank_corridor_left | flank_corridor_right
+    # | last_line | counterpress
     zone_key: Mapped[str] = mapped_column(String(30), primary_key=True)
     polygon_json: Mapped[list] = mapped_column(JSON, nullable=False)
     rondo_name: Mapped[str] = mapped_column(String(120), nullable=False)
@@ -54,6 +61,15 @@ class RondoZone(Base):
     trains_pattern_codes: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     source_ref: Mapped[str | None] = mapped_column(String(60), nullable=True)
     content_version: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    # Fallback label when no opposition is placed, e.g. '4v2'. Nullable:
+    # T-101 adds the column but seeds no new content (T-102/T-103's job),
+    # and inventing a label for the five still-unseeded formations is a
+    # content decision this ticket does not own.
+    canonical_rondo: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    # polygon | ball_relative_circle. Defaults to 'polygon' because every
+    # zone seeded so far (and every zone this migration creates) is one.
+    zone_kind: Mapped[str] = mapped_column(String(30), nullable=False, default="polygon")
+    radius: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class Identity(Base):

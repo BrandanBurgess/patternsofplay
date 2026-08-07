@@ -7,6 +7,10 @@ independently readable:
   formations.py      section 5  formations, keystones, rondo zones, identities (T-004)
   team_content.py    section 4.2/4.3  saved_patterns, boards (T-004)
   sessions.py        section 6  sessions, session_items, session_receipts (T-004)
+  tactics.py         doc 06 section 3  Tactics Lab: formation phases, rotation
+                      systems, position archetypes, archetype combinations,
+                      unit balance rules, formation matchups, team formations
+                      and their slots (T-101)
 
 Every name is re-exported here so callers keep writing
 `from app.models import X` (T-003 routers and deps already do this), and
@@ -27,6 +31,16 @@ from app.models.roster import (
     RoleSynergy,
 )
 from app.models.sessions import SessionItem, SessionReceipt, TrainingSession
+from app.models.tactics import (
+    ArchetypeCombination,
+    FormationMatchup,
+    FormationPhase,
+    PositionArchetype,
+    RotationSystem,
+    TeamFormation,
+    TeamFormationSlot,
+    UnitBalanceRule,
+)
 from app.models.team_content import Board, SavedPattern
 
 __all__ = [
@@ -50,4 +64,12 @@ __all__ = [
     "TrainingSession",
     "SessionItem",
     "SessionReceipt",
+    "FormationPhase",
+    "RotationSystem",
+    "PositionArchetype",
+    "ArchetypeCombination",
+    "UnitBalanceRule",
+    "FormationMatchup",
+    "TeamFormation",
+    "TeamFormationSlot",
 ]

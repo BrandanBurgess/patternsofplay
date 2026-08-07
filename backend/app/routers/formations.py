@@ -25,8 +25,18 @@ FORMATION_ORDER = ("433", "4231", "442", "352", "343", "541")
 # Bible 3G.2's rondo map order (first-line build-up through to the
 # counterpress moment); only 433 carries seeded zones today (seeds/
 # rondo_zones.json), but the ordering applies to any formation that gains
-# a rondo map later.
-ZONE_ORDER = ("first_line", "midfield_box", "flank_corridor", "last_line", "counterpress")
+# a rondo map later. flank_corridor split into left/right (T-101,
+# migration 0006, doc 06 section 3.1); left before right matches the
+# repo's own slot-naming convention (formations.json lists every '_l'
+# slot before its '_r' counterpart, e.g. fb_l before fb_r).
+ZONE_ORDER = (
+    "first_line",
+    "midfield_box",
+    "flank_corridor_left",
+    "flank_corridor_right",
+    "last_line",
+    "counterpress",
+)
 
 
 def _order_index(value: str, order: tuple[str, ...]) -> int:
