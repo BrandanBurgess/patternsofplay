@@ -53,7 +53,7 @@ class RondoZone(Base):
 
     formation_code: Mapped[str] = mapped_column(ForeignKey("formations.code"), primary_key=True)
     # first_line | midfield_box | flank_corridor_left | flank_corridor_right
-    # | last_line | counterpress
+    # | last_line | counterpress_ring
     zone_key: Mapped[str] = mapped_column(String(30), primary_key=True)
     polygon_json: Mapped[list] = mapped_column(JSON, nullable=False)
     rondo_name: Mapped[str] = mapped_column(String(120), nullable=False)
