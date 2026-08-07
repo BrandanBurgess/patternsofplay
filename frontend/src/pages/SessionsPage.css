@@ -38,7 +38,11 @@
 .sessions-new {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 6px;
+}
+.sessions-new .sessions-primary {
+  align-self: stretch;
 }
 
 .sessions-input {
@@ -494,6 +498,17 @@
 @media (max-width: 700px) {
   .sessions-stage {
     grid-template-columns: minmax(0, 1fr);
+  }
+  /* The rail is the full page width on phone, so a stretched gold button
+     would read as the loudest thing on screen before a coach has even
+     typed a title. Sized to its own text instead. */
+  .sessions-new {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  .sessions-new .sessions-primary {
+    align-self: auto;
   }
   .sessions-detail {
     padding: 10px;

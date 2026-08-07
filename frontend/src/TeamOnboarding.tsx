@@ -13,6 +13,7 @@
 
 import { FormEvent, useState } from "react";
 import { ApiError, Role, createTeam, joinTeam } from "./api";
+import "./auth.css";
 
 export function TeamOnboarding({
   role,

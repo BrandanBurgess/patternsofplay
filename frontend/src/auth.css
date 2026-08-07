@@ -1,0 +1,181 @@
+/* Sign up, log in, create team, join by code.
+ *
+ * The handoff contains no screens for any of these (Brief section 8, the
+ * known-design-gaps list), which says to "build the smallest functional
+ * version using the token system and existing component patterns (sheets,
+ * pills, gold primary buttons)". These four forms shipped before the token
+ * system landed and were never revisited, so they rendered as raw browser
+ * controls: labels running into their inputs, default grey buttons. This
+ * gives them the same card/pill/gold-primary idiom every other screen uses,
+ * with no new surface and no DOM change (every label, testid and control
+ * stays exactly where the platform e2e journeys expect it).
+ */
+
+.auth-forms,
+.team-onboarding {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 420px;
+  margin: 24px auto;
+  font-family: var(--body-font);
+}
+
+.auth-form,
+.team-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.auth-form h2,
+.team-form h2 {
+  margin: 0;
+  font-family: var(--display-font);
+  font-weight: 500;
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.team-form-hint {
+  margin: -6px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* Label text sits above its own input. Pure layout: the input stays nested
+   inside the label, so every getByLabel() in the e2e suite keeps working. */
+.auth-form label,
+.team-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"],
+.auth-form input:not([type]),
+.team-form input {
+  font: inherit;
+  font-size: 15px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-primary);
+  width: 100%;
+}
+.auth-form input:focus-visible,
+.team-form input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* The join code is read off a whiteboard and typed in: give it room. */
+.team-form input[maxlength="12"] {
+  font-family: var(--display-font);
+  font-size: 20px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* "I am a": the coach/player choice, as a pill row rather than a browser
+   fieldset with its default etched border. */
+.auth-form fieldset {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+.auth-form legend {
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.auth-form fieldset label {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.auth-form fieldset label:has(input:checked) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.auth-form input[type="radio"] {
+  accent-color: var(--accent);
+  margin: 0;
+}
+
+/* Gold primary: one per form (Create account, Log in, Create team, Join
+   team), matching every other screen's single-primary rule. */
+.auth-form button[type="submit"],
+.team-form button[type="submit"] {
+  align-self: flex-start;
+  font: inherit;
+  font-size: 14px;
+  padding: 9px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+  cursor: pointer;
+}
+.auth-form button[type="submit"]:disabled,
+.team-form button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Switching between register and log in is navigation, not an action. */
+.mode-toggle {
+  align-self: center;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.mode-toggle:hover,
+.mode-toggle:focus-visible {
+  color: var(--accent);
+}
+
+.form-error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-red, var(--red));
+}
+
+@media (max-width: 700px) {
+  .auth-forms,
+  .team-onboarding {
+    margin: 12px auto;
+  }
+  .auth-form,
+  .team-form {
+    padding: 16px;
+  }
+}

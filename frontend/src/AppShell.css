@@ -222,10 +222,46 @@
   .app-main {
     padding: 10px;
   }
-  /* Team meta (name, role, join code, log out) stays visible on phone: the
+  /* Team meta (name, role, join codes, log out) stays visible on phone: the
      T-003 platform DoD journey asserts on it in both viewports. The topbar
-     already wraps (flex-wrap), so this never forces horizontal overflow. */
+     already wraps (flex-wrap), so this never forces horizontal overflow.
+     What it DID do was eat a fifth of an iPhone 13's height before the
+     board started (T-050), so on phone it compresses: tighter padding, the
+     two join codes side by side on one line instead of stacked, and
+     smaller type throughout. Nothing is hidden. */
   .app-topbar {
-    padding: 10px 12px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .app-topbar-end {
+    gap: 8px;
+  }
+  .team-meta {
+    gap: 8px;
+  }
+  .team-meta-name {
+    font-size: 12px;
+  }
+  .team-meta-role,
+  .join-code {
+    font-size: 10px;
+  }
+  .join-codes {
+    flex-direction: row;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .team-meta-logout,
+  .team-members-toggle {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  /* The panel is anchored to the toggle, which sits near the right edge on
+     phone: pin it to the viewport instead so it can never overhang. */
+  .team-members-panel {
+    right: -8px;
+    min-width: 0;
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
   }
 }

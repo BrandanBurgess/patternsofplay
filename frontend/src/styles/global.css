@@ -71,3 +71,36 @@ h3 {
   min-width: 0;
   padding: 16px;
 }
+
+/* The shared NEUTRAL button (Clear, Open on whiteboard, Rondo map, Back to
+   session, Discard, Save note). Gold is reserved for the one primary action
+   on a screen and red is status only, so everything secondary reads as an
+   outline that picks up the accent on hover.
+
+   This lives here rather than in board/Board.css, which is where it started
+   (T-030) and where it was scoped to `.save-bar .ctl-ghost` and
+   `.saved-pattern .ctl-ghost`. Later screens reused the class name outside
+   those two parents, where it matched nothing and fell back to the
+   browser's default grey button: visible on the Formations Rondo map
+   toggle and the Patterns meta bar. The scoped Board.css rules still win
+   inside the save bar (higher specificity) and stay as they are. */
+.ctl-ghost {
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--text-secondary);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ctl-ghost:hover:not(:disabled),
+.ctl-ghost:focus-visible:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ctl-ghost:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

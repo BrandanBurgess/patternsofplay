@@ -120,6 +120,20 @@ export async function registerAndJoinTeam(
   return { email };
 }
 
+/** Signs an EXISTING account in on a fresh page (a second browser context,
+ * a second device). Pairs with registerCoach/registerPlayer, which return
+ * the email they created: the cross-device journey records on one device
+ * and replays on another as the SAME coach, which needs a real sign-in
+ * rather than another registration. */
+export async function signIn(page: Page, email: string): Promise<void> {
+  await page.goto("/");
+  await page.getByRole("button", { name: /Already have an account/ }).click();
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Log in", exact: true }).click();
+  await expect(page.getByTestId("board")).toBeVisible();
+}
+
 /** Flips the board's rendered orientation by resizing the viewport across
  * the phone/desktop breakpoint (design README: portrait on phone,
  * landscape otherwise). Replaces the old dev-only "Rotate board" toggle

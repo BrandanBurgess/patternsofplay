@@ -1,11 +1,12 @@
 // Minimal token-styled screen (Brief section 8: the handoff has no
 // sign-up/login screens; build the smallest functional version, no
-// invented navigation). Plain structure only: T-002's token system has
-// not merged yet, so this deliberately carries no color values or
-// invented styling of its own.
+// invented navigation). Structure only, no invented surfaces: the look
+// comes entirely from auth.css, which uses the shared token system and the
+// same card/pill/gold-primary idiom as every designed screen (T-050).
 
 import { FormEvent, useState } from "react";
 import { ApiError, Role, login, register } from "./api";
+import "./auth.css";
 
 type Mode = "register" | "login";
 
