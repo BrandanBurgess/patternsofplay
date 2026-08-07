@@ -145,7 +145,14 @@ test.describe("demo path: the Brief section 6 acceptance narrative", () => {
     await expect(page.getByTestId("rondo-zone-layer")).toBeVisible();
     await page.locator('[data-zone-key="first_line"]').click();
     await expect(page.getByTestId("formations-zone-card")).toBeVisible();
-    await expect(page.getByTestId("formations-zone-title")).toContainText("4v2");
+    // Still the 4v2 rondo, but T-106 moved the ratio out of the card title
+    // and into the on-board chip, where muted "seeded" styling marks it as
+    // the coached rondo rather than a live count of what is on the board
+    // (doc 06 section 5.1).
+    await expect(page.getByTestId("formations-zone-title")).toContainText("First-line build-up");
+    const firstLineChip = page.locator('[data-chip-zone="first_line"]');
+    await expect(firstLineChip).toContainText("4v2");
+    await expect(firstLineChip).toHaveAttribute("data-source", "seeded");
     await tap(page.getByTestId("formations-rondo-active-toggle"));
 
     // --- "opens Patterns, searches 'third man', plays A5 on the board" ----
