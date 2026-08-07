@@ -112,7 +112,22 @@ export function AppShell({
     <div className="app-shell">
       <header className="app-topbar">
         <h1 className="app-brand">
-          <span className="app-brand-dot" aria-hidden="true" />
+          {/* Decorative: the visible "Patterns of Play" text below is the
+              h1's accessible name (App.test.tsx asserts
+              getByRole("heading", { name: "Patterns of Play" })). An img
+              with its own alt text here would double up the name, so this
+              one stays alt="" and aria-hidden. */}
+          {/* Single asset, no srcSet (T-070 follow-up): rendered at a
+              ~28-32px logical size, so a 3x device needs 84-96px and this
+              96px source already covers it. shield-mark-144.png used to
+              sit in a srcSet candidate list a 96w entry already dominated,
+              so nothing ever downloaded it. */}
+          <img
+            className="app-brand-mark"
+            src="/shield-mark-96.png"
+            alt=""
+            aria-hidden="true"
+          />
           Patterns of Play
         </h1>
         <div className="app-topbar-end">
