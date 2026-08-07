@@ -4,14 +4,30 @@
 // formationsApi.ts and libraryApi.ts already follow.
 //
 // Library world only: phases, matchups and rotations carry no team_id, so
-// none of these calls takes or sends one (CLAUDE.md rule 4). The team
-// world routes (/api/team-formations) and the coach-only archetype
-// suggestion ranking are deliberately absent: they belong to the personnel
-// panel, which is T-107.
+// none of these calls takes or sends one (CLAUDE.md rule 4).
+//
+// T-107 adds the personnel panel's three surfaces below, in doc 06 section
+// 5.3 order: the archetype catalog (GET /archetypes, library world, both
+// roles), the ranked suggestion list (GET /archetypes/suggest, COACH-ONLY,
+// 403s a player token), and the live unit balance evaluation
+// (POST /formations/{code}/balance, also COACH-ONLY). FormationsPage.tsx is
+// the one caller and is responsible for never firing the two coach-only
+// fetchers for a player-role session (CLAUDE.md rule 5); nothing in this
+// module gates on role itself, same as every other file in this repo that
+// only wraps `fetch`.
+//
+// The team-formations routes (T-108: GET/POST/PUT /api/team-formations) are
+// still deliberately absent here. Doc 06 section 5.3 never asks the
+// personnel panel to persist a saved setup, and the balance endpoint's own
+// docstring says it evaluates the panel's UNSAVED state: eleven scratch
+// picks kept in FormationsPage.tsx's own React state, never written
+// anywhere. Wiring team-formations into this panel would be inventing a
+// save surface doc 06 does not ask for.
 
 import { request } from "./api";
 import type { FormationPositionWire } from "./formationsApi";
 import type { AnimationSpecWire } from "./libraryApi";
+import type { Flank, WorkRate } from "./rosterApi";
 
 /** formation_phases.phase. `transition` is in the vocabulary but nothing is
  *  seeded against it yet, so the page's phase segment does not offer it. */
@@ -86,5 +102,127 @@ export function getFormationMatchup(
 export function listRotations(formationCode: string): Promise<RotationSystemWire[]> {
   return request<RotationSystemWire[]>(
     `/rotations?formation_code=${encodeURIComponent(formationCode)}`
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Position archetypes (doc 06 sections 2.6, 3.1, 5.3; T-102/T-108). Library
+// world, read-only, both roles: no different from listFormations or
+// listRotations above.
+// ---------------------------------------------------------------------------
+
+export interface PositionArchetypeWire {
+  code: string;
+  slot_family: string;
+  name: string;
+  definition: string;
+  key_attribute_keys: string[];
+  foot_hint: "same_side" | "opposite_side" | "either" | null;
+  awr_default: WorkRate;
+  dwr_default: WorkRate;
+  duties: string[];
+  enables_pattern_codes: string[];
+  enables_rotation_codes: string[];
+  needs_around_it: string;
+  exemplar_note: string | null;
+}
+
+export function listArchetypes(slotFamily?: string): Promise<PositionArchetypeWire[]> {
+  const qs = slotFamily ? `?slot_family=${encodeURIComponent(slotFamily)}` : "";
+  return request<PositionArchetypeWire[]>(`/archetypes${qs}`);
+}
+
+// ---------------------------------------------------------------------------
+// Archetype suggestion ranking (doc 06 section 5.3), COACH-ONLY: 403s a
+// player token (backend/app/routers/tactics.py suggest_archetypes,
+// require_role_on_team("coach")). `why` is the server's own cited reason,
+// built from the player's real attribute values, footedness and work
+// rates ("passing range 5 and positional discipline 4 fit the metronome"),
+// never a score; render it verbatim (doc 06 section 5.3, this ticket's own
+// non-negotiable).
+// ---------------------------------------------------------------------------
+
+export interface ArchetypeSuggestionWire {
+  archetype_code: string;
+  archetype_name: string;
+  slot_family: string;
+  why: string;
+}
+
+/** `player_id` echoes back null when the caller asked for no player (the
+ *  empty-roster / unassigned-slot state, doc 06 section 5.3), not an
+ *  error: the response still carries a usable top three. */
+export interface ArchetypeSuggestResponseWire {
+  slot_family: string;
+  player_id: number | null;
+  suggestions: ArchetypeSuggestionWire[];
+}
+
+export function suggestArchetypes(params: {
+  slotFamily: string;
+  playerId?: number | null;
+  side?: Flank | null;
+}): Promise<ArchetypeSuggestResponseWire> {
+  const query = new URLSearchParams({ slot_family: params.slotFamily });
+  if (params.playerId !== undefined && params.playerId !== null) {
+    query.set("player_id", String(params.playerId));
+  }
+  if (params.side) query.set("side", params.side);
+  return request<ArchetypeSuggestResponseWire>(`/archetypes/suggest?${query.toString()}`);
+}
+
+// ---------------------------------------------------------------------------
+// Unit balance evaluation (doc 06 sections 2.6, 3.1, 5.3; T-110), COACH-ONLY:
+// 403s a player token (backend/app/routers/tactics.py evaluate_balance,
+// require_role_on_team("coach")). POST because it evaluates the personnel
+// panel's own UNSAVED eleven picks, not a saved row (module comment above).
+// ---------------------------------------------------------------------------
+
+export interface UnitBalanceSlotWire {
+  slot: string;
+  archetype_code: string | null;
+}
+
+/** One fired unit_balance_rules row. `message` is the seeded warning_copy
+ *  verbatim (backend/app/units.py); this ticket's non-negotiable is to
+ *  render it as-is, never compose or soften it further, because the seeded
+ *  copy already reads as a check rather than an error. */
+export interface UnitBalanceNoteWire {
+  code: string;
+  unit: string;
+  flank: Flank | null;
+  severity: "note" | "warning";
+  message: string;
+  slots: string[];
+}
+
+export interface UnitBalanceUnitWire {
+  unit: string;
+  /** Set only for wide_unit, which occurs once per touchline. */
+  flank: Flank | null;
+  slots: string[];
+  assigned_slots: string[];
+  is_complete: boolean;
+  notes: UnitBalanceNoteWire[];
+}
+
+/** `units_not_evaluated` is part of the contract, not debug output: a unit
+ *  the current formation does not contain (a 4-3-3 has no double pivot) is
+ *  simply absent from `units` and named here instead, so the panel can say
+ *  nothing about it rather than shout a warning about a unit that is not
+ *  on the pitch. */
+export interface UnitBalanceResponseWire {
+  formation_code: string;
+  units: UnitBalanceUnitWire[];
+  units_not_evaluated: string[];
+}
+
+export function evaluateUnitBalance(
+  formationCode: string,
+  slots: UnitBalanceSlotWire[]
+): Promise<UnitBalanceResponseWire> {
+  return request<UnitBalanceResponseWire>(
+    `/formations/${encodeURIComponent(formationCode)}/balance`,
+    { method: "POST", body: JSON.stringify({ slots }) }
   );
 }

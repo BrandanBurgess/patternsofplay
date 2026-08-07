@@ -62,16 +62,24 @@ import {
   listFormations,
   type FormationKeystoneWire,
   type FormationOutWire,
+  type FormationPositionWire,
   type RondoZoneWire,
 } from "../formationsApi";
 import { listLibraryItems } from "../libraryApi";
 import {
+  evaluateUnitBalance,
   getFormationMatchup,
+  listArchetypes,
   listFormationPhases,
   listRotations,
+  suggestArchetypes,
+  type ArchetypeSuggestionWire,
   type FormationPhaseWire,
+  type PositionArchetypeWire,
   type RotationSystemWire,
+  type UnitBalanceResponseWire,
 } from "../tacticsApi";
+import { fetchRoster, type PlayerWire, type Role } from "../rosterApi";
 import { animationSpecPreview } from "./patternPreview";
 import {
   BALL_RELATIVE_CIRCLE,
@@ -94,6 +102,14 @@ import {
   zoneReadLine,
   type PhaseKey,
 } from "./formationsLab";
+import {
+  familyLabel,
+  fullbackPairNote,
+  personnelGroups,
+  sideOfY,
+  slotFootednessNote,
+  unitHeading,
+} from "./personnelLab";
 import { matchesSearch } from "./search";
 import "./FormationsPage.css";
 
@@ -190,9 +206,15 @@ function FormationThumb({ formation }: { formation: FormationOutWire }) {
 
 interface FormationsPageProps {
   orientation: Orientation;
+  // T-107: the personnel panel's suggestions, unit balance, and footedness
+  // notes are coach-only, both at the API (403 for a player token) and
+  // here (CLAUDE.md rule 5): every fetch that touches them is gated on
+  // this, never fired unconditionally, so T-106's own "player role reaches
+  // every control with no failed request" e2e journey stays honest.
+  role: Role;
 }
 
-export function FormationsPage({ orientation }: FormationsPageProps) {
+export function FormationsPage({ orientation, role }: FormationsPageProps) {
   // Phone is exactly the breakpoint that already decides board orientation
   // (App.tsx, max-width 700px), so the icon row and the bottom sheets
   // switch on the same signal the portrait board does. One breakpoint, not
@@ -207,6 +229,13 @@ export function FormationsPage({ orientation }: FormationsPageProps) {
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  // T-107: the sheet's second segment, alongside "Browse formations" (doc
+  // 06 section 5.3: "opens from the sheet as a third segment", counting
+  // the sheet's original one plus this). Stays on whatever the coach last
+  // picked across a formation swap; selectFormation closes the sheet
+  // anyway, so there is no stale personnel content to worry about landing
+  // on for the WRONG formation.
+  const [sheetTab, setSheetTab] = useState<"browse" | "personnel">("browse");
 
   const [panel, setPanel] = useState<Panel>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
@@ -1478,12 +1507,13 @@ export function FormationsPage({ orientation }: FormationsPageProps) {
             </p>
           </div>
 
-          {/* Page-level swipe-up sheet. T-107's personnel panel is the next
-              surface to live here (doc 06 section 5.4: "a full-height
-              sheet, one unit at a time"), alongside this browser rather
-              than instead of it. Nothing is stubbed for it: an empty tab
-              would be inventing a surface. */}
-          <div className={`formations-sheet${sheetOpen ? " formations-sheet-open" : ""}`}>
+          {/* Page-level swipe-up sheet: "Browse formations" (T-106) plus
+              T-107's personnel panel as the segment alongside it (doc 06
+              section 5.3: "opens from the sheet as a third segment"). */}
+          <div
+            className={`formations-sheet${sheetOpen ? " formations-sheet-open" : ""}`}
+            data-sheet-tab={sheetTab}
+          >
             <button
               type="button"
               className="formations-sheet-handle"
@@ -1492,7 +1522,7 @@ export function FormationsPage({ orientation }: FormationsPageProps) {
               onClick={() => setSheetOpen((o) => !o)}
             >
               <span className="formations-sheet-grip" aria-hidden="true" />
-              Browse formations
+              {sheetTab === "personnel" ? "Personnel" : "Browse formations"}
               <span className="formations-sheet-chevron" aria-hidden="true">
                 {sheetOpen ? "⌄" : "⌃"}
               </span>
@@ -1500,42 +1530,540 @@ export function FormationsPage({ orientation }: FormationsPageProps) {
 
             {sheetOpen && (
               <div className="formations-sheet-body" data-testid="formations-sheet-body">
-                <input
-                  type="search"
-                  className="formations-search"
-                  placeholder="Search formations..."
-                  aria-label="Search formations"
-                  data-testid="formations-search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-
-                <div className="formations-grid" data-testid="formations-grid">
-                  {tiles.map((f) => (
-                    <button
-                      key={f.code}
-                      type="button"
-                      className="formations-tile"
-                      data-testid="formations-tile"
-                      onClick={() => selectFormation(f.code)}
-                    >
-                      <FormationThumb formation={f} />
-                      <span className="formations-tile-code">{f.code}</span>
-                      <span className="formations-tile-name">{f.name}</span>
-                    </button>
-                  ))}
-                  {tiles.length === 0 && (
-                    <p className="formations-empty-result" data-testid="formations-empty-result">
-                      No matches. Try a different search.
-                    </p>
-                  )}
+                <div
+                  className="formations-segment formations-sheet-segment"
+                  role="group"
+                  aria-label="Sheet view"
+                  data-testid="formations-sheet-segment"
+                >
+                  <button
+                    type="button"
+                    className="formations-segment-btn"
+                    data-testid="formations-sheet-tab-browse"
+                    aria-pressed={sheetTab === "browse"}
+                    onClick={() => setSheetTab("browse")}
+                  >
+                    Browse formations
+                  </button>
+                  <button
+                    type="button"
+                    className="formations-segment-btn"
+                    data-testid="formations-sheet-tab-personnel"
+                    aria-pressed={sheetTab === "personnel"}
+                    onClick={() => setSheetTab("personnel")}
+                  >
+                    Personnel
+                  </button>
                 </div>
+
+                {sheetTab === "browse" ? (
+                  <>
+                    <input
+                      type="search"
+                      className="formations-search"
+                      placeholder="Search formations..."
+                      aria-label="Search formations"
+                      data-testid="formations-search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+
+                    <div className="formations-grid" data-testid="formations-grid">
+                      {tiles.map((f) => (
+                        <button
+                          key={f.code}
+                          type="button"
+                          className="formations-tile"
+                          data-testid="formations-tile"
+                          onClick={() => selectFormation(f.code)}
+                        >
+                          <FormationThumb formation={f} />
+                          <span className="formations-tile-code">{f.code}</span>
+                          <span className="formations-tile-name">{f.name}</span>
+                        </button>
+                      ))}
+                      {tiles.length === 0 && (
+                        <p className="formations-empty-result" data-testid="formations-empty-result">
+                          No matches. Try a different search.
+                        </p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  // key={selected.code}: a fresh formation is a fresh eleven
+                  // slots, so the panel remounts with clean scratch state
+                  // rather than carrying stale slot assignments from the
+                  // formation the coach was just looking at.
+                  <PersonnelPanel
+                    key={selected.code}
+                    formationCode={selected.code}
+                    positions={selected.positions}
+                    role={role}
+                    phone={phone}
+                  />
+                )}
               </div>
             )}
           </div>
         </div>
       )}
     </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// T-107 Personnel panel (doc 06 sections 2.6, 2.7, 5.3, 5.4). Opens as the
+// sheet's "Personnel" segment: for each of the formation's eleven slots, a
+// player picker (from the team roster, open to both roles), an archetype
+// picker (library world, open to both roles), a top-three suggestion list
+// with the server's own cited reason (COACH-ONLY), and a footedness note
+// (COACH-ONLY, computed here per doc 06 section 2.7 since no endpoint
+// carries it). A live unit balance read (COACH-ONLY) sits underneath.
+//
+// Nothing here is saved: doc 06 section 5.3 never asks the panel to
+// persist a setup, and POST /formations/{code}/balance's own docstring
+// says it evaluates the panel's UNSAVED picks. `assignments` is therefore
+// plain component state, gone the moment the sheet's formation changes
+// (the `key={selected.code}` at the call site remounts this component
+// rather than carrying stale picks across formations).
+// ---------------------------------------------------------------------------
+
+/** A formation slot once its slot_family is known non-null. Always true
+ *  for `selected.positions` (the base formation, backend/app/routers/
+ *  formations.py always populates it there); the type stays a filter
+ *  rather than an assertion because FormationPositionWire's slot_family is
+ *  optional for the ONE other place that type is reused, a
+ *  formation_phases row's positions, which this panel never receives. */
+type PersonnelSlotWire = FormationPositionWire & { slot_family: string };
+
+interface SlotAssignment {
+  playerId: number | null;
+  archetypeCode: string | null;
+}
+
+interface PersonnelPanelProps {
+  formationCode: string;
+  positions: FormationPositionWire[];
+  role: Role;
+  phone: boolean;
+}
+
+function PersonnelPanel({ formationCode, positions, role, phone }: PersonnelPanelProps) {
+  const isCoach = role === "coach";
+
+  const knownSlots = useMemo(
+    () => positions.filter((p): p is PersonnelSlotWire => p.slot_family !== null),
+    [positions]
+  );
+
+  const [roster, setRoster] = useState<PlayerWire[] | null>(null);
+  const [rosterError, setRosterError] = useState<string | null>(null);
+  const [archetypesByFamily, setArchetypesByFamily] = useState<Record<string, PositionArchetypeWire[]>>({});
+  const [assignments, setAssignments] = useState<Record<string, SlotAssignment>>({});
+  const [suggestionsBySlot, setSuggestionsBySlot] = useState<Record<string, ArchetypeSuggestionWire[]>>({});
+  const [balance, setBalance] = useState<UnitBalanceResponseWire | null>(null);
+  const [groupIndex, setGroupIndex] = useState(0);
+
+  // Roster: open to both roles (rosterApi.fetchRoster, same call the
+  // Roster page makes; the roster itself is player-viewable per the
+  // permission table, only its fit-warning analysis is coach-only, and
+  // this panel never touches that).
+  useEffect(() => {
+    let cancelled = false;
+    fetchRoster()
+      .then((r) => {
+        if (!cancelled) setRoster(r.players);
+      })
+      .catch(() => {
+        if (!cancelled) setRosterError("Could not load the roster. Archetypes still work on their own.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Archetype catalog per slot family found on this formation: library
+  // world, open to both roles.
+  const families = useMemo(() => [...new Set(knownSlots.map((s) => s.slot_family))], [knownSlots]);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all(families.map((f) => listArchetypes(f).then((list) => [f, list] as const)))
+      .then((entries) => {
+        if (!cancelled) setArchetypesByFamily(Object.fromEntries(entries));
+      })
+      .catch(() => {
+        // Non-fatal: the roster and slot list already render either way,
+        // an archetype picker just comes up short of options.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [families]);
+
+  function setPlayerForSlot(slot: string, playerId: number | null) {
+    setAssignments((prev) => ({
+      ...prev,
+      [slot]: { playerId, archetypeCode: prev[slot]?.archetypeCode ?? null },
+    }));
+  }
+
+  function setArchetypeForSlot(slot: string, archetypeCode: string | null) {
+    setAssignments((prev) => ({
+      ...prev,
+      [slot]: { playerId: prev[slot]?.playerId ?? null, archetypeCode },
+    }));
+  }
+
+  // Suggestions (doc 06 section 5.3), COACH-ONLY. Keyed off the PLAYER
+  // each slot carries, not the archetype: which archetype is currently
+  // picked plays no part in ranking candidates for the slot.
+  const assignedPlayerKey = useMemo(
+    () => knownSlots.map((s) => `${s.slot}:${assignments[s.slot]?.playerId ?? ""}`).join("|"),
+    [knownSlots, assignments]
+  );
+
+  useEffect(() => {
+    if (!isCoach) {
+      setSuggestionsBySlot({});
+      return;
+    }
+    let cancelled = false;
+    Promise.all(
+      knownSlots.map((s) =>
+        suggestArchetypes({
+          slotFamily: s.slot_family,
+          playerId: assignments[s.slot]?.playerId ?? null,
+          side: sideOfY(s.y),
+        }).then((res) => [s.slot, res.suggestions] as const)
+      )
+    )
+      .then((entries) => {
+        if (!cancelled) setSuggestionsBySlot(Object.fromEntries(entries));
+      })
+      .catch(() => {
+        if (!cancelled) setSuggestionsBySlot({});
+      });
+    return () => {
+      cancelled = true;
+    };
+    // assignedPlayerKey stands in for `assignments` here on purpose: this
+    // effect only cares about WHICH PLAYER is on each slot, and keying on
+    // the whole assignments object would refire it on every archetype pick
+    // too, tripling the coach-only request count for no reason. The
+    // closure still reads the live `assignments` inside the effect body
+    // (via the .map above), so this is a deliberately narrower dependency
+    // list, not a stale one: assignedPlayerKey changes exactly when the
+    // relevant part of `assignments` does.
+  }, [isCoach, formationCode, assignedPlayerKey, knownSlots]);
+
+  // Unit balance (doc 06 sections 2.6, 3.1, 5.3), COACH-ONLY, "live as
+  // archetypes change": keyed off the ARCHETYPE each slot carries.
+  const assignedArchetypeKey = useMemo(
+    () => knownSlots.map((s) => `${s.slot}:${assignments[s.slot]?.archetypeCode ?? ""}`).join("|"),
+    [knownSlots, assignments]
+  );
+
+  useEffect(() => {
+    if (!isCoach) {
+      setBalance(null);
+      return;
+    }
+    let cancelled = false;
+    evaluateUnitBalance(
+      formationCode,
+      knownSlots.map((s) => ({ slot: s.slot, archetype_code: assignments[s.slot]?.archetypeCode ?? null }))
+    )
+      .then((res) => {
+        if (!cancelled) setBalance(res);
+      })
+      .catch(() => {
+        if (!cancelled) setBalance(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Same narrower-dependency reasoning as the suggestions effect above:
+    // assignedArchetypeKey is what this effect actually needs to react to.
+  }, [isCoach, formationCode, assignedArchetypeKey, knownSlots]);
+
+  const playersById = useMemo(() => {
+    const map = new Map<number, PlayerWire>();
+    for (const p of roster ?? []) map.set(p.id, p);
+    return map;
+  }, [roster]);
+
+  function footFor(slot: string): PreferredFootOrNull {
+    const playerId = assignments[slot]?.playerId ?? null;
+    if (playerId === null) return null;
+    return playersById.get(playerId)?.preferred_foot ?? null;
+  }
+
+  // Rule 4 is the one footedness rule that reads TWO slots (doc 06 section
+  // 2.7 item 4), computed once per formation and attached under both
+  // fullback rows rather than derived per slot.
+  const fbLeftSlot = knownSlots.find((s) => s.slot_family === "fb" && sideOfY(s.y) === "left");
+  const fbRightSlot = knownSlots.find((s) => s.slot_family === "fb" && sideOfY(s.y) === "right");
+  const fbPairNote = fullbackPairNote(
+    fbLeftSlot ? footFor(fbLeftSlot.slot) : null,
+    fbRightSlot ? footFor(fbRightSlot.slot) : null
+  );
+
+  const groups = useMemo(() => personnelGroups(knownSlots), [knownSlots]);
+
+  useEffect(() => {
+    setGroupIndex(0);
+  }, [formationCode]);
+
+  if (groups.length === 0) {
+    return (
+      <p className="formations-panel-note" data-testid="personnel-no-slots">
+        This formation has no slots to assign yet.
+      </p>
+    );
+  }
+
+  const clampedIndex = Math.min(groupIndex, groups.length - 1);
+  const visibleGroups = phone ? [groups[clampedIndex]] : groups;
+
+  return (
+    <div className="personnel-panel" data-testid="personnel-panel">
+      {rosterError && (
+        <p role="alert" className="formations-error">
+          {rosterError}
+        </p>
+      )}
+
+      {/* Empty roster is a first-class state (doc 06 section 5.3): the
+          panel still works, archetypes alone, no players assigned. This
+          notice is informational for both roles, not a coach-only read. */}
+      {roster !== null && roster.length === 0 && (
+        <p className="personnel-empty-roster" data-testid="personnel-empty-roster">
+          No players on the roster yet. Archetypes still rank and the shape still holds together on its own; assign
+          players whenever the roster is ready.
+        </p>
+      )}
+
+      {/* doc 06 section 5.4: "the personnel panel is a full-height sheet,
+          ONE UNIT AT A TIME" on phone. Desktop stacks every group and
+          scrolls the panel instead. */}
+      {phone && (
+        <div className="personnel-pager" data-testid="personnel-pager">
+          <button
+            type="button"
+            className="ctl-ghost"
+            data-testid="personnel-pager-prev"
+            disabled={clampedIndex === 0}
+            onClick={() => setGroupIndex((i) => Math.max(0, i - 1))}
+          >
+            Prev
+          </button>
+          <span className="personnel-pager-label" data-testid="personnel-pager-label">
+            {groups[clampedIndex].label} ({clampedIndex + 1} of {groups.length})
+          </span>
+          <button
+            type="button"
+            className="ctl-ghost"
+            data-testid="personnel-pager-next"
+            disabled={clampedIndex >= groups.length - 1}
+            onClick={() => setGroupIndex((i) => Math.min(groups.length - 1, i + 1))}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {visibleGroups.map((group) => (
+        <div className="personnel-group" data-testid="personnel-group" data-group={group.key} key={group.key}>
+          {!phone && <h3 className="personnel-group-title">{group.label}</h3>}
+          {group.slots.map((slot) => (
+            <SlotRow
+              key={slot.slot}
+              slot={slot}
+              side={sideOfY(slot.y)}
+              archetypes={archetypesByFamily[slot.slot_family] ?? []}
+              roster={roster ?? []}
+              assignment={assignments[slot.slot] ?? { playerId: null, archetypeCode: null }}
+              onPlayerChange={(playerId) => setPlayerForSlot(slot.slot, playerId)}
+              onArchetypeChange={(code) => setArchetypeForSlot(slot.slot, code)}
+              suggestions={suggestionsBySlot[slot.slot]}
+              footNote={slot.slot_family === "fb" ? fbPairNote : slotFootednessNote(slot.slot_family, sideOfY(slot.y), footFor(slot.slot))}
+              coachView={isCoach}
+            />
+          ))}
+        </div>
+      ))}
+
+      {/* Unit balance (doc 06 sections 2.6, 3.1, 5.3), COACH-ONLY: absent
+          from the DOM entirely for a player token, not merely hidden,
+          because `balance` never leaves null when isCoach is false. Reads
+          the REAL slot-to-unit crosswalk straight off the balance
+          response (app/units.py), so it names units the simple four-group
+          pager above never had to reconstruct (e.g. "Wide unit, left").
+          A unit the formation does not contain is not in `units` at all
+          (T-110's units_not_evaluated), so nothing here mentions it: say
+          nothing rather than shout. */}
+      {isCoach && balance && (
+        <div className="personnel-balance" data-testid="personnel-balance">
+          <p className="formations-card-kicker">Unit balance</p>
+          {balance.units.length === 0 ? (
+            <p className="formations-panel-note" data-testid="personnel-balance-empty">
+              No units are ready to read yet. Pick archetypes for a full unit (a back line, a midfield trio or pivot,
+              a front line) to see a balance read.
+            </p>
+          ) : (
+            balance.units.map((u) => (
+              <div
+                className="personnel-balance-unit"
+                data-testid="personnel-balance-unit"
+                key={`${u.unit}-${u.flank ?? ""}`}
+              >
+                <p className="personnel-balance-unit-title">{unitHeading(u.unit, u.flank)}</p>
+                {u.notes.length === 0 ? (
+                  <p className="personnel-balance-note" data-testid="personnel-balance-note" data-severity="none">
+                    {u.is_complete
+                      ? "No balance notes. This unit checks out."
+                      : "Not fully assigned yet. Balance notes appear once every slot in this unit has an archetype."}
+                  </p>
+                ) : (
+                  u.notes.map((n) => (
+                    <p
+                      key={n.code}
+                      className="personnel-balance-note"
+                      data-testid="personnel-balance-note"
+                      data-severity={n.severity}
+                    >
+                      {n.message}
+                    </p>
+                  ))
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+type PreferredFootOrNull = PlayerWire["preferred_foot"] | null;
+
+interface SlotRowProps {
+  slot: PersonnelSlotWire;
+  side: ReturnType<typeof sideOfY>;
+  archetypes: PositionArchetypeWire[];
+  roster: PlayerWire[];
+  assignment: SlotAssignment;
+  onPlayerChange: (playerId: number | null) => void;
+  onArchetypeChange: (code: string | null) => void;
+  /** undefined (not yet loaded) and [] (loaded, empty) both render no
+   *  list; the distinction only matters to the network layer above. */
+  suggestions: ArchetypeSuggestionWire[] | undefined;
+  footNote: string | null;
+  /** Suggestions and the footedness note are COACH-ONLY (doc 06 sections
+   *  2.7, 5.3): when false, this row renders neither, and not as a hidden
+   *  element either, so a player token's page carries no trace of them. */
+  coachView: boolean;
+}
+
+function SlotRow({
+  slot,
+  side,
+  archetypes,
+  roster,
+  assignment,
+  onPlayerChange,
+  onArchetypeChange,
+  suggestions,
+  footNote,
+  coachView,
+}: SlotRowProps) {
+  const selectedArchetype = archetypes.find((a) => a.code === assignment.archetypeCode) ?? null;
+  return (
+    <div className="personnel-slot" data-testid="personnel-slot" data-slot={slot.slot}>
+      <div className="personnel-slot-head">
+        <span className="personnel-slot-name" data-testid="personnel-slot-name">
+          {slotLabel(slot.slot)}
+        </span>
+        <span className="personnel-slot-family">
+          {familyLabel(slot.slot_family)}
+          {side !== "center" ? `, ${side}` : ""}
+        </span>
+      </div>
+
+      <label className="formations-field">
+        <span className="formations-card-kicker">Player</span>
+        <select
+          className="formations-select"
+          data-testid="personnel-player-select"
+          value={assignment.playerId ?? ""}
+          onChange={(e) => onPlayerChange(e.target.value === "" ? null : Number(e.target.value))}
+        >
+          <option value="">Unassigned</option>
+          {roster.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="formations-field">
+        <span className="formations-card-kicker">Archetype</span>
+        <select
+          className="formations-select"
+          data-testid="personnel-archetype-select"
+          value={assignment.archetypeCode ?? ""}
+          onChange={(e) => onArchetypeChange(e.target.value === "" ? null : e.target.value)}
+        >
+          <option value="">No archetype picked</option>
+          {archetypes.map((a) => (
+            <option key={a.code} value={a.code}>
+              {a.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      {selectedArchetype && (
+        <p className="personnel-archetype-definition" data-testid="personnel-archetype-definition">
+          {selectedArchetype.definition}
+        </p>
+      )}
+
+      {/* Suggestions (doc 06 section 5.3): "show the top three with a
+          one-line why for each. The why must cite the actual reason ...,
+          not a score." `s.why` is rendered exactly as the API returns it;
+          nothing here recomputes or summarises it. */}
+      {coachView && suggestions && suggestions.length > 0 && (
+        <div className="personnel-suggestions" data-testid="personnel-suggestions">
+          <p className="formations-card-kicker">Suggested archetypes</p>
+          <ul className="personnel-suggestion-list">
+            {suggestions.map((s) => (
+              <li key={s.archetype_code} className="personnel-suggestion" data-testid="personnel-suggestion">
+                <button
+                  type="button"
+                  className="personnel-suggestion-pick"
+                  data-testid="personnel-suggestion-pick"
+                  aria-pressed={assignment.archetypeCode === s.archetype_code}
+                  onClick={() => onArchetypeChange(s.archetype_code)}
+                >
+                  {s.archetype_name}
+                </button>
+                <span className="personnel-suggestion-why" data-testid="personnel-suggestion-why">
+                  {s.why}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {coachView && footNote && (
+        <p className="personnel-foot-note" data-testid="personnel-foot-note">
+          {footNote}
+        </p>
+      )}
+    </div>
   );
 }
 

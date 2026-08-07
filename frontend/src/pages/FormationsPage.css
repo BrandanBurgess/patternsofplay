@@ -817,6 +817,193 @@
   stroke: none;
 }
 
+/* Sheet segment (T-107, doc 06 section 5.3): "Browse formations" next to
+   "Personnel", same pill-segment look the meta bar's Phase control uses. */
+.formations-sheet-segment {
+  align-self: flex-start;
+}
+
+/* ---------------------------------------------------------------------
+   Personnel panel (T-107, doc 06 sections 2.6, 2.7, 5.3, 5.4).
+   --------------------------------------------------------------------- */
+.personnel-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.personnel-empty-roster {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  font-family: var(--body-font);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Phone pager (doc 06 section 5.4: "one unit at a time"). Prev/Next are
+   plain neutral controls, not gold: they page a READ, they do not commit
+   to anything, and gold stays reserved for the archetype/suggestion picks
+   below that actually change the shape's personnel. */
+.personnel-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.personnel-pager-label {
+  font-family: var(--display-font);
+  font-size: 12px;
+  color: var(--text-primary);
+  text-align: center;
+  flex: 1;
+}
+
+.personnel-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.personnel-group-title {
+  margin: 4px 0 0;
+  font-family: var(--display-font);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+.personnel-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.personnel-slot-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.personnel-slot-name {
+  font-family: var(--display-font);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.personnel-slot-family {
+  font-family: var(--body-font);
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: capitalize;
+}
+.personnel-archetype-definition {
+  margin: 0;
+  font-family: var(--body-font);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+/* Suggestions (doc 06 section 5.3): the archetype name is the one
+   clickable, gold-on-select element in this row; its cited "why" sits
+   beside it in the neutral body colour, never re-stated as a score. */
+.personnel-suggestion-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.personnel-suggestion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+.personnel-suggestion-pick {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.personnel-suggestion-pick[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.personnel-suggestion-why {
+  font-family: var(--body-font);
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Footedness note (doc 06 section 2.7): one line, coach-facing, never an
+   error colour, exactly the same "informational aside" treatment as
+   .formations-panel-note elsewhere on this page. */
+.personnel-foot-note {
+  margin: 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  font-family: var(--body-font);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* Unit balance (doc 06 sections 2.6, 3.1, 5.3). Reads as a CHECK, never an
+   error: no red anywhere in this block, matching the positional grid's own
+   breach styling. A "warning" severity gets a touch more emphasis than a
+   "note" (a slightly stronger accent-toned rule), never a status colour
+   swap, so the coach's eye still lands there first without the app
+   claiming something is broken. */
+.personnel-balance {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+.personnel-balance-unit {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.personnel-balance-unit-title {
+  margin: 0;
+  font-family: var(--display-font);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+.personnel-balance-note {
+  margin: 0;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: var(--bg);
+  border-left: 2px solid var(--border);
+  font-family: var(--body-font);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+.personnel-balance-note[data-severity="warning"] {
+  border-left-color: var(--accent);
+}
+.personnel-balance-note[data-severity="none"] {
+  color: var(--text-secondary);
+  border-left-color: transparent;
+  background: transparent;
+  padding-left: 0;
+}
+
 @media (max-width: 700px) {
   /* Doc 06 section 5.4: on phone every meta bar control opens a BOTTOM
      SHEET rather than a popover, so the panel leaves the board visible
@@ -891,5 +1078,12 @@
      type, same colour, neither one a footnote. */
   .formations-balance {
     grid-template-columns: 1fr;
+  }
+  /* Doc 06 section 5.4: "the personnel panel is a full-height sheet".
+     Browse formations keeps the existing 74vh drawer height; the
+     Personnel segment claims the screen instead, since paging one unit
+     at a time through eleven slots needs the room. */
+  .formations-sheet-open[data-sheet-tab="personnel"] {
+    max-height: 94vh;
   }
 }

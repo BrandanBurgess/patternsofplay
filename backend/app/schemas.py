@@ -460,10 +460,24 @@ class SuggestionOut(BaseModel):
 class FormationPositionOut(BaseModel):
     """One slot from Formation.positions_json (doc 03 section 5): a
     landscape model coordinate plus the position_code the keystone lookup
-    and the board's on-token labels both key off of."""
+    and the board's on-token labels both key off of.
+
+    `slot_family` (doc 06 section 2.6, T-110 seed) is additive as of
+    T-107: it is the key the personnel panel needs to call
+    GET /api/archetypes and GET /api/archetypes/suggest for this slot.
+    T-110 seeded it on seeds/formations.json (validator-enforced there)
+    but never on seeds/formation_phases.json, whose positions_json rows
+    carry only slot/position_code/x/y (scripts/validate_seeds.py does not
+    require it there). Optional rather than required so
+    GET /formations/{code}/phases, which parses FormationPhaseOut.positions
+    straight off that column via validation_alias, keeps validating: it
+    comes back None on a phase variant, and app/routers/formations.py
+    below is the only place that ever populates it (from the base
+    formation, where it is always present)."""
 
     slot: str
     position_code: str
+    slot_family: str | None = None
     x: float
     y: float
 

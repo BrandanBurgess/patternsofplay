@@ -134,7 +134,7 @@ export default function App() {
       ) : page === "roster" ? (
         <RosterPage role={membership.role_on_team} />
       ) : page === "formations" ? (
-        <FormationsPage orientation={orientation} />
+        <FormationsPage orientation={orientation} role={membership.role_on_team} />
       ) : page === "identity" ? (
         <IdentityPage orientation={orientation} />
       ) : (
