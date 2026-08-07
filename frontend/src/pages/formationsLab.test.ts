@@ -14,14 +14,16 @@ import {
   NO_BREACH_CHECK,
   NO_SEEDED_MATCHUP_NOTE,
   polygonCentroid,
+  ringCentre,
+  rondoDisplayName,
   shortLine,
   slotLabel,
   spareLine,
-  splitRondoName,
   variantsForPhase,
   zoneReadLine,
 } from "./formationsLab";
-import type { GridBreach, MatchupRead, ZoneCount } from "../board/superiorityTypes";
+import { BALL_FALLBACK_ADVANCED_COUNT } from "../board/superiority";
+import type { GridBreach, MatchupRead, SlotPos, ZoneCount } from "../board/superiorityTypes";
 import type { FormationPhaseWire } from "../tacticsApi";
 
 function phase(variant_code: string, phaseName: FormationPhaseWire["phase"]): FormationPhaseWire {
@@ -54,32 +56,117 @@ function count(over: Partial<ZoneCount> = {}): ZoneCount {
   };
 }
 
-describe("splitRondoName", () => {
+describe("rondoDisplayName", () => {
   it("takes the ratio out of the display name", () => {
-    const split = splitRondoName("5v3 (the midfield box)");
-    expect(split.displayName).toBe("The midfield box");
-    expect(split.seededRatio).toBe("5v3");
-    // The whole point of the epic: no computed-looking ratio survives in
-    // the name a coach reads next to a live one.
-    expect(split.displayName).not.toMatch(/\dv\d/);
+    expect(rondoDisplayName("5v3 (the midfield box)")).toBe("The midfield box");
+    // The whole point of the epic: no ratio survives in the name a coach
+    // reads next to a live one.
+    expect(rondoDisplayName("5v3 (the midfield box)")).not.toMatch(/\dv\d/);
   });
 
-  it("splits on the LAST parenthetical, so a ratio may contain one", () => {
-    const split = splitRondoName("2v2 (+1 keeper) (the last line)");
-    expect(split.displayName).toBe("The last line");
-    expect(split.seededRatio).toBe("2v2 (+1 keeper)");
+  it("takes the LAST parenthetical, so a ratio may contain one", () => {
+    expect(rondoDisplayName("2v2 (+1 keeper) (the last line)")).toBe("The last line");
   });
 
   it("handles a slashed ratio", () => {
-    const split = splitRondoName("4v2 / 3v2 (first-line build-up)");
-    expect(split.displayName).toBe("First-line build-up");
-    expect(split.seededRatio).toBe("4v2 / 3v2");
+    expect(rondoDisplayName("4v2 / 3v2 (first-line build-up)")).toBe("First-line build-up");
   });
 
-  it("keeps a name with no parenthetical whole and reports no ratio", () => {
-    const split = splitRondoName("The half-space pocket");
-    expect(split.displayName).toBe("The half-space pocket");
-    expect(split.seededRatio).toBe("");
+  it("keeps a name with no parenthetical whole", () => {
+    expect(rondoDisplayName("The half-space pocket")).toBe("The half-space pocket");
+  });
+
+  it("returns the counterpress ring's name without its ratio", () => {
+    expect(rondoDisplayName("4v4+3 (the counterpress ring)")).toBe("The counterpress ring");
+  });
+
+  it("never returns a ratio, which is what canonical_rondo is for", () => {
+    // Regression guard on the workaround T-112 deleted. splitRondoName used
+    // to hand back a `seededRatio` because canonical_rondo was not on the
+    // wire; the chip now reads the column, and nothing here may go back to
+    // synthesising a ratio from a display name.
+    for (const seeded of [
+      "4v2 / 3v2 (first-line build-up)",
+      "5v3 (the midfield box)",
+      "2v1 to 2v2 (the flank corridor)",
+      "2v2 (+1 keeper) (the last line)",
+      "4v4+3 (the counterpress ring)",
+    ]) {
+      expect(rondoDisplayName(seeded)).not.toMatch(/\dv\d/);
+    }
+  });
+});
+
+describe("ringCentre (doc 06 section 2.3)", () => {
+  function slot(s: string, x: number, y: number): SlotPos {
+    return { slot: s, position_code: "cm", x, y };
+  }
+
+  // The 4-3-3's three most advanced at base (seeds/formations.json): the
+  // striker at x 88 and both wingers at x 76.5, which average to 80.333.
+  const shape: SlotPos[] = [
+    slot("gk", 5, 50),
+    slot("cb_l", 22, 40),
+    slot("cb_r", 22, 60),
+    slot("six", 42, 50),
+    slot("eight_l", 58, 36),
+    slot("eight_r", 58, 64),
+    slot("w_l", 76.5, 12),
+    slot("w_r", 76.5, 88),
+    slot("st", 88, 50),
+  ];
+
+  it("centres on the centroid of our three most advanced when no ball is placed", () => {
+    const c = ringCentre(shape, null);
+    expect(c?.x).toBeCloseTo((88 + 76.5 + 76.5) / 3, 6);
+    expect(c?.y).toBeCloseTo((50 + 12 + 88) / 3, 6);
+  });
+
+  it("uses exactly three, the engine's own BALL_FALLBACK_ADVANCED_COUNT", () => {
+    expect(BALL_FALLBACK_ADVANCED_COUNT).toBe(3);
+    // A fourth player just behind the front three must not move the centre.
+    const withDeeper = [...shape, slot("am", 70, 50)];
+    expect(ringCentre(withDeeper, null)).toEqual(ringCentre(shape, null));
+  });
+
+  it("moves when the shape advances, which is the teaching point", () => {
+    const base = ringCentre(shape, null);
+    const pushedOn = ringCentre(
+      shape.map((s) => (s.x > 70 ? { ...s, x: s.x + 8 } : s)),
+      null
+    );
+    expect(pushedOn?.x).toBeGreaterThan(base?.x ?? 0);
+  });
+
+  it("prefers a placed ball over the fallback", () => {
+    expect(ringCentre(shape, { x: 30, y: 20 })).toEqual({ x: 30, y: 20 });
+  });
+
+  it("does not depend on the order the caller built the array", () => {
+    const reversed = [...shape].reverse();
+    expect(ringCentre(reversed, null)).toEqual(ringCentre(shape, null));
+  });
+
+  it("breaks an x tie by slot rather than by array order", () => {
+    // Four players on the same x: which three are picked must be decided by
+    // the data, not by whoever built the list.
+    const tied: SlotPos[] = [
+      slot("d", 80, 10),
+      slot("a", 80, 20),
+      slot("c", 80, 30),
+      slot("b", 80, 40),
+    ];
+    expect(ringCentre(tied, null)).toEqual(ringCentre([...tied].reverse(), null));
+    // a, b, c win on slot order: y averages 20, 40, 30.
+    expect(ringCentre(tied, null)?.y).toBeCloseTo(30, 6);
+  });
+
+  it("has no centre when there is nobody to centre on", () => {
+    expect(ringCentre([], null)).toBeNull();
+  });
+
+  it("averages fewer than three when fewer are on the pitch", () => {
+    expect(ringCentre([slot("a", 60, 20), slot("b", 40, 40)], null)).toEqual({ x: 50, y: 30 });
   });
 });
 

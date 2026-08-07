@@ -22,12 +22,14 @@
 // temporary breach is legal football.
 
 import { JDP_GRID } from "../board/grid";
+import { BALL_FALLBACK_ADVANCED_COUNT } from "../board/superiority";
 import type {
   GridBreach,
   LaneKey,
   LineKey,
   MatchupRead,
   Pt,
+  SlotPos,
   ZoneCount,
 } from "../board/superiorityTypes";
 import type { FormationPhaseWire, PhaseName } from "../tacticsApi";
@@ -86,49 +88,84 @@ export function defaultOpponentVariant(phases: readonly FormationPhaseWire[]): s
 /** Doc 06 section 2.3's ball-relative zone. Named once, matched by key. */
 export const COUNTERPRESS_RING_ZONE_KEY = "counterpress_ring";
 
-export interface RondoZoneName {
-  /** The zone's name with no ratio in it, e.g. "The midfield box". */
-  displayName: string;
-  /**
-   * The seeded ratio, e.g. "5v3", used ONLY as the no-opposition fallback
-   * chip and always rendered muted.
-   *
-   * KNOWN GAP, flagged rather than worked around silently. The real source
-   * for this is rondo_zones.canonical_rondo, which T-103 seeded on all 36
-   * rows and migration 0006 added to the model. GET /api/formations does
-   * not expose it: schemas.py RondoZoneOut carries zone_key, rondo_name,
-   * teaches, polygon and trains_pattern_codes and nothing else, and this
-   * ticket's scope is frontend only. So the fallback is split back out of
-   * `rondo_name`, which is where T-103 left the ratio duplicated for
-   * exactly this reason. When RondoZoneOut gains the column, delete this
-   * function's second return value and read the field: nothing else in the
-   * page changes, because the chip already treats it as opaque text.
-   */
-  seededRatio: string;
-}
+/** rondo_zones.zone_kind for a zone that is a circle around the ball rather
+ *  than a fixed polygon (doc 06 section 2.3, migration 0006). */
+export const BALL_RELATIVE_CIRCLE = "ball_relative_circle";
 
 /**
- * Split "5v3 (the midfield box)" into a ratio and a name.
+ * "5v3 (the midfield box)" as the name alone: "The midfield box".
  *
- * Splits on the LAST " (" rather than the first, because one seeded name
- * carries a parenthetical inside the ratio itself
+ * The seeded rondo_name carries the canonical ratio in front of the name,
+ * and seeds/rondo_zones.json says out loud that taking it back out is a UI
+ * change rather than a seed change. This is that change. It is NOT where
+ * the fallback chip's ratio comes from: that is rondo_zones.canonical_rondo,
+ * read straight off the wire since T-112. Splitting a ratio out of a display
+ * name to stand in for a column was T-106's `splitRondoName` workaround and
+ * it is gone; nothing in this file synthesises a ratio from anything.
+ *
+ * Takes the LAST parenthetical rather than the first, because one seeded
+ * name carries a parenthetical inside the ratio itself
  * ("2v2 (+1 keeper) (the last line)") and splitting on the first would file
- * "+1 keeper" as the zone's name. A name with no parenthetical at all keeps
- * the whole string as its display name and yields no ratio, so an unusual
- * seed degrades to "no fallback chip" rather than to a wrong one.
+ * "+1 keeper" as the zone's name. A name with no parenthetical at all is
+ * already a plain name and is returned whole.
  */
-export function splitRondoName(rondoName: string): RondoZoneName {
+export function rondoDisplayName(rondoName: string): string {
   const idx = rondoName.lastIndexOf(" (");
-  if (idx === -1 || !rondoName.endsWith(")")) {
-    return { displayName: rondoName, seededRatio: "" };
-  }
-  const ratio = rondoName.slice(0, idx).trim();
-  const name = rondoName.slice(idx + 2, rondoName.length - 1).trim();
-  return { displayName: capitalise(name), seededRatio: ratio };
+  if (idx === -1 || !rondoName.endsWith(")")) return rondoName;
+  return capitalise(rondoName.slice(idx + 2, rondoName.length - 1).trim());
 }
 
 function capitalise(s: string): string {
   return s.length === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// ---------------------------------------------------------------------------
+// The counterpress ring's centre (doc 06 section 2.3)
+// ---------------------------------------------------------------------------
+
+/**
+ * Where the counterpress ring sits, in landscape model coords.
+ *
+ * Doc 06 section 2.3: "a circle of radius 18 model units centred on the
+ * ball's position (or on the centroid of our three most advanced players
+ * when no ball is placed). It moves. That is the whole teaching point: rest
+ * defence is relative to the ball, not to the pitch."
+ *
+ * So the fallback is UNCONDITIONAL, which is what makes the ring always
+ * renderable. Doc 06 section 5.1 says the ring "only renders when a ball is
+ * placed or a phase with a defined ball position is active"; that clause
+ * assumes a ball affordance the Formations page does not have and
+ * formation_phases has no column for, and section 2.3 defines the object
+ * itself and hands it a centre for exactly that case. Section 2.3 wins.
+ *
+ * `ball` is threaded through rather than assumed absent because the spec
+ * gives it precedence and a later surface (a placed ball, a phase that
+ * gains a ball position) should not have to rediscover that rule. The
+ * Formations page passes null today: it has no ball.
+ *
+ * Most advanced means largest x, x growing toward the attacking goal
+ * (CLAUDE.md rule 8). Ties break by slot, so two players on the same x
+ * cannot make the ring depend on the order the caller built its array; the
+ * engine's own fallbackBallLine does not need that because it averages x
+ * alone, and this averages y as well.
+ *
+ * Null when there is nobody to centre on, which is the shape of "no ring"
+ * rather than a ring parked at the origin.
+ */
+export function ringCentre(ours: readonly SlotPos[], ball: Pt | null): Pt | null {
+  if (ball) return { x: ball.x, y: ball.y };
+  if (ours.length === 0) return null;
+  const byX = [...ours].sort(
+    (a, b) => b.x - a.x || (a.slot < b.slot ? -1 : a.slot > b.slot ? 1 : 0)
+  );
+  const n = Math.min(BALL_FALLBACK_ADVANCED_COUNT, byX.length);
+  let sx = 0;
+  let sy = 0;
+  for (let i = 0; i < n; i += 1) {
+    sx += byX[i].x;
+    sy += byX[i].y;
+  }
+  return { x: sx / n, y: sy / n };
 }
 
 // ---------------------------------------------------------------------------

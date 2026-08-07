@@ -480,13 +480,36 @@ class FormationKeystoneOut(BaseModel):
 
 class RondoZoneOut(BaseModel):
     """One rondo_zones row (Bible 3G.2): a tappable zone on the Rondo Map,
-    naming which rondo lives there and which library patterns it trains."""
+    naming which rondo lives there and which library patterns it trains.
+
+    The last three fields are doc 06 section 2.3's. T-101 added them to the
+    model (migration 0006) and T-103 seeded them, but they were never put on
+    the wire, so the Formations page could neither draw the counterpress
+    ring (it needs zone_kind and radius to know the zone is a ball-relative
+    circle rather than its seeded bounding polygon) nor show a
+    no-opposition fallback chip without splitting the ratio back out of
+    rondo_name. T-112 closes that.
+    """
 
     zone_key: str
     rondo_name: str
     teaches: str
     polygon: list[ModelPoint]
     trains_pattern_codes: list[str]
+    # The label shown when NO opposition is placed, e.g. '4v2'. Nullable on
+    # the model (T-101 added the column before T-103 had content for every
+    # row), so nullable here: a client that gets null renders no fallback
+    # chip rather than an empty one. With opposition on the board this field
+    # is not read at all, because the ratio is computed from the two shapes
+    # actually on the pitch.
+    canonical_rondo: str | None = None
+    # polygon | ball_relative_circle. Defaulted rather than required so a
+    # row written before migration 0006 still serializes as the polygon it
+    # is.
+    zone_kind: str = "polygon"
+    # Model units, and only meaningful when zone_kind is
+    # ball_relative_circle. Null on every polygon zone.
+    radius: int | None = None
 
 
 class FormationOut(BaseModel):

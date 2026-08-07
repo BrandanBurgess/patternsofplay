@@ -96,13 +96,19 @@ test.describe("tactics lab: phase morph, opposition, live counts, rotations, gri
     // section 5.1: muted, and the seeded ratio only.
     // ------------------------------------------------------------------
     await page.getByTestId("formations-rondo-toggle").click();
+    // SIX zones (doc 06 section 0), and only five of them are polygons: the
+    // counterpress ring is a circle around the ball (doc 06 section 2.3),
+    // so it is not a `rondo-zone` and never will be.
     await expect(page.getByTestId("rondo-zone")).toHaveCount(5);
-    // The counterpress ring is never drawn: it is ball-relative and no ball
-    // is on this page (doc 06 section 5.1).
+    await expect(page.getByTestId("formations-rondo-ring")).toHaveCount(1);
+    // The ring's seeded polygon is still never drawn. That polygon bounds
+    // the half of the pitch the ring is coached in; it is not the zone, and
+    // filling it would show an eleven-a-side count in the same language as
+    // a real 4v2.
     await expect(page.locator('[data-zone-key="counterpress_ring"]')).toHaveCount(0);
 
     const chips = page.getByTestId("formations-zone-chip");
-    await expect(chips).toHaveCount(5);
+    await expect(chips).toHaveCount(6);
     for (const chip of await chips.all()) {
       await expect(chip).toHaveAttribute("data-source", "seeded");
     }
@@ -147,8 +153,10 @@ test.describe("tactics lab: phase morph, opposition, live counts, rotations, gri
     await page.getByTestId("formations-opposition-close").click();
 
     // Now the chips are COMPUTED, and visibly so: a different data-source,
-    // a verdict, and a different colour from the muted fallback above.
-    await expect(chips).toHaveCount(5);
+    // a verdict, and a different colour from the muted fallback above. All
+    // six, the ring included: countZone reads a circle the same way it
+    // reads a polygon.
+    await expect(chips).toHaveCount(6);
     for (const chip of await chips.all()) {
       await expect(chip).toHaveAttribute("data-source", "computed");
       await expect(chip).toHaveAttribute("data-verdict", /superiority|parity|inferiority/);
@@ -187,9 +195,11 @@ test.describe("tactics lab: phase morph, opposition, live counts, rotations, gri
     // ------------------------------------------------------------------
     await page.getByTestId("formations-rotations-toggle").click();
     await expect(page.getByTestId("formations-rotations-panel")).toBeVisible();
-    // Mutual exclusion: opening Rotations closes the Rondo map overlay.
+    // Mutual exclusion: opening Rotations closes the Rondo map overlay,
+    // the ring with it.
     await expect(page.getByTestId("rondo-zone")).toHaveCount(0);
     await expect(page.getByTestId("formations-zone-chip")).toHaveCount(0);
+    await expect(page.getByTestId("formations-rondo-ring")).toHaveCount(0);
 
     const rotationItems = page.getByTestId("formations-rotation-item");
     expect(await rotationItems.count()).toBeGreaterThan(0);
