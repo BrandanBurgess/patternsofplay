@@ -3,6 +3,44 @@
 VENV := .venv
 PY := $(VENV)/bin/python
 
+# T-109: derive a stable, distinct POP_WEB_PORT / POP_API_PORT pair from
+# this checkout's own path, so `make dev` / `make e2e` / `make verify` no
+# longer collide when several ticket worktrees run them at the same time.
+# Before this, both defaulted to 5173/8000 everywhere (scripts/dev.sh's
+# fallback, playwright.config.ts's fallback), so a second worktree's
+# `make verify` would find the FIRST worktree's dev server already
+# listening (reuseExistingServer is true outside CI) and quietly test the
+# wrong worktree's code against the wrong worktree's database. That
+# doesn't fail loudly, it looks exactly like a flaky assertion, and it
+# cost this epic several false diagnoses (doc 06 section 6, T-109).
+#
+# `?=` means an explicit `POP_WEB_PORT=7673 POP_API_PORT=10500 make
+# verify` (or an exported value from the shell) always wins over this
+# default, so the manual override every ticket in this epic already
+# relied on keeps working unchanged, including running two worktrees on
+# the SAME two ports on purpose (e.g. one at a time, by hand).
+#
+# CURDIR is make's own absolute working directory (set once at startup,
+# unaffected by any `cd` inside a recipe), so it is exactly the
+# per-worktree checkout path. cksum is POSIX and present on both macOS
+# and the Linux CI runner, so this needs no new dependency. Folding the
+# checksum into 0-999 keeps the derived ports inside a low-collision,
+# non-privileged range (5173-6172 for web, 8000-8999 for api) without a
+# real port-availability probe, which is unnecessary here: CI only ever
+# runs one checkout at a time, so its derived pair is simply "some
+# deterministic port instead of 5173", never a coordination problem.
+#
+# `printf '%s'`, not `echo -n`: make always runs shell functions through
+# /bin/sh regardless of the caller's login shell, and /bin/sh's builtin
+# echo does not honour -n on macOS OR on Debian/Ubuntu's dash (the CI
+# runner's /bin/sh), so `echo -n "$(CURDIR)"` hashes the literal 4
+# characters "-n " glued onto the path instead of the path alone. Still
+# deterministic, but needlessly fragile; printf has no such flag ambiguity
+# in any POSIX shell.
+WORKTREE_OFFSET := $(shell printf '%s' "$(CURDIR)" | cksum | awk '{print $$1 % 1000}')
+export POP_WEB_PORT ?= $(shell echo $$(( 5173 + $(WORKTREE_OFFSET) )))
+export POP_API_PORT ?= $(shell echo $$(( 8000 + $(WORKTREE_OFFSET) )))
+
 bootstrap:
 	python3 -m venv $(VENV)
 	$(VENV)/bin/pip install --quiet --upgrade pip

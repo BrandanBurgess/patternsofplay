@@ -71,6 +71,27 @@ async function addPlayer(
   await expect(page.getByTestId("player-save")).toHaveCount(0);
 }
 
+/** True on the phone project, where the Formations meta bar collapses to
+ *  an icon row and the phase segment lives behind a bottom sheet instead
+ *  of sitting in the bar itself (doc 06 section 5.4). Same detection
+ *  e2e/tactics-lab.spec.ts uses. */
+async function isPhone(page: Page): Promise<boolean> {
+  return (await page.getByTestId("formations-phase-toggle").count()) > 0;
+}
+
+/** Selects a Tactics Lab phase, opening the phone's Phase sheet first when
+ *  there is one. */
+async function selectPhase(page: Page, key: string) {
+  if (await isPhone(page)) {
+    await tap(page.getByTestId("formations-phase-toggle"));
+    await expect(page.getByTestId("formations-phase-panel")).toBeVisible();
+  }
+  await tap(page.getByTestId(`formations-phase-${key}`));
+  if (await page.getByTestId("formations-phase-close").count()) {
+    await tap(page.getByTestId("formations-phase-close"));
+  }
+}
+
 /** Drags a token by a pixel offset on whichever orientation is rendering.
  * The demo narrative's "drags a build-out" is about the gesture and what
  * it records, not about landing on an exact coordinate, so this stays
@@ -154,6 +175,29 @@ test.describe("demo path: the Brief section 6 acceptance narrative", () => {
     await expect(firstLineChip).toContainText("4v2");
     await expect(firstLineChip).toHaveAttribute("data-source", "seeded");
     await tap(page.getByTestId("formations-rondo-active-toggle"));
+
+    // --- Tactics Lab (doc 06): the coach morphs to the in-possession
+    //     phase, turns the opposition on, and reads a COMPUTED superiority
+    //     rather than the seeded rondo fallback just closed above. Same
+    //     4-3-3 against 4-4-2 pair e2e/tactics-lab.spec.ts pins as seeded,
+    //     so the read below carries a coached route rather than an
+    //     inferred one. -------------------------------------------------
+    await selectPhase(page, "in_possession");
+    await expect(page.getByTestId("formations-phase-caption")).toContainText("Trigger:");
+    await expect(page.locator("[data-token-id]")).toHaveCount(11);
+
+    await tap(page.getByTestId("formations-opposition-toggle"));
+    await expect(page.getByTestId("formations-opposition-panel")).toBeVisible();
+    await page.getByTestId("formations-opponent-formation").selectOption("442");
+    await expect(page.getByTestId("formations-opponent-phase")).not.toHaveValue("");
+    await page.getByTestId("formations-opponent-phase").selectOption({ index: 1 });
+    await expect(page.locator('[data-token-side="away"]')).toHaveCount(11);
+
+    // The computed read: a named superiority, not the 4v2 rondo label.
+    await expect(page.getByTestId("formations-read")).toBeVisible();
+    await expect(page.getByTestId("formations-read-unseeded")).toHaveCount(0);
+    await expect(page.getByTestId("formations-read-spare")).toContainText(/superiority/i);
+    await tap(page.getByTestId("formations-opposition-close"));
 
     // --- "opens Patterns, searches 'third man', plays A5 on the board" ----
     await tap(page.getByTestId("nav-patterns"));
