@@ -84,6 +84,7 @@ def list_formations(
                     FormationPositionOut(
                         slot=p["slot"],
                         position_code=p["position_code"],
+                        slot_family=p["slot_family"],
                         x=p["x"],
                         y=p["y"],
                     )

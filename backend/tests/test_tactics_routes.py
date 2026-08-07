@@ -78,9 +78,9 @@ def _player_on_team(coach: TestClient, email: str, name: str = "Player Test") ->
 
 
 _POSITIONS_433 = [
-    {"slot": "gk", "position_code": "GK", "x": 5.0, "y": 50.0},
-    {"slot": "cb_l", "position_code": "CB", "x": 20.0, "y": 35.0},
-    {"slot": "cb_r", "position_code": "CB", "x": 20.0, "y": 65.0},
+    {"slot": "gk", "position_code": "GK", "slot_family": "gk", "x": 5.0, "y": 50.0},
+    {"slot": "cb_l", "position_code": "CB", "slot_family": "cb_central", "x": 20.0, "y": 35.0},
+    {"slot": "cb_r", "position_code": "CB", "slot_family": "cb_central", "x": 20.0, "y": 65.0},
 ]
 
 

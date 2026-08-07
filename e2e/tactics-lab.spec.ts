@@ -268,6 +268,12 @@ test.describe("tactics lab: a player gets the whole lab, because none of it is c
   // suggestion ranking is the obvious candidate), a player hits a 403 and
   // assertCleanPage fails on the failed request rather than the page
   // quietly rendering a hole.
+  //
+  // T-107 landed the obvious candidate: the personnel panel's suggestion
+  // ranking and unit balance read. This journey now walks into that panel
+  // too (e2e/personnel-panel.spec.ts owns the full role-split coverage;
+  // this is the narrower "does the ORIGINAL tripwire still mean what it
+  // said" check, in the file that made the promise).
   test("player role reaches every control with no failed request", async ({
     page,
     issues,
@@ -295,6 +301,20 @@ test.describe("tactics lab: a player gets the whole lab, because none of it is c
     await page.getByTestId("formations-grid-toggle").click();
     await expect(page.getByTestId("formations-grid-check").first()).toBeVisible();
     await page.getByTestId("formations-grid-close").click();
+
+    // T-107: the personnel panel opens for a player (assignment and the
+    // archetype picker are open-to-both-roles reads), but its coach-only
+    // suggestion list, footedness note, and unit balance section are
+    // absent from the DOM, and none of their requests ever fire (or this
+    // 403s and assertCleanPage below catches it as a failed request).
+    await page.getByTestId("formations-sheet-handle").click();
+    await page.getByTestId("formations-sheet-tab-personnel").click();
+    await expect(page.getByTestId("personnel-panel")).toBeVisible();
+    await expect(page.getByTestId("personnel-slot").first()).toBeVisible();
+    await expect(page.getByTestId("personnel-suggestions")).toHaveCount(0);
+    await expect(page.getByTestId("personnel-foot-note")).toHaveCount(0);
+    await expect(page.getByTestId("personnel-balance")).toHaveCount(0);
+    await page.getByTestId("formations-sheet-handle").click();
 
     await assertCleanPage(page, issues);
   });

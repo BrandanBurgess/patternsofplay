@@ -9,6 +9,19 @@ import { request } from "./api";
 export interface FormationPositionWire {
   slot: string;
   position_code: string;
+  /**
+   * Doc 06 section 2.6's slot family (`gk`, `cb_central`, `cb_wide`, `fb`,
+   * `wb`, `six`, `eight`, `ten`, `wide_forward`, `nine`): the key T-107's
+   * personnel panel needs for GET /archetypes and GET /archetypes/suggest.
+   * T-110 seeded it on every base formation slot; T-107 is what finally
+   * puts it on the wire (backend/app/schemas.py FormationPositionOut).
+   * Optional because GET /formations/{code}/phases reuses this same type
+   * for a formation_phases row's positions_json, which carries no
+   * slot_family of its own (backend/app/schemas.py docstring) and comes
+   * back null there. The personnel panel only ever reads it off a
+   * formation's own base `positions`, never off a phase variant.
+   */
+  slot_family: string | null;
   x: number;
   y: number;
 }
