@@ -16,6 +16,8 @@ jobs:
         run: make bootstrap
       - name: Copy checks (em-dash scan + seed validator)
         run: make check-copy
+      - name: Permission suite (Brief section 3, every row, no skips)
+        run: make permissions
       - name: Lint + typecheck
         run: make lint typecheck
       - name: Unit + integration

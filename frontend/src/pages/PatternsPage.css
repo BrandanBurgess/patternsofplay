@@ -253,6 +253,46 @@
   gap: 10px;
 }
 
+/* Open, the sheet is a real bottom DRAWER: it slides up over the page from
+   the bottom edge of the viewport, covering the lower part of the board and
+   the nav rail (PNG 07, and its formations/identity equivalents 38 and 40).
+   It used to sit in normal flow and push the page taller instead, which
+   scrolled the header and the board's top edge off screen the moment a
+   coach opened it. The drawer itself scrolls, so the grid inside drops its
+   own scroll container rather than nesting two.
+   Shared by the Identity page, which reuses these exact class names. */
+.patterns-sheet-open {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  margin-top: 0;
+  max-height: 74vh;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 16px;
+  background: var(--sidebar-bg);
+  border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.4);
+}
+.patterns-sheet-open .patterns-sheet-handle {
+  background: transparent;
+  flex-shrink: 0;
+}
+.patterns-sheet-open .patterns-sheet-body {
+  margin-top: 6px;
+  padding: 0;
+  background: transparent;
+  overflow-y: auto;
+  min-height: 0;
+}
+.patterns-sheet-open .patterns-grid {
+  max-height: none;
+  overflow-y: visible;
+}
+
 .patterns-tabs {
   display: flex;
   gap: 8px;

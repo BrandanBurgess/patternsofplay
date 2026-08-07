@@ -92,13 +92,22 @@
 /* Keystone keycard / Rondo zone card (PNG 11/37 "6 -- keystone..."; PNG 32
    "5v3 -- this zone is a rondo..."): a floating card near the bottom of the
    pitch, one at a time. */
+/* Keycards and rondo-zone cards float over the bottom of the pitch. They
+   sit ABOVE the swipe-up sheet handle, not behind it: the handle overlaps
+   the pitch's bottom edge by design, and a rondo zone card (name, what it
+   teaches, the patterns it trains) is tall enough that anchoring it flush
+   to the bottom put its last line underneath the handle. A max-height with
+   its own scroll keeps a long card inside the board instead of running off
+   the end of the page. */
 .formations-card {
   position: absolute;
   left: 10px;
   right: 10px;
-  bottom: 10px;
+  bottom: 48px;
   max-width: 480px;
-  z-index: 4;
+  max-height: calc(100% - 70px);
+  overflow-y: auto;
+  z-index: 6;
   background: var(--surface);
   border: 1px solid var(--accent);
   border-radius: 10px;
@@ -263,6 +272,41 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* Open, the sheet is a bottom DRAWER over the page (PNG 38), not a block
+   that pushes the board off the top of the screen. Mirrors
+   PatternsPage.css's .patterns-sheet-open exactly; see the note there. */
+.formations-sheet-open {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  margin-top: 0;
+  max-height: 74vh;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 16px;
+  background: var(--sidebar-bg);
+  border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.4);
+}
+.formations-sheet-open .formations-sheet-handle {
+  background: transparent;
+  flex-shrink: 0;
+}
+.formations-sheet-open .formations-sheet-body {
+  margin-top: 6px;
+  padding: 0;
+  background: transparent;
+  overflow-y: auto;
+  min-height: 0;
+}
+.formations-sheet-open .formations-grid {
+  max-height: none;
+  overflow-y: visible;
 }
 
 .formations-search {

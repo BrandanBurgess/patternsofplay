@@ -18,6 +18,7 @@ import {
   savedPatternBoardSnapshot,
   savedPatternPreview,
 } from "./patternPreview";
+import { matchesSearch } from "./search";
 import "./PatternsPage.css";
 
 type Selection =
@@ -47,17 +48,16 @@ function humanizeSlug(slug: string): string {
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
-function matchesSearch(haystack: (string | undefined)[], query: string): boolean {
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-  return haystack.some((h) => h?.toLowerCase().includes(q));
-}
-
 // Exported so the Identity page (T-034) can reuse this exact mini-pitch
 // thumbnail for its own browse tiles instead of redefining it.
 export function TileThumb({ tokens }: { tokens: { id: string; side: TokenSide; pos: { x: number; y: number } }[] }) {
   const W = 105;
   const H = 68;
+  // A preset's vignette is four or five players; a saved whiteboard
+  // recording is the full 23-token board. At one fixed dot size the latter
+  // reads as confetti, so dots shrink once a scene is crowded: the shape
+  // still reads, the tile stops looking like noise.
+  const scale = tokens.length > 12 ? 0.66 : 1;
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="tile-thumb" aria-hidden="true">
       <rect x={0} y={0} width={W} height={H} rx={3} className="tile-thumb-bg" />
@@ -66,7 +66,7 @@ export function TileThumb({ tokens }: { tokens: { id: string; side: TokenSide; p
           key={t.id}
           cx={(t.pos.x / 100) * W}
           cy={(t.pos.y / 100) * H}
-          r={t.side === "ball" ? 1.6 : 2.6}
+          r={(t.side === "ball" ? 1.6 : 2.6) * scale}
           className={`tile-thumb-token tile-thumb-${t.side}`}
         />
       ))}
@@ -319,7 +319,7 @@ export function PatternsPage({ orientation, onOpenOnWhiteboard }: PatternsPagePr
             )}
           </div>
 
-          <div className="patterns-sheet">
+          <div className={`patterns-sheet${sheetOpen ? " patterns-sheet-open" : ""}`}>
             <button
               type="button"
               className="patterns-sheet-handle"

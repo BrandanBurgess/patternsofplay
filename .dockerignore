@@ -1,0 +1,22 @@
+# Keep the build context small and deterministic: everything the image needs
+# is copied explicitly in the Dockerfile.
+.git
+.github
+.venv
+node_modules
+frontend/node_modules
+frontend/dist
+docs
+e2e
+playwright-report
+test-results
+backend/tests
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.db
+*.db-wal
+*.db-shm
+.DS_Store

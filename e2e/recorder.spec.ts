@@ -170,3 +170,38 @@ test("record in one orientation, replay correctly in the other", async ({ page, 
 
   await assertCleanPage(page, issues);
 });
+
+// The ball's gold trace while a take is being recorded (design README:
+// "Record (red dot): captures timestamped keyframes of every drag; ball
+// leaves a gold trace", PNG 03). It uses the same AnimationOverlay
+// polyline the playback trail uses, so this checks the one thing that
+// distinguishes it: the trace is being laid down DURING the recording,
+// before anything is saved or replayed.
+test("the ball leaves a gold trace while recording", async ({ page, issues }) => {
+  await registerCoach(page);
+  const trail = page.getByTestId("ball-trail");
+
+  // Nothing drawn on a fresh board (the attribute is not set at all until
+  // the overlay first renders).
+  expect(await trail.getAttribute("points")).toBeFalsy();
+
+  await page.getByTestId("record").click();
+  await dragTokenTo(page, "ball", { x: 40, y: 30 });
+  await dragTokenTo(page, "ball", { x: 65, y: 20 });
+
+  const points = (await trail.getAttribute("points")) ?? "";
+  expect(points.trim().length, "trace has geometry").toBeGreaterThan(0);
+  expect(points.trim().split(/\s+/).length, "trace has several waypoints").toBeGreaterThan(2);
+
+  // Dragging a PLAYER adds nothing to the trace: it is the ball's path.
+  const before = await trail.getAttribute("points");
+  await dragTokenTo(page, "home-7", { x: 78, y: 26 });
+  await expect(trail).toHaveAttribute("points", before!);
+
+  // Discarding the take clears it, so the next one starts on a clean pitch.
+  await page.getByTestId("stop-record").click();
+  await page.getByRole("button", { name: "Discard" }).click();
+  await expect(trail).toHaveAttribute("points", "");
+
+  await assertCleanPage(page, issues);
+});

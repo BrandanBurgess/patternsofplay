@@ -204,6 +204,12 @@ export default function Board({
   // per-frame work is imperative (posRef, DOM, overlays).
   const [playing, setPlaying] = useState(false);
   const [recording, setRecording] = useState(false);
+  // Mirrored into a ref so the per-frame drag flush can read the current
+  // recording mode without `recording` entering its dependency list (which
+  // would rebuild the callback, and with it the frame scheduler's target,
+  // on every mode switch).
+  const recordingRef = useRef(false);
+  recordingRef.current = recording;
   const [pendingKeyframes, setPendingKeyframes] = useState<Keyframe[] | null>(null);
   const [recordName, setRecordName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -294,6 +300,24 @@ export default function Board({
     });
   }, []);
 
+  // The ball's gold trace WHILE RECORDING (design README: "Record (red dot):
+  // captures timestamped keyframes of every drag; ball leaves a gold trace",
+  // PNG 03). Uses the same AnimationOverlay layer and the same trailRef the
+  // playback path uses, so a trace being recorded and one being replayed are
+  // drawn by one piece of code and look identical; beginPlayback already
+  // clears both.
+  const renderRecordTrace = useCallback(() => {
+    const { orientation: o, vb: box } = overlayConfigRef.current;
+    animOverlayRef.current?.render({
+      trail: trailRef.current,
+      badges: [],
+      trajectory: null,
+      orientation: o,
+      vb: box,
+      tokenRadius: box.width * 0.021,
+    });
+  }, []);
+
   // Redraw lanes/rings after any React commit that changes them.
   useLayoutEffect(() => {
     renderOverlay();
@@ -314,6 +338,15 @@ export default function Board({
       animOverlayRef.current = new AnimationOverlay(animLayerRef.current);
     }
   }, []);
+
+  // A recording trace is drawn in pixel space, so an orientation flip has to
+  // repaint it through the new mapping. Scoped to the RECORDING flow only
+  // (mid-take, or a stopped take still sitting in the save bar): the player
+  // owns the overlay during and after a playback, and repainting it here
+  // would wipe the route badges a finished playback leaves on screen.
+  useLayoutEffect(() => {
+    if (recordingRef.current || pendingKeyframes) renderRecordTrace();
+  }, [orientation, vb.width, vb.height, pendingKeyframes, renderRecordTrace]);
 
   // ---- Persistence: report the committed snapshot upward (T-030) -----------
 
@@ -466,6 +499,10 @@ export default function Board({
     setViewMenuOpen(false);
     recordSnapshotRef.current = buildSnapshot();
     recorderRef.current!.start();
+    // A new take starts from a clean pitch: drop any trace left by the last
+    // recording or playback.
+    trailRef.current = [];
+    animOverlayRef.current?.clear();
     setPendingKeyframes(null);
     setSaveError(null);
     setRecording(true);
@@ -487,6 +524,10 @@ export default function Board({
       .then(() => {
         setPendingKeyframes(null);
         setRecordName("");
+        // The take is banked: wipe its trace so the board is clean for the
+        // next one (Replay redraws it from the saved keyframes).
+        trailRef.current = [];
+        animOverlayRef.current?.clear();
       })
       .catch(() => {
         setSaveError("Could not save the pattern, try again.");
@@ -498,6 +539,8 @@ export default function Board({
     setPendingKeyframes(null);
     setRecordName("");
     setSaveError(null);
+    trailRef.current = [];
+    animOverlayRef.current?.clear();
   }, []);
 
   const handleDelete = useCallback(
@@ -548,9 +591,15 @@ export default function Board({
     moveTokenDom(drag.id, model);
     // Capture every dragged token while recording (teammates, opponents, ball).
     recorderRef.current!.capture(drag.id, model);
+    if (recordingRef.current && drag.side === "ball") {
+      const trail = trailRef.current;
+      trail.push(model);
+      if (trail.length > MAX_TRAIL) trail.splice(0, trail.length - MAX_TRAIL);
+      renderRecordTrace();
+    }
     // Lanes + rings recompute on the same frame, from all 23 live positions.
     renderOverlay();
-  }, [clientToViewBox, orientation, vb, renderOverlay, moveTokenDom]);
+  }, [clientToViewBox, orientation, vb, renderOverlay, moveTokenDom, renderRecordTrace]);
 
   const flushRef = useRef(flush);
   flushRef.current = flush;
@@ -607,7 +656,12 @@ export default function Board({
       };
       pointerClient.current = { x: e.clientX, y: e.clientY };
       // Anchor the recording at the token's current spot so replay starts clean.
-      recorderRef.current!.capture(token.id, posRef.current.get(token.id) ?? token.pos);
+      const anchor = posRef.current.get(token.id) ?? token.pos;
+      recorderRef.current!.capture(token.id, anchor);
+      // The trace starts where the ball was picked up, not where the first
+      // animation frame happened to land (PNG 03's line runs from the ball's
+      // origin). Consecutive ball drags extend the same trace.
+      if (recordingRef.current && token.side === "ball") trailRef.current.push(anchor);
       setActiveId(token.id);
     },
     [playing]

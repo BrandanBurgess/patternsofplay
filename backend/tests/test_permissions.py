@@ -23,17 +23,13 @@ roster) are re-asserted here in the table's own words rather than
 re-derived from scratch, so a reviewer can check this file against
 Brief section 3 line by line without cross-referencing five other files.
 
-Two rows -- "Suggest own playstyle" and "Sessions" -- have no API
-surface yet in this codebase state: only their SQLAlchemy models exist
-(app/models/roster.py PlaystyleSuggestion; app/models/sessions.py
-TrainingSession/SessionItem/SessionReceipt), no router is registered for
-either in app/main.py. Per Brief section 4's own build order, role
-gating (step 21, this ticket) lands before the suggestion flow (step 22,
-T-041) and sessions (step 23, T-042). Those two rows are marked skipped
-below with a reason, not silently omitted, so the suite still names
-every row of the table; T-041/T-042 must turn each skip into a real
-assertion when their routes land (T-041's own ticket says as much for
-the suggestion row; the same applies to sessions by the same logic).
+Two rows -- "Suggest own playstyle" and "Sessions" -- were placeholder
+skips when this file was written, because only their SQLAlchemy models
+existed at the time (Brief section 4 lands role gating, step 21, before
+the suggestion flow, step 22, and sessions, step 23). Both routers have
+since landed (app/routers/suggestions.py, T-041; app/routers/sessions.py,
+T-042) and both skips have been replaced by real assertions, so EVERY row
+of the table is now enforced here with nothing skipped.
 """
 
 import pytest
@@ -290,52 +286,141 @@ def test_roster__coach_full_with_fit_warnings_player_view_only_no_fit_warnings(
 # ---------------------------------------------------------------------------
 # Row: "Suggest own playstyle" -- not applicable (coach) / free text on own
 # profile then "pending coach review"; coach sees a gold badge and an
-# Approve / Dismiss card (player). No route exists yet: PlaystyleSuggestion
-# is a model only (app/models/roster.py), no router is registered in
-# app/main.py. T-041 (suggestion flow) is being built in parallel in
-# another worktree and owns turning this into a real assertion.
+# Approve / Dismiss card (player). Implemented by T-041
+# (app/routers/suggestions.py), which replaced this row's placeholder skip
+# with the assertion below. Route-level detail (409 on a second pending
+# suggestion, dismiss leaving the profile unchanged) lives in
+# test_suggestions_routes.py; this states the TABLE ROW itself.
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(
-    reason=(
-        "No suggestion route exists in this worktree yet (Brief step 22 / "
-        "T-041, building in parallel). PlaystyleSuggestion is a model only; "
-        "app/main.py registers no router for it. T-041 must replace this "
-        "skip with a real submit/pending/approve/dismiss assertion."
-    )
-)
 def test_suggest_own_playstyle__player_submits_pending_coach_approves_or_dismisses(
     client: TestClient,
-) -> None:  # pragma: no cover - intentionally not runnable yet, see skip reason
-    raise AssertionError("T-041 must implement this row's route and this test")
+) -> None:
+    coach = _coach_with_team()
+    # The roster row's name matches the player's display name, which is how
+    # a row becomes "their own profile" (app/routers/roster.py claim).
+    player_id = coach.post("/api/roster/players", json=_player_body(name="Sam Player")).json()["id"]
+    player = _player_on_team(coach, email="player@example.com", name="Sam Player")
+    player.get("/api/roster")  # claims the matching row
+
+    # "Not applicable" for a coach: the submit route 403s them outright.
+    assert (
+        coach.post(
+            f"/api/roster/players/{player_id}/suggestions", json={"text": "Coach text"}
+        ).status_code
+        == 403
+    )
+
+    submitted = player.post(
+        f"/api/roster/players/{player_id}/suggestions",
+        json={"text": "I read the game better as a number 8 than out wide."},
+    )
+    assert submitted.status_code == 201
+    assert submitted.json()["status"] == "pending"
+
+    # Never against a teammate's row, even on the same team.
+    teammate_id = coach.post("/api/roster/players", json=_player_body(name="Other Player")).json()[
+        "id"
+    ]
+    assert (
+        player.post(
+            f"/api/roster/players/{teammate_id}/suggestions", json={"text": "Not mine"}
+        ).status_code
+        == 403
+    )
+
+    # The pending queue is the coach's alone.
+    assert player.get("/api/roster/suggestions/pending").status_code == 403
+    pending = coach.get("/api/roster/suggestions/pending").json()
+    assert len(pending) == 1
+    suggestion_id = pending[0]["id"]
+
+    # Approve and dismiss are coach-only too.
+    assert player.post(f"/api/roster/suggestions/{suggestion_id}/approve").status_code == 403
+    assert player.post(f"/api/roster/suggestions/{suggestion_id}/dismiss").status_code == 403
+
+    approved = coach.post(f"/api/roster/suggestions/{suggestion_id}/approve")
+    assert approved.status_code == 200
+    assert approved.json()["status"] == "approved"
+
+    # "Approve merges the note into the profile", visible to both roles.
+    merged = next(
+        row for row in coach.get("/api/roster").json()["players"] if row["id"] == player_id
+    )
+    assert merged["playstyle_note"] == "I read the game better as a number 8 than out wide."
+    assert coach.get("/api/roster/suggestions/pending").json() == []
 
 
 # ---------------------------------------------------------------------------
 # Row: "Sessions" -- create, edit drafts, send, see per-player read
 # receipts (coach) / sees sent sessions only, read-only, Watch deep-link,
-# Mark as watched feeding the coach's receipt counter (player). No route
-# exists yet: TrainingSession/SessionItem/SessionReceipt are models only
-# (app/models/sessions.py); app/main.py registers no sessions router.
-# That module's own docstring assigns enforcement to T-042. Same treatment
-# as the suggestion row above: named and skipped, not silently omitted.
+# Mark as watched feeding the coach's receipt counter (player).
+# Implemented by T-042 (app/routers/sessions.py), which replaced this row's
+# placeholder skip with the assertion below. Route-level detail (reorder,
+# send validation, cross-team scoping) lives in test_sessions_routes.py;
+# this states the TABLE ROW itself, including the two things the skip
+# reason called out: receipts created for every recipient at send with
+# viewed_at null, and receipt data ABSENT from player payloads.
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(
-    reason=(
-        "No sessions route exists in this worktree yet (Brief step 23 / "
-        "T-042). TrainingSession/SessionItem/SessionReceipt are models "
-        "only; app/main.py registers no router for them. T-042 must "
-        "replace this skip with a real create/send/receipt assertion, "
-        "including: receipts created for every recipient at send with "
-        "viewed_at null, and receipt data absent from player payloads."
-    )
-)
 def test_sessions__coach_creates_sends_sees_receipts_player_reads_and_marks_watched(
     client: TestClient,
-) -> None:  # pragma: no cover - intentionally not runnable yet, see skip reason
-    raise AssertionError("T-042 must implement this row's route and this test")
+) -> None:
+    coach = _coach_with_team()
+    player = _player_on_team(coach, email="player@example.com", name="Sam Player")
+    other = _player_on_team(coach, email="other@example.com", name="Jordan Player")
+
+    # Coach: create and edit a draft.
+    pattern_id = coach.post(
+        "/api/patterns",
+        json={"name": "Build-out", "board_snapshot": _board_snapshot(), "keyframes": _KEYFRAMES},
+    ).json()["id"]
+    session_id = coach.post("/api/sessions", json={"title": "Tuesday"}).json()["id"]
+    coach.patch(f"/api/sessions/{session_id}", json={"coach_note": "Watch this before training."})
+    coach.post(
+        f"/api/sessions/{session_id}/items",
+        json={"item_kind": "saved_pattern", "saved_pattern_id": pattern_id},
+    )
+
+    # Player: create/edit/send are all 403 (the whole draft builder is
+    # coach-only), and a draft is not even visible to them.
+    assert player.post("/api/sessions", json={"title": "Mine"}).status_code == 403
+    assert player.patch(f"/api/sessions/{session_id}", json={"title": "Mine"}).status_code == 403
+    assert player.post(f"/api/sessions/{session_id}/send").status_code == 403
+    assert player.get("/api/sessions").json() == []
+    assert player.get(f"/api/sessions/{session_id}").status_code == 404
+
+    sent = coach.post(f"/api/sessions/{session_id}/send").json()
+    assert sent["status"] == "sent"
+    # Receipts exist for every recipient at send time, viewed_at null.
+    assert sent["recipient_count"] == 2
+    assert sent["viewed_count"] == 0
+    assert all(r["viewed_at"] is None for r in sent["receipts"])
+
+    # Player: sees the sent session, read-only, with the coach note and the
+    # content list the Watch buttons deep-link into. Receipt data is ABSENT
+    # from the payload, not null or empty (CLAUDE.md rule 5): players never
+    # see each other's status.
+    player_rows = player.get("/api/sessions").json()
+    assert [r["title"] for r in player_rows] == ["Tuesday"]
+    player_row = player_rows[0]
+    assert player_row["coach_note"] == "Watch this before training."
+    assert player_row["items"][0]["saved_pattern"]["name"] == "Build-out"
+    for coach_only_key in ("receipts", "viewed_count", "recipient_count"):
+        assert coach_only_key not in player_row
+
+    # Mark as watched feeds the coach's counter and flips that row only.
+    assert player.post(f"/api/sessions/{session_id}/watched").json()["you_watched"] is True
+    assert coach.post(f"/api/sessions/{session_id}/watched").status_code == 403  # not a recipient
+
+    after = coach.get(f"/api/sessions/{session_id}").json()
+    assert (after["viewed_count"], after["recipient_count"]) == (1, 2)
+    by_name = {r["display_name"]: r["viewed"] for r in after["receipts"]}
+    assert by_name == {"Sam Player": True, "Jordan Player": False}
+    # The other player still sees no receipt data of any kind.
+    assert "receipts" not in other.get(f"/api/sessions/{session_id}").json()
 
 
 # ---------------------------------------------------------------------------

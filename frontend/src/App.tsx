@@ -7,6 +7,7 @@ import { AppShell, type NavKey } from "./AppShell";
 import { TeamOnboarding } from "./TeamOnboarding";
 import { WhiteboardPage } from "./pages/WhiteboardPage";
 import { PatternsPage } from "./pages/PatternsPage";
+import { SessionsPage } from "./pages/SessionsPage";
 import { RosterPage } from "./pages/RosterPage";
 import { FormationsPage } from "./pages/FormationsPage";
 import { IdentityPage } from "./pages/IdentityPage";
@@ -14,11 +15,12 @@ import ThemeSwitcher from "./theme/ThemeSwitcher";
 import "./App.css";
 
 // Every screens ticket has landed (T-030 Whiteboard, T-031 Patterns,
-// T-032 Formations, T-033 Roster, T-034 Identity): all five nav entries
-// are live.
+// T-032 Formations, T-033 Roster, T-034 Identity) and T-042 adds Sessions:
+// all six nav entries are live.
 const ENABLED_NAV_KEYS: readonly NavKey[] = [
   "whiteboard",
   "patterns",
+  "sessions",
   "roster",
   "formations",
   "identity",
@@ -127,6 +129,8 @@ export default function App() {
     >
       {page === "patterns" ? (
         <PatternsPage orientation={orientation} onOpenOnWhiteboard={() => setPage("whiteboard")} />
+      ) : page === "sessions" ? (
+        <SessionsPage orientation={orientation} role={membership.role_on_team} />
       ) : page === "roster" ? (
         <RosterPage role={membership.role_on_team} />
       ) : page === "formations" ? (

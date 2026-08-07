@@ -4,12 +4,24 @@ import { test as base, expect, Page } from "@playwright/test";
 
 type Issues = { consoleErrors: string[]; failedRequests: string[]; serverErrors: string[] };
 
+/** Wires the clean-page listeners onto any page, not just the fixture's
+ * own. Journeys that need a SECOND account signed in at the same time
+ * (sessions, the demo path) open a second browser context, and its page
+ * would otherwise report console errors and 5xx responses that nothing
+ * ever asserts on. Call this right after creating that page. */
+export function watchPage(page: Page, issues: Issues): void {
+  page.on("console", (m) => m.type() === "error" && issues.consoleErrors.push(m.text()));
+  page.on("requestfailed", (r) => issues.failedRequests.push(`${r.method()} ${r.url()}`));
+  page.on(
+    "response",
+    (r) => r.status() >= 500 && issues.serverErrors.push(`${r.status()} ${r.url()}`)
+  );
+}
+
 export const test = base.extend<{ issues: Issues }>({
   issues: async ({ page }, use) => {
     const issues: Issues = { consoleErrors: [], failedRequests: [], serverErrors: [] };
-    page.on("console", (m) => m.type() === "error" && issues.consoleErrors.push(m.text()));
-    page.on("requestfailed", (r) => issues.failedRequests.push(`${r.method()} ${r.url()}`));
-    page.on("response", (r) => r.status() >= 500 && issues.serverErrors.push(`${r.status()} ${r.url()}`));
+    watchPage(page, issues);
     await use(issues);
   },
 });
@@ -106,6 +118,20 @@ export async function registerAndJoinTeam(
   await page.getByRole("button", { name: "Join team" }).click();
   await expect(page.getByTestId("board")).toBeVisible();
   return { email };
+}
+
+/** Signs an EXISTING account in on a fresh page (a second browser context,
+ * a second device). Pairs with registerCoach/registerPlayer, which return
+ * the email they created: the cross-device journey records on one device
+ * and replays on another as the SAME coach, which needs a real sign-in
+ * rather than another registration. */
+export async function signIn(page: Page, email: string): Promise<void> {
+  await page.goto("/");
+  await page.getByRole("button", { name: /Already have an account/ }).click();
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("button", { name: "Log in", exact: true }).click();
+  await expect(page.getByTestId("board")).toBeVisible();
 }
 
 /** Flips the board's rendered orientation by resizing the viewport across

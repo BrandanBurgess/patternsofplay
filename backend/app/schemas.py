@@ -504,3 +504,131 @@ class FormationOut(BaseModel):
     positions: list[FormationPositionOut]
     keystones: list[FormationKeystoneOut]
     rondo_zones: list[RondoZoneOut]
+
+
+# ---------------------------------------------------------------------------
+# Sessions: the classroom loop (doc 03 section 6; Brief step 23, PNG 21-23,
+# 26, 28; T-042). Design README: "bundle patterns and recorded whiteboard
+# tactics into a session, attach a coach note, and send to players... Sent
+# state: gold SENT pill with an x/y viewed counter, and per-player read
+# receipts (Viewed / Not yet). Receipts are coach-only, consistent with fit
+# warnings, players never see each other's status."
+#
+# The coach/player split follows the RosterOut/CoachRosterOut precedent
+# exactly: two sibling models over a shared base, picked per caller by a
+# response_model=None route that returns an already-serialized dict, so a
+# player's payload has no receipt KEY at all (not a null or empty one) and
+# a coach's has no `you_watched` key (it is meaningless for a non-recipient).
+# ---------------------------------------------------------------------------
+
+SessionStatus = Literal["draft", "sent"]
+SessionItemKind = Literal["library", "saved_pattern"]
+
+
+class SessionCreateRequest(BaseModel):
+    """POST /api/sessions body. No team_id/created_by/status field on
+    purpose (CLAUDE.md rule 4): team_id is stamped by TeamScope.add from
+    the caller's own membership, created_by from the session, and a fresh
+    session is always a draft."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    title: str = Field(min_length=1, max_length=120)
+    coach_note: str | None = Field(default=None, max_length=2000)
+
+
+class SessionUpdateRequest(BaseModel):
+    """PATCH /api/sessions/{id}. Draft-only (a sent session is a record of
+    what the players were actually told, so it stops being editable), and
+    both fields are optional so the draft builder can save a note without
+    resending the title."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    title: str | None = Field(default=None, min_length=1, max_length=120)
+    coach_note: str | None = Field(default=None, max_length=2000)
+
+
+class SessionItemCreateRequest(BaseModel):
+    """POST /api/sessions/{id}/items. Exactly one of the two id fields must
+    be set, matching `item_kind`; the route validates that pairing and that
+    the referenced row is reachable (library items are library world, saved
+    patterns are team-scoped through this same caller's scope)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    item_kind: SessionItemKind
+    library_item_id: int | None = None
+    saved_pattern_id: int | None = None
+
+
+class SessionItemMoveRequest(BaseModel):
+    """PATCH /api/sessions/{id}/items/{item_id}: the design README's
+    "Draft state: reorder/remove items". Positions are renormalized to
+    0..n-1 server-side after every move, so a client never has to compute
+    a gap-free ordering itself."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    position: int = Field(ge=0)
+
+
+class SessionItemOut(BaseModel):
+    """One attached item. Carries the FULL referenced content (not just an
+    id) so both the coach's picker thumbnails and the player's Watch
+    deep-link can render it through the existing preview converters
+    (frontend/src/pages/patternPreview.ts) in one round trip, the same
+    embedded-detail shape FormationOut already uses for keystones."""
+
+    id: int
+    position: int
+    item_kind: SessionItemKind
+    library_item: LibraryItemOut | None = None
+    saved_pattern: SavedPatternOut | None = None
+
+
+class SessionReceiptOut(BaseModel):
+    """One recipient's read state (doc 03 section 6). COACH-ONLY: this
+    model only ever appears inside CoachSessionOut. `jersey_number` is
+    resolved from the recipient's claimed roster row when there is one
+    (PNG 21's numbered badges), null otherwise."""
+
+    player_user_id: int
+    display_name: str
+    jersey_number: int | None
+    viewed_at: datetime | None
+    viewed: bool
+
+
+class SessionOut(BaseModel):
+    """Fields both roles see. Never returned on its own: the routes always
+    build one of the two subclasses below."""
+
+    id: int
+    title: str
+    coach_note: str | None
+    status: SessionStatus
+    sent_at: datetime | None
+    created_at: datetime
+    items: list[SessionItemOut]
+
+
+class PlayerSessionOut(SessionOut):
+    """Player payload. `you_watched` is the caller's OWN receipt state and
+    nothing else: it is what the Mark as watched button reads, and it
+    reveals no other player's status, which is the actual coach-only line
+    the design README draws ("players never see each other's status")."""
+
+    you_watched: bool
+
+
+class CoachSessionOut(SessionOut):
+    """Coach payload: the per-player receipts and the x/y counter (PNG 21's
+    "SENT . 3/4 viewed"). For a DRAFT the receipt rows are the team's
+    current player members with viewed=false, which is the design README's
+    "players listed as Will receive"; real receipt rows are written at send
+    time (doc 03 section 6)."""
+
+    receipts: list[SessionReceiptOut]
+    viewed_count: int
+    recipient_count: int

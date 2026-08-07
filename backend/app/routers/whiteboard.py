@@ -44,7 +44,7 @@ def _author_label(role: str, user: User | None) -> str:
     return user.display_name if user is not None else "Player"
 
 
-def _pattern_to_out(pattern: SavedPattern, author: User | None) -> SavedPatternOut:
+def pattern_to_out(pattern: SavedPattern, author: User | None) -> SavedPatternOut:
     return SavedPatternOut(
         id=pattern.id,
         name=pattern.name,
@@ -113,7 +113,7 @@ def list_patterns(
     rows = scope.query(SavedPattern).order_by(SavedPattern.created_at.desc()).all()
     author_ids = {r.author_user_id for r in rows}
     authors = {u.id: u for u in db.query(User).filter(User.id.in_(author_ids)).all()}
-    return [_pattern_to_out(r, authors.get(r.author_user_id)) for r in rows]
+    return [pattern_to_out(r, authors.get(r.author_user_id)) for r in rows]
 
 
 @router.post("/patterns", response_model=SavedPatternOut, status_code=status.HTTP_201_CREATED)
@@ -134,7 +134,7 @@ def create_pattern(
     scope.add(row)
     scope.commit()
     scope.refresh(row)
-    return _pattern_to_out(row, ctx.user)
+    return pattern_to_out(row, ctx.user)
 
 
 @router.delete("/patterns/{pattern_id}", status_code=status.HTTP_204_NO_CONTENT)
