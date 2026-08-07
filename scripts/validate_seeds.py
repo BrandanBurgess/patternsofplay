@@ -28,6 +28,10 @@ Rule provenance, so a failing check is traceable back to its source:
   - animation slot references: doc 03 section 4.1, delegated to
     backend/app/specs.py's AnimationSpec so the rule lives in one place.
   - reference team five-part detail template: doc 03 section 5.
+  - Tactics Lab archetypes/combinations/balance rules (T-102): doc 06
+    section 2.6 for the content rules (closed duty vocabulary, 2 to 3 key
+    attributes from the six, every combination states a cost, warning copy
+    reads as a check) and section 3.1 for the column shapes.
 """
 
 from __future__ import annotations
@@ -43,14 +47,74 @@ SEEDS = ROOT / "seeds"
 BACKEND = ROOT / "backend"
 
 sys.path.insert(0, str(BACKEND))
+from app.schemas import ATTRIBUTE_KEYS  # noqa: E402
 from app.specs import AnimationSpec, Trajectory  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 from typing import get_args  # noqa: E402
 
 EM_DASH = "—"
 BANNED_IDENTITY_PHRASES = ["correct", "right way", "off-identity"]
-SOURCE_REF_RE = re.compile(r"^bible:")
+# doc 03 section 7.7 traceability. Content transcribed from the Bible cites
+# "bible:SECTION"; the Tactics Lab tables (T-102/T-103) are written from doc
+# 06, which is a separate source document, so they cite "doc06:SECTION". A
+# ref still has to name one of the two, never nothing.
+SOURCE_REF_RE = re.compile(r"^(bible|doc06):")
 TRAJECTORY_VALUES = set(get_args(Trajectory))
+
+# ---------------------------------------------------------------------------
+# Tactics Lab vocabularies (doc 06 section 2.6 / 3.1, T-102)
+# ---------------------------------------------------------------------------
+
+# The six coach-rated attribute sliders, taken from the single existing
+# source of that vocabulary (app/schemas.py ATTRIBUTE_KEYS, itself Bible
+# 1.3 / app/models/roster.py PlayerAttribute) rather than copied, so a
+# change there cannot leave this validator silently checking a stale list.
+ATTRIBUTE_VOCABULARY = set(ATTRIBUTE_KEYS)
+
+# doc 06 section 2.6: "Slot families: gk, cb_central, cb_wide, fb, wb, six,
+# eight, ten, wide_forward, nine." Archetypes attach to a slot family, not
+# a position code, because the eight in a 4-3-3 and the eight in a 3-5-2
+# are different jobs.
+SLOT_FAMILIES = {
+    "gk", "cb_central", "cb_wide", "fb", "wb",
+    "six", "eight", "ten", "wide_forward", "nine",
+}
+
+# doc 06 section 3.1: "duties_json is what the combination checker runs on.
+# Keep the duty vocabulary closed and small; adding a duty is a spec
+# change, not a seed change." Hence a hard-closed set here.
+DUTY_VOCABULARY = {
+    "tempo", "progression", "rest_defence", "width", "pin",
+    "box_threat", "press_trigger",
+}
+
+UNIT_VOCABULARY = {
+    "midfield_three", "double_pivot", "front_three", "strike_pair",
+    "back_line", "wide_unit", "box_midfield",
+}
+
+# Which slot families may appear in which unit. Catches a combination that
+# puts a nine in a back line, which no other check would notice.
+UNIT_SLOT_FAMILIES = {
+    "midfield_three": {"six", "eight"},
+    "double_pivot": {"six"},
+    "box_midfield": {"six", "eight", "ten"},
+    "front_three": {"wide_forward", "nine"},
+    "strike_pair": {"nine", "ten"},
+    "back_line": {"cb_central", "cb_wide", "fb", "wb"},
+    "wide_unit": {"fb", "wb", "wide_forward"},
+}
+
+RULE_KINDS = {"requires_duty", "max_duty", "max_same_archetype"}
+SEVERITIES = {"note", "warning"}
+FOOT_HINTS = {"same_side", "opposite_side", "either"}
+WORK_RATES = {"low", "med", "high"}
+
+# doc 06 section 3.1: unit balance warning_copy "must read as a check not
+# an error", and CLAUDE.md's "curate, never lock" principle says the same
+# thing about identity copy. A coach may want the flagged combination on
+# purpose, so the vocabulary of failure is banned outright.
+BANNED_WARNING_WORDS = ["invalid", "illegal", "wrong", "forbidden", "not allowed", "error"]
 
 # Free-text cross-reference tokenizers for fields that embed codes in prose
 # rather than as a structured list (role_clashes.trigger_expression, doc 03
@@ -81,6 +145,22 @@ SYNERGY_REQUIRED_FIELDS = ["code", "name", "why_it_works", "source_ref", "conten
 CLASH_REQUIRED_FIELDS = ["code", "name", "trigger_expression", "warning_copy", "source_ref", "content_version"]
 IDENTITY_REQUIRED_FIELDS = [
     "code", "name", "tag_line", "core_idea", "youth_takeaway", "age_hint", "shape_render",
+    "source_ref", "content_version",
+]
+# enables_pattern_codes / enables_rotation_codes are legitimately empty on
+# plenty of archetypes (a coverer enables no pattern), so they are checked
+# for resolvability below rather than for presence here.
+ARCHETYPE_REQUIRED_FIELDS = [
+    "code", "slot_family", "name", "definition", "key_attribute_keys",
+    "awr_default", "dwr_default", "duties_json", "needs_around_it",
+    "source_ref", "content_version",
+]
+COMBINATION_REQUIRED_FIELDS = [
+    "code", "unit", "name", "slots_json", "what_it_gives", "what_it_costs",
+    "source_ref", "content_version",
+]
+BALANCE_RULE_REQUIRED_FIELDS = [
+    "code", "unit", "rule_kind", "warning_copy", "severity",
     "source_ref", "content_version",
 ]
 
@@ -489,6 +569,222 @@ def main() -> int:
             "role_clashes.json: exactly one clash, 'double_exposure_flank', should be is_active_mvp "
             "(doc 03 section 3 comment)",
         )
+
+    # -----------------------------------------------------------------
+    # Tactics Lab: position_archetypes, archetype_combinations,
+    # unit_balance_rules (doc 06 section 2.6 / 3.1, T-102).
+    # -----------------------------------------------------------------
+
+    rotation_item_codes: set[str] = set()
+    if "rotations.json" in files:
+        rotation_item_codes = {item["code"] for item in files["rotations.json"]["items"]}
+
+    position_archetype_codes: dict[str, str] = {}  # code -> slot_family
+    if "position_archetypes.json" in files:
+        fname = "position_archetypes.json"
+        archetype_items = files[fname]["items"]
+        check_duplicates(fname, archetype_items, lambda i: i["code"])
+        position_archetype_codes = {i["code"]: i.get("slot_family") for i in archetype_items}
+
+        for item in archetype_items:
+            code = item["code"]
+            require_fields(fname, code, item, ARCHETYPE_REQUIRED_FIELDS)
+            check_source_ref(fname, code, item)
+            # Archetype copy names real players in exemplar_note, so it is
+            # held to the same "curate, never lock" standard as identity
+            # copy (doc 03 section 7.6, CLAUDE.md rule 6).
+            check_no_banned_identity_phrase_anywhere(fname, code, item)
+
+            require(
+                item.get("slot_family") in SLOT_FAMILIES,
+                f"{fname} {code}: slot_family '{item.get('slot_family')}' not in {sorted(SLOT_FAMILIES)}",
+            )
+
+            # doc 06 section 3.1: "2 to 3 key_attribute_keys drawn strictly
+            # from the existing six".
+            attrs = item.get("key_attribute_keys") or []
+            require(
+                2 <= len(attrs) <= 3,
+                f"{fname} {code}: key_attribute_keys has {len(attrs)} entries, doc 06 section 3.1 "
+                "requires 2 to 3",
+            )
+            for attr in attrs:
+                require(
+                    attr in ATTRIBUTE_VOCABULARY,
+                    f"{fname} {code}: key_attribute_keys '{attr}' is not one of the six attributes "
+                    f"{sorted(ATTRIBUTE_VOCABULARY)}",
+                )
+            require(
+                len(set(attrs)) == len(attrs),
+                f"{fname} {code}: key_attribute_keys repeats an attribute",
+            )
+
+            # Closed duty vocabulary: adding one is a spec change, not a
+            # seed change (doc 06 section 3.1).
+            duties = item.get("duties_json") or []
+            for duty in duties:
+                require(
+                    duty in DUTY_VOCABULARY,
+                    f"{fname} {code}: duties_json '{duty}' not in the closed duty vocabulary "
+                    f"{sorted(DUTY_VOCABULARY)}",
+                )
+            require(
+                len(set(duties)) == len(duties),
+                f"{fname} {code}: duties_json repeats a duty",
+            )
+
+            foot = item.get("foot_hint")
+            require(
+                foot is None or foot in FOOT_HINTS,
+                f"{fname} {code}: foot_hint must be null or one of {sorted(FOOT_HINTS)}",
+            )
+            for wr_field in ("awr_default", "dwr_default"):
+                require(
+                    item.get(wr_field) in WORK_RATES,
+                    f"{fname} {code}: {wr_field} must be low|med|high",
+                )
+
+            # "needs_around_it (free text, one line)". Non-empty is covered
+            # by require_fields; the word floor is what keeps filler like
+            # "good players" out, which the ticket calls out by name.
+            needs = item.get("needs_around_it") or ""
+            require(
+                word_count(needs) >= 5,
+                f"{fname} {code}: needs_around_it is {word_count(needs)} words, too thin to be a real "
+                "requirement",
+            )
+
+            for pc in item.get("enables_pattern_codes") or []:
+                require(
+                    pc in pattern_codes,
+                    f"{fname} {code}: enables_pattern_codes references unknown code '{pc}'",
+                )
+            for rc in item.get("enables_rotation_codes") or []:
+                require(
+                    rc in rotation_item_codes,
+                    f"{fname} {code}: enables_rotation_codes references unknown rotation code '{rc}'",
+                )
+
+    if "archetype_combinations.json" in files:
+        fname = "archetype_combinations.json"
+        combination_items = files[fname]["items"]
+        check_duplicates(fname, combination_items, lambda i: i["code"])
+
+        for item in combination_items:
+            code = item["code"]
+            # what_it_costs is in the required list, so an empty string or a
+            # missing key fails here: doc 06 section 3.1 marks it REQUIRED,
+            # for the same reason rotation_systems.risk is not nullable.
+            require_fields(fname, code, item, COMBINATION_REQUIRED_FIELDS)
+            check_source_ref(fname, code, item)
+            check_no_banned_identity_phrase_anywhere(fname, code, item)
+
+            unit = item.get("unit")
+            require(
+                unit in UNIT_VOCABULARY,
+                f"{fname} {code}: unit '{unit}' not in {sorted(UNIT_VOCABULARY)}",
+            )
+
+            costs = item.get("what_it_costs") or ""
+            require(
+                word_count(costs) >= 5,
+                f"{fname} {code}: what_it_costs is {word_count(costs)} words, too thin to be a real cost",
+            )
+
+            for i, slot in enumerate(item.get("slots_json") or []):
+                label = f"{code}.slots_json[{i}]"
+                archetype_code = slot.get("archetype_code")
+                slot_family = slot.get("slot_family")
+                require(
+                    archetype_code in position_archetype_codes,
+                    f"{fname} {label}: archetype_code '{archetype_code}' does not exist in "
+                    "position_archetypes.json",
+                )
+                require(
+                    slot_family in SLOT_FAMILIES,
+                    f"{fname} {label}: slot_family '{slot_family}' not in {sorted(SLOT_FAMILIES)}",
+                )
+                if archetype_code in position_archetype_codes:
+                    require(
+                        position_archetype_codes[archetype_code] == slot_family,
+                        f"{fname} {label}: archetype '{archetype_code}' belongs to slot family "
+                        f"'{position_archetype_codes[archetype_code]}', not '{slot_family}'",
+                    )
+                if unit in UNIT_SLOT_FAMILIES:
+                    require(
+                        slot_family in UNIT_SLOT_FAMILIES[unit],
+                        f"{fname} {label}: slot family '{slot_family}' cannot appear in unit '{unit}'",
+                    )
+
+            for fc in item.get("home_formations") or []:
+                require(
+                    fc in formation_codes,
+                    f"{fname} {code}: home_formations references unknown formation '{fc}'",
+                )
+
+    if "unit_balance_rules.json" in files:
+        fname = "unit_balance_rules.json"
+        rule_items = files[fname]["items"]
+        check_duplicates(fname, rule_items, lambda i: i["code"])
+
+        for item in rule_items:
+            code = item["code"]
+            require_fields(fname, code, item, BALANCE_RULE_REQUIRED_FIELDS)
+            check_source_ref(fname, code, item)
+
+            require(
+                item.get("unit") in UNIT_VOCABULARY,
+                f"{fname} {code}: unit '{item.get('unit')}' not in {sorted(UNIT_VOCABULARY)}",
+            )
+            rule_kind = item.get("rule_kind")
+            require(
+                rule_kind in RULE_KINDS,
+                f"{fname} {code}: rule_kind '{rule_kind}' not in {sorted(RULE_KINDS)}",
+            )
+            require(
+                item.get("severity") in SEVERITIES,
+                f"{fname} {code}: severity must be note|warning",
+            )
+
+            duty = item.get("duty")
+            if rule_kind in ("requires_duty", "max_duty"):
+                require(
+                    duty in DUTY_VOCABULARY,
+                    f"{fname} {code}: duty '{duty}' not in the closed duty vocabulary "
+                    f"{sorted(DUTY_VOCABULARY)}",
+                )
+            elif rule_kind == "max_same_archetype":
+                require(
+                    duty is None,
+                    f"{fname} {code}: max_same_archetype counts repeated archetypes, so duty must be null",
+                )
+
+            if rule_kind == "requires_duty":
+                require(
+                    isinstance(item.get("min_count"), int),
+                    f"{fname} {code}: requires_duty needs an integer min_count",
+                )
+            elif rule_kind in ("max_duty", "max_same_archetype"):
+                require(
+                    isinstance(item.get("max_count"), int),
+                    f"{fname} {code}: {rule_kind} needs an integer max_count",
+                )
+
+            # "coach-facing, must read as a check not an error" (doc 06
+            # section 3.1). The engine may want the flagged combination.
+            copy_text = (item.get("warning_copy") or "").lower()
+            for banned in BANNED_WARNING_WORDS:
+                require(
+                    banned not in copy_text,
+                    f"{fname} {code}: warning_copy uses '{banned}', which reads as an error rather "
+                    "than a check",
+                )
+            require(
+                "check" in copy_text,
+                f"{fname} {code}: warning_copy never asks the coach to check anything, so it reads "
+                "as a verdict rather than a check",
+            )
+            check_no_banned_identity_phrase_anywhere(fname, code, item)
 
     if errors:
         print("\n".join(errors))

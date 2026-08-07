@@ -1,0 +1,300 @@
+{
+  "content_version": "1.1.0",
+  "table": "archetype_combinations",
+  "note": "doc 06 section 2.6, the named combinations for each unit. Every row states what the pairing or trio gives AND what it costs: a library that lists only benefits is marketing, not coaching, so what_it_costs is required and the seed validator rejects an empty one. Some of these named combinations deliberately trip a unit_balance_rules row (the gegenpress trio has no tempo setter, the rotating trio has two). That is not a contradiction: the rules are checks, the cost line says the same thing in words, and doc 06 names both as good combinations anyway.",
+  "items": [
+    {
+      "code": "mt_metronome_creator_crasher",
+      "unit": "midfield_three",
+      "name": "Control, Unlock, Finish",
+      "slots_json": [
+        {"slot_family": "six", "archetype_code": "six_metronome"},
+        {"slot_family": "eight", "archetype_code": "eight_half_space_creator"},
+        {"slot_family": "eight", "archetype_code": "eight_box_crasher"}
+      ],
+      "what_it_gives": "The positional-possession trio. One player controls the tempo, one unlocks the last line, one arrives from deep to finish the move.",
+      "what_it_costs": "The crasher's flank is exposed on the turnover, because he is inside their box at the moment the ball changes hands.",
+      "reference_note": "The trio positional-possession sides keep returning to. Not a licence: names are editorial reference points only.",
+      "home_formations": ["433"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "mt_destroyer_carrier_winner",
+      "unit": "midfield_three",
+      "name": "The Gegenpress Trio",
+      "slots_json": [
+        {"slot_family": "six", "archetype_code": "six_destroyer"},
+        {"slot_family": "eight", "archetype_code": "eight_carrier"},
+        {"slot_family": "eight", "archetype_code": "eight_ball_winner"}
+      ],
+      "what_it_gives": "Wins the ball high and drives at a defence that has not had time to set itself.",
+      "what_it_costs": "Limited against a low block, because carrying into a packed box is not a plan. Nobody in the trio sets a tempo, so it struggles to control a game it is already leading.",
+      "reference_note": "Liverpool in the 2018 to 2020 window. Not a licence: names are editorial reference points only.",
+      "home_formations": ["433"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "mt_breaker_rotator_crasher",
+      "unit": "midfield_three",
+      "name": "Double Pivot By Rotation",
+      "slots_json": [
+        {"slot_family": "six", "archetype_code": "six_line_breaker"},
+        {"slot_family": "eight", "archetype_code": "eight_deep_rotator"},
+        {"slot_family": "eight", "archetype_code": "eight_box_crasher"}
+      ],
+      "what_it_gives": "Builds as a two and attacks as a two, changing shape by rotation rather than by substitution.",
+      "what_it_costs": "It demands very high tactical discipline about who drops. Two of the three can set tempo, so they have to agree who accelerates once the line is broken.",
+      "reference_note": null,
+      "home_formations": ["433", "352"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "mt_metronome_winner_creator",
+      "unit": "midfield_three",
+      "name": "The Tournament Trio",
+      "slots_json": [
+        {"slot_family": "six", "archetype_code": "six_metronome"},
+        {"slot_family": "eight", "archetype_code": "eight_ball_winner"},
+        {"slot_family": "eight", "archetype_code": "eight_half_space_creator"}
+      ],
+      "what_it_gives": "Balanced across all three midfield duties: tempo, rest defence, and progression, with no obvious hole to attack.",
+      "what_it_costs": "Nobody drives with the ball, so the last twenty metres depend entirely on the front three.",
+      "reference_note": null,
+      "home_formations": ["433", "352"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "dp_metronome_destroyer",
+      "unit": "double_pivot",
+      "name": "Screen and Circulate",
+      "slots_json": [
+        {"slot_family": "six", "archetype_code": "six_metronome"},
+        {"slot_family": "six", "archetype_code": "six_destroyer"}
+      ],
+      "what_it_gives": "One holds the ball, one holds the space. The pair is hard to play through and always offers a safe pass backwards.",
+      "what_it_costs": "Neither of them breaks a line, so the ten and the wide forwards have to create everything on their own.",
+      "reference_note": "The default 4-2-3-1 pairing. Bible 4.2 names the failure case, two destroyers together, as the sterile pivot.",
+      "home_formations": ["4231", "442"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "dp_breaker_shuttler",
+      "unit": "double_pivot",
+      "name": "Playmaker and Runner",
+      "slots_json": [
+        {"slot_family": "six", "archetype_code": "six_line_breaker"},
+        {"slot_family": "six", "archetype_code": "six_shuttler"}
+      ],
+      "what_it_gives": "One picks the vertical pass, one runs past the ball into the box, so the pivot both builds the attack and arrives in it.",
+      "what_it_costs": "Neither of them is a screen. Once the shuttler goes and the line breaker steps up with the ball, the counter comes straight back through the middle.",
+      "reference_note": null,
+      "home_formations": ["4231", "442"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "dp_carrier_destroyer",
+      "unit": "double_pivot",
+      "name": "Carry and Screen",
+      "slots_json": [
+        {"slot_family": "six", "archetype_code": "six_carrier"},
+        {"slot_family": "six", "archetype_code": "six_destroyer"}
+      ],
+      "what_it_gives": "Beats the first press by carrying rather than passing, with a screen sitting behind the carry the whole time.",
+      "what_it_costs": "There is no tempo setter in the pair, so possession is either forward or lost. Against a set block it will look rushed.",
+      "reference_note": null,
+      "home_formations": ["4231", "442"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "ft_winger_runner_inside",
+      "unit": "front_three",
+      "name": "Width, Depth, and a Cut Inside",
+      "slots_json": [
+        {"slot_family": "wide_forward", "archetype_code": "wf_touchline_winger"},
+        {"slot_family": "nine", "archetype_code": "nine_runner"},
+        {"slot_family": "wide_forward", "archetype_code": "wf_inside_forward"}
+      ],
+      "what_it_gives": "One holds the width, one holds the depth, one arrives in the box from the far half-space. The back four is stretched in both directions.",
+      "what_it_costs": "Only one of the three tracks back, so the fullback behind the inside forward is left alone on every turnover.",
+      "reference_note": null,
+      "home_formations": ["433", "343"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "ft_false_nine_front_three",
+      "unit": "front_three",
+      "name": "The False Nine Front Three",
+      "slots_json": [
+        {"slot_family": "wide_forward", "archetype_code": "wf_channel_runner"},
+        {"slot_family": "nine", "archetype_code": "nine_false"},
+        {"slot_family": "wide_forward", "archetype_code": "wf_inside_forward"}
+      ],
+      "what_it_gives": "The nine drops to make a midfield overload and the wide forwards attack the space he leaves on the last line.",
+      "what_it_costs": "If the centre backs refuse to follow the nine, the team has a spare man in midfield and nobody in the box.",
+      "reference_note": "Barcelona under Guardiola. Not a licence: names are editorial reference points only.",
+      "home_formations": ["433"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "ft_pressing_front_three",
+      "unit": "front_three",
+      "name": "The Pressing Front Three",
+      "slots_json": [
+        {"slot_family": "wide_forward", "archetype_code": "wf_pressing_winger"},
+        {"slot_family": "nine", "archetype_code": "nine_pressing_forward"},
+        {"slot_family": "wide_forward", "archetype_code": "wf_inside_forward"}
+      ],
+      "what_it_gives": "Sets the trap from the front, wins the ball inside forty metres of their goal, and finishes through the inside forward.",
+      "what_it_costs": "It is a fitness bet. Once the front three cannot repeat the sprints, the block sits ten metres deeper and the same players look passive.",
+      "reference_note": null,
+      "home_formations": ["433"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "sp_runner_and_target",
+      "unit": "strike_pair",
+      "name": "Runner and Target",
+      "slots_json": [
+        {"slot_family": "nine", "archetype_code": "nine_runner"},
+        {"slot_family": "nine", "archetype_code": "nine_target"}
+      ],
+      "what_it_gives": "One occupies the centre backs in the air and one occupies the space behind them, so the defence has no single reference point.",
+      "what_it_costs": "Neither of them drops into midfield, so a two-versus-three in the middle third is the standing price of the pair.",
+      "reference_note": null,
+      "home_formations": ["442", "352", "541"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "sp_two_runners",
+      "unit": "strike_pair",
+      "name": "Two Runners",
+      "slots_json": [
+        {"slot_family": "nine", "archetype_code": "nine_runner"},
+        {"slot_family": "nine", "archetype_code": "nine_runner"}
+      ],
+      "what_it_gives": "Both attack the space behind, which pushes a high line back thirty metres from the very first pass.",
+      "what_it_costs": "It needs a ten who can find them or an identity that plays long. Without one of those, the pair is isolated and the midfield is outnumbered.",
+      "reference_note": null,
+      "home_formations": ["442", "352"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "sp_false_and_poacher",
+      "unit": "strike_pair",
+      "name": "False and Poacher",
+      "slots_json": [
+        {"slot_family": "nine", "archetype_code": "nine_false"},
+        {"slot_family": "nine", "archetype_code": "nine_poacher"}
+      ],
+      "what_it_gives": "One drops off to build the chance, one stays on the last shoulder to finish it, and the centre backs have to split their attention.",
+      "what_it_costs": "The poacher touches the ball a handful of times a game. If the chances do not arrive, the team is playing with ten.",
+      "reference_note": null,
+      "home_formations": ["442", "352"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "bl_stopper_and_coverer",
+      "unit": "back_line",
+      "name": "Stopper and Coverer",
+      "slots_json": [
+        {"slot_family": "cb_central", "archetype_code": "cb_stopper"},
+        {"slot_family": "cb_central", "archetype_code": "cb_coverer"}
+      ],
+      "what_it_gives": "One meets the ball in front of the line and one defends the space behind it, which is the minimum a back four needs.",
+      "what_it_costs": "Neither is picked to build, so the first pass out has to come from the fullbacks or the goalkeeper.",
+      "reference_note": null,
+      "home_formations": ["433", "4231", "442"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "bl_builder_and_stopper",
+      "unit": "back_line",
+      "name": "Builder and Stopper",
+      "slots_json": [
+        {"slot_family": "cb_central", "archetype_code": "cb_ball_player"},
+        {"slot_family": "cb_central", "archetype_code": "cb_stopper"}
+      ],
+      "what_it_gives": "One breaks the first line with a pass and one defends on the front foot, which suits a side that presses high and plays out.",
+      "what_it_costs": "Neither is picked for pure recovery pace, so depth is defended by the goalkeeper or by a very disciplined offside line.",
+      "reference_note": null,
+      "home_formations": ["433", "4231"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "bl_stepping_back_three",
+      "unit": "back_line",
+      "name": "Stepping Back Three",
+      "slots_json": [
+        {"slot_family": "cb_wide", "archetype_code": "cb_wide_stepper"},
+        {"slot_family": "cb_central", "archetype_code": "cb_coverer"},
+        {"slot_family": "cb_wide", "archetype_code": "cb_wide_carrier"}
+      ],
+      "what_it_gives": "One side of the three carries the ball out, the other follows his man, and the middle sweeps behind both of them.",
+      "what_it_costs": "It only holds up if the wingbacks drop into a five. If they stay high, the three is defending the full width of the pitch alone.",
+      "reference_note": null,
+      "home_formations": ["352", "343", "541"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "wu_overlap_pair",
+      "unit": "wide_unit",
+      "name": "Overlap Pair",
+      "slots_json": [
+        {"slot_family": "fb", "archetype_code": "fb_overlapper"},
+        {"slot_family": "wide_forward", "archetype_code": "wf_inside_forward"}
+      ],
+      "what_it_gives": "The winger comes inside and takes his marker with him, the fullback runs into the space outside and delivers from the byline.",
+      "what_it_costs": "Both end up ahead of the ball, so the flank is a corridor on the turnover. This is the double exposure the roster already warns about.",
+      "reference_note": null,
+      "home_formations": ["433", "4231"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "wu_invert_and_hold_width",
+      "unit": "wide_unit",
+      "name": "Inverted Fullback and Touchline Winger",
+      "slots_json": [
+        {"slot_family": "fb", "archetype_code": "fb_inverter"},
+        {"slot_family": "wide_forward", "archetype_code": "wf_touchline_winger"}
+      ],
+      "what_it_gives": "The fullback steps in to overload the middle and protect the counter, the winger holds the chalk and keeps their fullback pinned.",
+      "what_it_costs": "The winger is alone in his one-versus-one all game. If he does not beat his man, that flank produces nothing at all.",
+      "reference_note": null,
+      "home_formations": ["433", "4231"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "wu_wingback_and_inside",
+      "unit": "wide_unit",
+      "name": "Wingback and Inside Forward",
+      "slots_json": [
+        {"slot_family": "wb", "archetype_code": "wb_flyer"},
+        {"slot_family": "wide_forward", "archetype_code": "wf_inside_forward"}
+      ],
+      "what_it_gives": "The wingback supplies the width and the depth on his own, and the wide forward plays inside him in the half-space.",
+      "what_it_costs": "One player covers the whole flank in both directions, which is a bet on his fitness and on his recovery pace.",
+      "reference_note": null,
+      "home_formations": ["343", "352"],
+      "source_ref": "doc06:2.6",
+      "content_version": "1.1.0"
+    }
+  ]
+}
