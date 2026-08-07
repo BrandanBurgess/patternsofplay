@@ -60,3 +60,29 @@ Dispatch rule for this epic: give a subagent its ticket row plus **only** the do
 Sequencing: T-100 solo → T-101 ∥ T-104 → (T-102 ∥ T-103 ∥ T-108) → T-105 → (T-106 ∥ T-107) → T-109.
 T-104 is this epic's critical path and its hardest work, same reasoning as T-020: coordinate math, unit tests first, keep it isolated from the seed tickets.
 T-102 and T-103 are marked opus despite being seed work: the football judgement in the archetype duty assignments and the rotation risk lines is the product, not transcription.
+
+---
+
+## Epic T-070: Brand refresh (founder commission 2026-08-07)
+
+Source of truth: the founder directive of 2026-08-07 plus the logo asset. **The directive supersedes the
+design-handoff token table**, which still specifies a gold accent on the default theme and is now stale;
+amending it is part of T-071. Everything else in the design README (layout, interactions, permissions)
+still wins. Land this epic before any remaining T-100 ticket: it rewrites `tokens.css`, `AppShell`, and
+`frontend/src/board/` styling, which T-113 and T-114 also touch.
+
+Brand constants sampled from the asset: brand red `#C81C1C`, shield navy `#16304F`, shield gold `#C9A227`,
+grass green `#3B7A44`.
+
+| ID | Title | Source | Agent | Model | Deps | Parallel-safe with | Status |
+|---|---|---|---|---|---|---|---|
+| T-070 | Logo integration: derivative assets in `frontend/public/` (transparent-background shield mark, full lockup, favicon set), sign-in lockup, nav-rail shield mark replacing `app-brand-dot`, favicon + tab title. Keeps the App.test.tsx "Patterns of Play" heading assertion passing | founder | screens | sonnet | none | T-071 | todo |
+| T-071 | Palette: `pitch` default becomes the red brand theme; `dark` and `board` restyled to the brand. Board decoupled from chrome tokens (real `--pitch-*`, `--team-*`, `--lane-*` tokens) so a red accent cannot turn the pitch red or collapse home/away. AA contrast. Amends the design README token table and the `tokens.css` header comment | founder | screens | opus | none | T-070 | todo |
+| T-072 | QA sweep: every main screen x both viewports x all three themes. Fixes styling and sizing regressions including ones that predate this epic. Screenshot review, not a green test run | founder | verifier | opus | T-070, T-071 | none | todo |
+| T-074 | README refresh: lead with the logo, recapture `docs/screenshots/` against the rebranded UI, show off the design | founder | screens | sonnet | T-072 | none | todo |
+
+Sequencing: (T-070 ∥ T-071) → T-072 → T-074 → ship.
+T-070 and T-071 are parallel-safe on a strict file split: T-070 owns `frontend/public/`, `index.html`,
+`AuthForms.tsx`, `auth.css`, `AppShell.tsx`, `AppShell.css`; T-071 owns `styles/tokens.css`,
+`frontend/src/board/`, `pages/*.css`, and the design-handoff README. Neither crosses into the other's set.
+T-071 is opus: the token architecture and the contrast work are the hard part of this epic, not the asset work.
