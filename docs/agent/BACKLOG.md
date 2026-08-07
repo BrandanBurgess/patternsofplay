@@ -30,3 +30,27 @@ Model: sonnet default; opus = hard ticket, never downgrade.
 
 Sequencing: T-001 solo → (T-002 ∥ T-003 ∥ T-004) → (T-010/011 ∥ T-020/021/022) → screens fan-out → collab → phone → hardening → deploy.
 Board engine (T-020..022) is the critical path and the hardest work: start it immediately after T-001, keep it isolated (Brief §4 Phase 2 note).
+
+---
+
+## Epic T-100: Tactics Lab (founder commission 2026-08-07)
+
+Source of truth: `docs/source/06_Tactical_Depth_Spec.md`. That doc wins on everything in this epic; doc 03 still wins on schema conventions, the design README on visual language and permissions, the Bible wherever it already speaks (1, 2, 3G, 4, 5B).
+Dispatch rule for this epic: give a subagent its ticket row plus **only** the doc 06 sections its row names. Nothing more.
+
+| ID | Title | Doc 06 §§ | Agent | Model | Deps | Parallel-safe with | Status |
+|---|---|---|---|---|---|---|---|
+| T-100 | Scope amendment: move 4 rows to IN in Brief §1, add doc 06 to the CLAUDE.md source table, no code | 0 | platform | sonnet | none | none (solo, first) | todo |
+| T-101 | Schema + Alembic: formation_phases, rotation_systems, position_archetypes, archetype_combinations, unit_balance_rules, formation_matchups, rondo_zones new columns + L/R corridor data migration, team_formations, team_formation_slots; scoped layer for both team-world tables + cross-team read test | 3 | platform | sonnet | T-100 | T-104 | todo |
+| T-102 | Seeds: position_archetypes (all 10 slot families), archetype_combinations, unit_balance_rules; validator extensions (duty vocabulary closed, key_attribute_keys subset of the six, cost line required) | 2.6, 3.1 | content-seeder | opus | T-101 | T-103, T-104 | todo |
+| T-103 | Seeds: formation_phases (6 formations x 3-5 variants), rotation_systems (14 incl. animation specs), rondo_zones for all 6 formations at 6 zones, formation_matchups (15 pairs), 10 reference systems as identities kind=reference_system; validator: phase slot-set equality, risk line required | 2.3, 2.4, 2.5, 2.8, 3.1 | content-seeder | opus | T-101 | T-102, T-104 | todo |
+| T-104 | Superiority engine: mirrorOpponent (involutive round-trip test FIRST), pointInPolygon/Circle, countZone, findFreeMen, gridOccupancy, classifyRestDefence, buildRead + route inference; recompute benchmark under 2ms at 22 tokens | 2.2, 4 | board-engineer | opus | T-100 | T-101, T-102, T-103 | todo |
+| T-105 | Phase morph playback (bind by slot, 600ms) + opponent token layer mirrored into our frame, both reusing the existing animation player and PatternPreviewBoard, no parallel renderer | 4, 5.1 | board-engineer | opus | T-104, T-103 | T-108 | todo |
+| T-106 | Formations page rebuild: phase segment, opposition toggle + opponent pickers, live rondo counts, rotation player with equal-weight risk line, positional grid overlay, portrait pass | 5.1, 5.2, 5.4 | screens | opus | T-105 | T-107 | todo |
+| T-107 | Personnel panel: slot assignment from roster, archetype picker, ranked suggestions with cited reasons, live unit balance, footedness notes (all coach-only), empty-roster state | 2.6, 2.7, 5.3 | screens | sonnet | T-105, T-102 | T-106 | todo |
+| T-108 | API: /formations/{code}/phases, /formations/matchup, /rotations, /archetypes, /archetypes/suggest, team formation persistence; 403 for player tokens on every coach-only route, test per route | 3.2, 5.3, 6 | collab | sonnet | T-101 | T-105 | todo |
+| T-109 | Epic hardening: em-dash sweep over new seeds, permission suite additions in CI, tactics-lab Playwright journey at both viewports, extend the demo path | 6 | verifier | sonnet | T-106, T-107, T-108 | none | todo |
+
+Sequencing: T-100 solo → T-101 ∥ T-104 → (T-102 ∥ T-103 ∥ T-108) → T-105 → (T-106 ∥ T-107) → T-109.
+T-104 is this epic's critical path and its hardest work, same reasoning as T-020: coordinate math, unit tests first, keep it isolated from the seed tickets.
+T-102 and T-103 are marked opus despite being seed work: the football judgement in the archetype duty assignments and the rotation risk lines is the product, not transcription.
