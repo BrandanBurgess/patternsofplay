@@ -28,6 +28,21 @@ function IconPatterns() {
     </svg>
   );
 }
+function IconSessions() {
+  // Paper plane (mockup nav, PNG 21-23): "send this to the team".
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+      <path
+        d="M17.5 2.5 L2.5 9 L8.4 11.6 L11 17.5 Z M8.4 11.6 L17.5 2.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 function IconFormations() {
   return (
     <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
@@ -65,6 +80,9 @@ function IconIdentity() {
 const NAV_ITEMS = [
   { key: "whiteboard", label: "Whiteboard", icon: <IconWhiteboard /> },
   { key: "patterns", label: "Patterns", icon: <IconPatterns /> },
+  // Sessions sits third, between Patterns and Formations, exactly where the
+  // mockup nav puts it (PNG 21-23, 26, 28).
+  { key: "sessions", label: "Sessions", icon: <IconSessions /> },
   { key: "formations", label: "Formations", icon: <IconFormations /> },
   { key: "roster", label: "Roster", icon: <IconRoster /> },
   { key: "identity", label: "Identity", icon: <IconIdentity /> },

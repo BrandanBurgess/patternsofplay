@@ -4,12 +4,24 @@ import { test as base, expect, Page } from "@playwright/test";
 
 type Issues = { consoleErrors: string[]; failedRequests: string[]; serverErrors: string[] };
 
+/** Wires the clean-page listeners onto any page, not just the fixture's
+ * own. Journeys that need a SECOND account signed in at the same time
+ * (sessions, the demo path) open a second browser context, and its page
+ * would otherwise report console errors and 5xx responses that nothing
+ * ever asserts on. Call this right after creating that page. */
+export function watchPage(page: Page, issues: Issues): void {
+  page.on("console", (m) => m.type() === "error" && issues.consoleErrors.push(m.text()));
+  page.on("requestfailed", (r) => issues.failedRequests.push(`${r.method()} ${r.url()}`));
+  page.on(
+    "response",
+    (r) => r.status() >= 500 && issues.serverErrors.push(`${r.status()} ${r.url()}`)
+  );
+}
+
 export const test = base.extend<{ issues: Issues }>({
   issues: async ({ page }, use) => {
     const issues: Issues = { consoleErrors: [], failedRequests: [], serverErrors: [] };
-    page.on("console", (m) => m.type() === "error" && issues.consoleErrors.push(m.text()));
-    page.on("requestfailed", (r) => issues.failedRequests.push(`${r.method()} ${r.url()}`));
-    page.on("response", (r) => r.status() >= 500 && issues.serverErrors.push(`${r.status()} ${r.url()}`));
+    watchPage(page, issues);
     await use(issues);
   },
 });

@@ -1,6 +1,16 @@
 from fastapi import FastAPI
 
-from app.routers import auth, formations, identity, library, roster, suggestions, teams, whiteboard
+from app.routers import (
+    auth,
+    formations,
+    identity,
+    library,
+    roster,
+    sessions,
+    suggestions,
+    teams,
+    whiteboard,
+)
 
 app = FastAPI(title="Patterns of Play API")
 app.include_router(auth.router)
@@ -11,6 +21,7 @@ app.include_router(roster.router)
 app.include_router(suggestions.router)
 app.include_router(formations.router)
 app.include_router(identity.router)
+app.include_router(sessions.router)
 
 
 @app.get("/api/health")

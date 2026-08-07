@@ -1,0 +1,525 @@
+/* Sessions page (Brief step 23, PNG 21-23, 26, 28). Colors come only from
+   the theme token variables: gold (var(--accent)) is the only interactive
+   colour (SENT pill, Send to players, Mark as watched, Viewed state), and
+   red never appears here at all, since nothing on this screen is a danger
+   state. */
+
+.sessions-page {
+  max-width: 1180px;
+}
+
+.sessions-loading,
+.sessions-error {
+  font-family: var(--body-font);
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0 0 8px;
+}
+.sessions-error {
+  color: var(--text-red, var(--red));
+}
+
+/* Rail + detail (PNG 21/22). Stacks to one column on phone (design README:
+   "grids stack"), rail first, exactly like the phone mockups 23 and 28. */
+.sessions-stage {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.sessions-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sessions-new {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sessions-input {
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-primary);
+  width: 100%;
+}
+.sessions-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.sessions-textarea {
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-primary);
+  width: 100%;
+  resize: vertical;
+}
+.sessions-textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Gold is the only interactive colour: the one primary action per state
+   (New session, Send to players, Mark as watched) carries it. */
+.sessions-primary {
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sessions-primary:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.sessions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sessions-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.sessions-list-item-active {
+  border-color: var(--accent);
+}
+.sessions-list-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sessions-list-tag {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.sessions-list-item-active .sessions-list-tag {
+  color: var(--accent);
+}
+.sessions-rail-empty,
+.sessions-detail-empty,
+.sessions-items-empty,
+.sessions-picker-empty {
+  font-family: var(--body-font);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.sessions-detail {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.sessions-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.sessions-detail-title {
+  margin: 0;
+  font-family: var(--display-font);
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+.sessions-detail-meta {
+  margin: 2px 0 0;
+  font-family: var(--body-font);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.sessions-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* SENT pill with the x/y viewed counter (PNG 21). */
+.sessions-sent-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+  font-family: var(--display-font);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.sessions-draft-pill,
+.sessions-watched-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-family: var(--display-font);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.sessions-watched-pill {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sessions-kicker {
+  margin: 0 0 4px;
+  font-family: var(--display-font);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.sessions-note {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg);
+}
+.sessions-note-body {
+  margin: 0;
+  font-family: var(--body-font);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+.sessions-note-edit {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.sessions-section-title {
+  margin: 4px 0 0;
+  font-family: var(--display-font);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.sessions-hint {
+  font-family: var(--body-font);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.sessions-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sessions-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.sessions-item-thumb {
+  flex-shrink: 0;
+  width: 76px;
+  display: block;
+}
+.sessions-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.sessions-item-kicker {
+  font-family: var(--body-font);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.sessions-item-name {
+  font-family: var(--body-font);
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.sessions-item-controls {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.sessions-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+.sessions-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Watch (PNG 26/28): a text action on the row, gold because it is the one
+   thing a player is meant to do here. */
+.sessions-watch-btn {
+  flex-shrink: 0;
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+}
+.sessions-watch-btn:hover,
+.sessions-watch-btn:focus-visible {
+  border-color: var(--accent);
+}
+
+.sessions-picker-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.sessions-picker {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.sessions-picker-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sessions-tab {
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.sessions-tab-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+}
+.sessions-picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.sessions-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.sessions-picker-row:hover,
+.sessions-picker-row:focus-visible {
+  border-color: var(--accent);
+}
+.sessions-picker-row:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.sessions-picker-row .sessions-item-thumb {
+  width: 56px;
+}
+.sessions-picker-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Read receipts (PNG 21): numbered gold badge, name, state. */
+.sessions-receipts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sessions-receipt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.sessions-receipt-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--display-font);
+  font-size: 12px;
+}
+.sessions-receipt-name {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--body-font);
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+.sessions-receipt-state {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: var(--body-font);
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.sessions-receipt-viewed {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Watch view: the item playing full width on the board, portrait on phone
+   like every other board surface (design README). */
+.sessions-watch {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.sessions-watch-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.sessions-watch-title {
+  font-family: var(--display-font);
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.sessions-watch .board-wrap {
+  width: 100%;
+}
+
+@media (max-width: 700px) {
+  .sessions-stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sessions-detail {
+    padding: 10px;
+  }
+  .sessions-item-thumb {
+    width: 62px;
+  }
+  .sessions-detail-head {
+    gap: 8px;
+  }
+  /* The rail becomes a horizontal pill row on phone (design README: the
+     list surfaces collapse to pill rows), so a long session list never
+     pushes the session itself below the fold. */
+  .sessions-list {
+    flex-direction: row;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .sessions-list-item {
+    width: auto;
+    white-space: nowrap;
+    border-radius: 999px;
+    padding: 8px 14px;
+  }
+  .sessions-list-title {
+    overflow-wrap: normal;
+  }
+}
