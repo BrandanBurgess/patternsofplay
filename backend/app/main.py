@@ -13,6 +13,7 @@ from app.routers import (
     roster,
     sessions,
     suggestions,
+    tactics,
     teams,
     whiteboard,
 )
@@ -27,6 +28,7 @@ app.include_router(suggestions.router)
 app.include_router(formations.router)
 app.include_router(identity.router)
 app.include_router(sessions.router)
+app.include_router(tactics.router)
 
 
 @app.get("/api/health")
