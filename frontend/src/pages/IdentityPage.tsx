@@ -17,6 +17,7 @@ import type { Orientation } from "../board/coords";
 import PatternPreviewBoard from "../board/PatternPreviewBoard";
 import { listIdentities, type IdentityKind, type IdentityOutWire, type KeystoneRoleWire } from "../identityApi";
 import { identityPreview } from "./identityPreview";
+import { matchesSearch } from "./search";
 import { TileThumb } from "./PatternsPage";
 import "./PatternsPage.css";
 import "./IdentityPage.css";
@@ -30,12 +31,6 @@ const SEGMENTS: { key: IdentityKind; label: string }[] = [
 function humanizeSlug(slug: string): string {
   const words = slug.replace(/_/g, " ");
   return words.charAt(0).toUpperCase() + words.slice(1);
-}
-
-function matchesSearch(haystack: (string | undefined | null)[], query: string): boolean {
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-  return haystack.some((h) => h?.toLowerCase().includes(q));
 }
 
 /** Every reference team's core_idea begins with a "Formation: ..." leading

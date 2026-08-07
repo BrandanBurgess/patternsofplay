@@ -15,17 +15,12 @@ import type { Orientation } from "../board/coords";
 import PatternPreviewBoard, { type PreviewToken, type PreviewZone } from "../board/PatternPreviewBoard";
 import { listFormations, type FormationKeystoneWire, type FormationOutWire } from "../formationsApi";
 import { listLibraryItems } from "../libraryApi";
+import { matchesSearch } from "./search";
 import "./FormationsPage.css";
 
 function humanizeSlug(slug: string): string {
   const words = slug.replace(/_/g, " ");
   return words.charAt(0).toUpperCase() + words.slice(1);
-}
-
-function matchesSearch(haystack: (string | undefined)[], query: string): boolean {
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-  return haystack.some((h) => h?.toLowerCase().includes(q));
 }
 
 // rondo_name reads like "5v3 (the midfield box)"; the on-pitch zone label

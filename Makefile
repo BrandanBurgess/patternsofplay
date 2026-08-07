@@ -1,4 +1,4 @@
-.PHONY: bootstrap dev migrate lint typecheck test e2e verify seed seed-demo demo check-copy
+.PHONY: bootstrap dev migrate lint typecheck test e2e verify seed seed-demo demo check-copy permissions
 
 VENV := .venv
 PY := $(VENV)/bin/python
@@ -34,6 +34,22 @@ check-copy:
 	$(PY) scripts/check_copy.py
 	$(PY) scripts/validate_seeds.py
 
+# The Brief section 3 permission table, every row (backend/tests/test_permissions.py).
+# `make test` already runs it, but this target also fails when a row is
+# SKIPPED rather than asserted: two rows sat as @pytest.mark.skip
+# placeholders for most of the build, and a green suite that quietly stops
+# checking a permission row is exactly the failure mode worth pinning.
+permissions:
+	@out=$$($(VENV)/bin/pytest backend/tests/test_permissions.py -q --no-header 2>&1); \
+	status=$$?; \
+	echo "$$out"; \
+	if [ $$status -ne 0 ]; then exit $$status; fi; \
+	if echo "$$out" | grep -q "skipped"; then \
+		echo "permissions: FAILED, a Brief section 3 row is skipped, not enforced"; \
+		exit 1; \
+	fi; \
+	echo "permissions: every Brief section 3 row enforced, none skipped"
+
 seed:
 	$(PY) scripts/seed.py
 
@@ -52,5 +68,5 @@ demo:
 	$(PY) scripts/seed.py
 	$(PY) scripts/seed_demo.py
 
-verify: check-copy lint typecheck test e2e
+verify: check-copy permissions lint typecheck test e2e
 	@echo "verify: all green"

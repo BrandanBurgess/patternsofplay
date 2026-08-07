@@ -39,6 +39,7 @@ import {
 } from "../sessionsApi";
 import { libraryItemPreview, savedPatternPreview } from "./patternPreview";
 import { TileThumb } from "./PatternsPage";
+import { matchesSearch } from "./search";
 import "./SessionsPage.css";
 
 type PickerTab = "library" | "saved";
@@ -66,12 +67,6 @@ function itemKicker(item: SessionItemWire): string {
 
 function itemName(item: SessionItemWire): string {
   return item.library_item?.name ?? item.saved_pattern?.name ?? "Untitled";
-}
-
-function matches(haystack: (string | undefined)[], query: string): boolean {
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-  return haystack.some((h) => h?.toLowerCase().includes(q));
 }
 
 interface SessionsPageProps {
@@ -210,10 +205,10 @@ export function SessionsPage({ orientation, role }: SessionsPageProps) {
 
   const pickerRows = useMemo(() => {
     if (pickerTab === "saved") {
-      return savedPatterns.filter((p) => matches([p.name, p.author_label], pickerQuery));
+      return savedPatterns.filter((p) => matchesSearch([p.name, p.author_label], pickerQuery));
     }
     return libraryItems.filter((item) =>
-      matches([item.name, item.code, item.category, item.blurb], pickerQuery)
+      matchesSearch([item.name, item.code, item.category, item.blurb], pickerQuery)
     );
   }, [pickerTab, pickerQuery, libraryItems, savedPatterns]);
 

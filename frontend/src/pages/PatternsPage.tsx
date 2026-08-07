@@ -18,6 +18,7 @@ import {
   savedPatternBoardSnapshot,
   savedPatternPreview,
 } from "./patternPreview";
+import { matchesSearch } from "./search";
 import "./PatternsPage.css";
 
 type Selection =
@@ -45,12 +46,6 @@ const PATTERN_CATEGORIES: { key: string; label: string }[] = [
 function humanizeSlug(slug: string): string {
   const words = slug.replace(/_/g, " ");
   return words.charAt(0).toUpperCase() + words.slice(1);
-}
-
-function matchesSearch(haystack: (string | undefined)[], query: string): boolean {
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-  return haystack.some((h) => h?.toLowerCase().includes(q));
 }
 
 // Exported so the Identity page (T-034) can reuse this exact mini-pitch
