@@ -206,7 +206,7 @@ test.describe("patterns: libraries, chips, search, meta bar, details, open on wh
   });
 });
 
-test.describe("patterns: matches across all three themes, gold-only interactive, red never a CTA", () => {
+test.describe("patterns: matches across all three themes, brand red interactive, gold for status", () => {
   test("tabs, chips, and the Details action are theme-driven, never red", async ({ page, issues }) => {
     await registerCoach(page);
     await page.getByTestId("nav-patterns").click();

@@ -1,4 +1,19 @@
-/* Board styling. Colors come only from the T-002 theme token variables.
+/* Board styling. Colors come only from the theme token variables, and this
+   file is where the two token layers meet, so the split matters (T-071,
+   see styles/tokens.css):
+
+     - FOOTBALL SEMANTICS read BOARD tokens. The turf, the players, the ball,
+       every lane, every ring, every zone. These keep the design README's
+       pitch language (green turf, gold "the pass is on", red "blocked /
+       opposition / marking") in all three themes, and they are immune to the
+       chrome's brand red: changing --accent cannot change what the pitch or
+       a lane looks like (proved by e2e/palette.spec.ts).
+     - CHROME INSIDE THE BOARD PANEL reads chrome tokens. The toolbar, the
+       view menu, the save bar, the saved-pattern list, focus and drag
+       affordances. --accent (brand red) is the only interactive colour;
+       --warn (shield gold) is non-interactive emphasis; --red is failure
+       status and never fills a control.
+
    No hardcoded colors, no layout thrash during drag. */
 
 .board-wrap {
@@ -6,7 +21,11 @@
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
-  background: var(--bg-stripe);
+  /* The SVG paints the turf; this backs it so no chrome colour shows
+     through at the rounded corners. Board token, never --bg-stripe (which
+     was a chrome token pretending to be turf before T-071, and no longer
+     exists). */
+  background: var(--pitch-turf);
   border: 1px solid var(--surface);
   border-radius: 10px;
   overflow: hidden;
@@ -37,11 +56,14 @@
 
 .token-ball .token-face {
   /* gold glow on the ball (design README: glowing gold dot) */
-  filter: drop-shadow(0 0 6px var(--glow));
+  filter: drop-shadow(0 0 6px var(--ball));
   stroke: none;
 }
 
 .token-active .token-face {
+  /* Drag affordance, not football: a token being dragged is an interaction
+     state, so it reads the chrome's interactive colour. Nothing about the
+     token's identity (its ring, its number) comes from here. */
   filter: drop-shadow(0 0 5px var(--accent));
 }
 
@@ -51,15 +73,18 @@
   pointer-events: none;
 }
 
-/* Selected first token while confirming a lane (click two players). Gold is the
-   only interactive color (design README), so the pairing cue is a gold pulse. */
+/* Selected first token while confirming a lane (click two players). This is an
+   interaction cue, not a football one, so it reads the chrome accent (T-071:
+   the brand red is now the interactive colour). The lane it produces is gold. */
 .token-pairing .token-face {
   filter: drop-shadow(0 0 6px var(--accent));
 }
 
 /* Lane graph (T-021). Stroke widths and dashes are in viewBox user units so
-   they scale with the board. Colors are theme tokens only: gold for suggested
-   and confirmed lanes, red for blocked. Red is status only, never interactive. */
+   they scale with the board. Colors are BOARD tokens only: gold for suggested
+   and confirmed lanes, red for blocked and for interception. Never --accent
+   or --red: those are chrome, and with a red brand accent they would paint
+   "this pass is on" and "this pass is blocked" the same colour (T-071). */
 .lane-layer .lane,
 .mark-layer .mark-ring {
   fill: none;
@@ -72,7 +97,7 @@
 
 /* Suggested: dashed dim gold (auto passing option within range). */
 .lane-suggested {
-  stroke: var(--accent);
+  stroke: var(--lane-suggested);
   stroke-width: 3;
   stroke-dasharray: 3 9;
   opacity: 0.45;
@@ -80,15 +105,15 @@
 
 /* Confirmed: solid bright gold, coach-locked. */
 .lane-confirmed {
-  stroke: var(--accent);
+  stroke: var(--lane-confirmed);
   stroke-width: 4.5;
   opacity: 1;
-  filter: drop-shadow(0 0 4px var(--glow));
+  filter: drop-shadow(0 0 4px var(--lane-glow));
 }
 
 /* Blocked: dashed red (a suggested or confirmed lane an opponent sits in). */
 .lane-blocked {
-  stroke: var(--red);
+  stroke: var(--lane-blocked);
   stroke-width: 3.5;
   stroke-dasharray: 8 7;
   opacity: 0.95;
@@ -96,14 +121,14 @@
 
 /* Interception dot: red, sits on the closest point of the pass segment. */
 .lane-dot {
-  fill: var(--red);
+  fill: var(--intercept);
   stroke: none;
   pointer-events: none;
 }
 
 /* Marking rings: thin when marked, thick + glow when tightly marked. */
 .mark-ring {
-  stroke: var(--red);
+  stroke: var(--mark);
 }
 .mark-loose {
   stroke-width: 2.5;
@@ -112,7 +137,7 @@
 .mark-tight {
   stroke-width: 5;
   opacity: 1;
-  filter: drop-shadow(0 0 5px var(--red));
+  filter: drop-shadow(0 0 5px var(--mark));
 }
 
 .board-root {
@@ -153,14 +178,15 @@
 }
 
 /* -------------------------------------------------------------------------
-   Zone overlays (T-022, Brief step 13). Zones are informational geometry, so
-   they use gold (the interactive/accent family) at low opacity and never red
-   (red is status only). They paint behind lanes, rings, and tokens.
+   Zone overlays (T-022, Brief step 13). Zones are informational football
+   geometry, so they use the board's gold --zone token at low opacity and
+   never a red: a zone is a place to play into, not a warning. They paint
+   behind lanes, rings, and tokens.
    ------------------------------------------------------------------------- */
 .zone-rect {
-  fill: var(--accent);
+  fill: var(--zone);
   fill-opacity: 0.08;
-  stroke: var(--accent);
+  stroke: var(--zone);
   stroke-opacity: 0.5;
   stroke-width: 1.5;
   stroke-dasharray: 6 5;
@@ -172,14 +198,14 @@
   stroke-dasharray: 3 7;
 }
 .zone-divider {
-  stroke: var(--accent);
+  stroke: var(--zone);
   stroke-opacity: 0.4;
   stroke-width: 1.5;
   stroke-dasharray: 4 8;
   pointer-events: none;
 }
 .zone-label {
-  fill: var(--accent);
+  fill: var(--zone);
   fill-opacity: 0.8;
   font-family: var(--display-font, sans-serif);
   font-size: 15px;
@@ -189,16 +215,16 @@
 
 /* -------------------------------------------------------------------------
    Animation trace (T-022, Brief step 14): glowing gold ball trail + numbered
-   gold route badges. Gold only.
+   gold route badges. Board tokens only: the trace belongs to the ball.
    ------------------------------------------------------------------------- */
 .ball-trail {
   fill: none;
-  stroke: var(--glow);
+  stroke: var(--ball);
   stroke-width: 4;
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: 0.9;
-  filter: drop-shadow(0 0 5px var(--glow));
+  filter: drop-shadow(0 0 5px var(--ball));
   pointer-events: none;
 }
 /* Trajectory-driven trail styles (design README: ground flat, floated arced). */
@@ -214,13 +240,13 @@
   opacity: 0.8;
 }
 .route-badge {
-  fill: var(--accent);
-  stroke: var(--glow);
+  fill: var(--route-badge);
+  stroke: var(--lane-glow);
   stroke-width: 1.5;
   pointer-events: none;
 }
 .route-badge-num {
-  fill: var(--accent-ink, #1b1b1b);
+  fill: var(--route-badge-ink);
   font-family: var(--display-font, sans-serif);
   font-weight: 700;
   pointer-events: none;
@@ -241,7 +267,7 @@
   border-radius: 999px;
   background: var(--surface);
   border: 1px solid var(--red);
-  color: var(--red);
+  color: var(--text-red);
   font-family: var(--body-font);
   font-size: 13px;
   white-space: nowrap;
@@ -273,10 +299,10 @@
 
 /* -------------------------------------------------------------------------
    Toolbar: a floating pill pinned to the bottom-center of the pitch (PNG
-   01-04). Select is the permanent default tool (gold, always active); record
-   is status, never a call to action (surface fill, red only once active);
-   play/reset/view-menu are neutral until acted on. Gold is the only
-   interactive color (design README).
+   01-04). Select is the permanent default tool (always active); record is
+   neutral until it is running; play/reset/view-menu are neutral until acted
+   on. Every one of these is a control, so they read the chrome's interactive
+   colour, the brand red --accent (T-071 founder directive).
    ------------------------------------------------------------------------- */
 .board-toolbar-float {
   position: absolute;
@@ -312,11 +338,33 @@
   background: var(--accent);
   color: var(--accent-ink, #1b1b1b);
 }
-/* Record is status, not a call to action: neutral until recording, then a
-   solid red dot (red is never interactive, only status, design README). */
+/* Recording in progress. It is a control, so it takes the interactive accent
+   like every other active tool. The select tool is permanently active, so two
+   accent-filled circles would otherwise sit in the same pill looking alike:
+   the recording one carries TWO non-colour cues, a ring and a live pulse,
+   plus the "Recording." banner above the pitch. Colour alone never
+   distinguishes them, which is the point (T-071: the brand is red now, so
+   "red circle" no longer means "recording" on its own). */
 .tool-btn.tool-record-active {
-  background: var(--red);
-  color: var(--surface);
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 0 0 3px var(--glow);
+  animation: record-pulse 1.3s ease-in-out infinite;
+}
+@keyframes record-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px var(--glow);
+  }
+  50% {
+    box-shadow: 0 0 0 6px var(--surface);
+  }
+}
+/* The ring survives on its own for anyone who has asked for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .tool-btn.tool-record-active {
+    animation: none;
+  }
 }
 .view-menu {
   position: relative;
@@ -483,20 +531,27 @@
   opacity: 0.6;
   cursor: default;
 }
-/* Reusable neutral button: never red (red is status only, never a call to
-   action, design README), used for Discard and for Delete on saved patterns. */
+/* Reusable neutral button, used for Discard and for Delete on saved patterns:
+   destructive actions stay neutral rather than borrowing the accent. */
 .save-bar .ctl-ghost,
 .saved-pattern .ctl-ghost {
   background: transparent;
   color: var(--text-secondary);
   border-color: var(--text-secondary);
 }
+/* Failure status. --red never fills a control, so an error is a tinted,
+   outlined block of red text: a shape the accent never takes, which is what
+   keeps it from reading as a red button now that the brand is red (T-071). */
 .save-error {
   flex-basis: 100%;
   margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  background: var(--bg-red);
   font-family: var(--body-font);
   font-size: 12px;
-  color: var(--text-red, var(--red));
+  color: var(--text-red);
 }
 
 .saved-patterns {
@@ -531,10 +586,12 @@
   font-size: 14px;
   flex: 1;
 }
+/* An author stamp is a label, not a control: shield gold, never the
+   interactive accent (T-071). */
 .saved-pattern-author {
   font-size: 11px;
   letter-spacing: 0.05em;
-  color: var(--accent);
+  color: var(--text-warn);
 }
 .saved-pattern button {
   font: inherit;

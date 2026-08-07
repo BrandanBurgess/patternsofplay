@@ -11,8 +11,14 @@
   margin: 0 0 8px;
 }
 
+/* Failure status: red text in a tinted, outlined block, a shape the brand
+   red accent never takes (T-071). */
 .whiteboard-error {
   font-family: var(--body-font);
   font-size: 13px;
-  color: var(--text-red, var(--red));
+  padding: 6px 10px;
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  background: var(--bg-red);
+  color: var(--text-red);
 }

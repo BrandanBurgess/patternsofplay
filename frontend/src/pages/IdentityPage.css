@@ -3,8 +3,10 @@
    wholesale since both pages share the same board-first + swipe-up-sheet
    shape (design README sections 3/5); this file only adds what's specific
    to the identity content itself. Colors come only from the theme token
-   variables; gold is the only interactive color, red never appears here
-   as a call to action (the pass-risk "Off-menu" label uses --text-red as
+   variables (T-071 founder directive): var(--accent) is the brand red and
+   the only interactive colour, var(--warn) is shield gold for read-only
+   status, and red never appears here as a call to action (the pass-risk
+   "Off-menu" label uses --text-red as
    a STATUS color, same convention as a fit warning or a blocked lane,
    never as a clickable control). */
 
@@ -60,7 +62,7 @@
   padding: 3px 9px;
   border-radius: 999px;
   background: var(--bg);
-  color: var(--accent);
+  color: var(--text-warn);
 }
 
 .identity-keystone-list {
@@ -71,16 +73,17 @@
   gap: 4px;
 }
 
-/* Pass-risk block (Bible 5.7, style archetypes only): Encouraged in gold
-   (matches the confirmed-lane / interactive convention), Off-menu in the
-   status red used elsewhere for blocked lanes and fit warnings (never a
-   clickable control, so this is not "red as a CTA"), Tempo muted italic. */
+/* Pass-risk block (Bible 5.7, style archetypes only): Encouraged in shield
+   gold (--warn, matching the board's confirmed-lane language and the rest of
+   this app's read-only status), Off-menu in the status red, Tempo muted
+   italic. Neither is clickable, so neither takes the interactive brand red
+   (T-071). */
 .identity-risk-encouraged {
-  color: var(--accent);
+  color: var(--text-warn);
   font-weight: 600;
 }
 .identity-risk-discouraged {
-  color: var(--text-red, var(--red));
+  color: var(--text-red);
   font-weight: 600;
 }
 .identity-risk-tempo {

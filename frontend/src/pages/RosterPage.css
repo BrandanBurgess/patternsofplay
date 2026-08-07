@@ -1,7 +1,10 @@
-/* Roster page (PNG 12 desktop / 20 phone). Tokens only, no hardcoded
-   colors: red is status-only here (the FIT banner), never a call to
-   action; gold is the only interactive color (the active row's border,
-   the Save/Add-player buttons, the slider thumbs via accent-color). */
+/* Roster page (PNG 12 desktop / 20 phone). Tokens only, no hardcoded colors
+   (T-071 founder directive): var(--accent) is the brand red and the only
+   interactive colour (the active row's border, the Save/Add-player buttons,
+   the slider thumbs via accent-color), and var(--warn) is shield gold for
+   coach advisories and status. The FIT banner is the reason the split
+   exists: it is a warning, so it wears gold. If it stayed red it would be
+   indistinguishable from a primary button now that the brand is red. */
 
 .roster-page {
   max-width: 1200px;
@@ -13,18 +16,24 @@
   font-size: 13px;
   margin: 0 0 12px;
 }
+/* Failure status: red text in a tinted, outlined block, never a red fill. */
 .roster-error {
-  color: var(--text-red, var(--red));
+  padding: 6px 10px;
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  background: var(--bg-red);
+  color: var(--text-red);
 }
 
-/* FIT warning banner: red border/tag, coach-only (see RosterPage.tsx).
-   Status only, never clickable, so it carries no interactive styling. */
+/* FIT warning banner: gold border/tag, coach-only (see RosterPage.tsx).
+   Advisory only, never clickable, so it carries no interactive styling and
+   never the brand red (T-071). */
 .fit-warning {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  border: 1px solid var(--red);
-  background: var(--bg-red, transparent);
+  border: 1px solid var(--warn);
+  background: var(--bg-warn);
   border-radius: var(--radius);
   padding: 12px 14px;
   margin-bottom: 14px;
@@ -36,8 +45,8 @@
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
-  color: var(--text-red, var(--red));
-  border: 1px solid var(--red);
+  color: var(--text-warn);
+  border: 1px solid var(--warn);
   border-radius: 4px;
   padding: 2px 6px;
 }
@@ -47,7 +56,7 @@
   line-height: 1.45;
 }
 .fit-warning-body strong {
-  color: var(--text-red, var(--red));
+  color: var(--text-warn);
   font-weight: 600;
 }
 .fit-warning-body p {
@@ -117,16 +126,16 @@
 }
 
 /* Coach-only "gold badge on the row" for a pending playstyle suggestion
-   (README roles table; Brief step 22). Gold is the only interactive
-   color, but this is a status dot, not a control; kept small and
-   inline like .roster-you rather than a full pill. */
+   (README roles table; Brief step 22). This is a status dot, not a control,
+   so it stays literally gold (--warn) rather than following the interactive
+   colour to red. Kept small and inline like .roster-you, not a full pill. */
 .suggestion-badge {
   display: inline-block;
   width: 7px;
   height: 7px;
   margin-left: 6px;
   border-radius: 50%;
-  background: var(--accent);
+  background: var(--warn);
   vertical-align: middle;
 }
 .roster-row-role {
@@ -339,9 +348,9 @@
 }
 
 /* Playstyle suggestion flow (PNG 24/25/27; Brief step 22): the composer,
-   the player's own pending card, and the coach's review card all share
-   this gold-bordered card shape, gold being the design system's one
-   interactive/highlight color. */
+   the player's own pending card, and the coach's review card all share one
+   card shape outlined in the interactive colour, because each of the three
+   holds a control (submit, or approve/dismiss). */
 .suggestion-card {
   border: 1px solid var(--accent);
   border-radius: var(--radius);

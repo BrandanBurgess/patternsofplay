@@ -1,8 +1,9 @@
 /* Sessions page (Brief step 23, PNG 21-23, 26, 28). Colors come only from
-   the theme token variables: gold (var(--accent)) is the only interactive
-   colour (SENT pill, Send to players, Mark as watched, Viewed state), and
-   red never appears here at all, since nothing on this screen is a danger
-   state. */
+   the theme token variables (T-071 founder directive). Two families here:
+   var(--accent), the brand red, on the controls (Send to players, Mark as
+   watched, the active rail row), and var(--warn), shield gold, on every
+   read-only state (the SENT pill, the Viewed receipt, the watched pill,
+   item kickers). Nothing gold is clickable and nothing red is a status. */
 
 .sessions-page {
   max-width: 1180px;
@@ -15,8 +16,13 @@
   color: var(--text-secondary);
   margin: 0 0 8px;
 }
+/* Failure status: red text in a tinted, outlined block, never a red fill. */
 .sessions-error {
-  color: var(--text-red, var(--red));
+  padding: 6px 10px;
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  background: var(--bg-red);
+  color: var(--text-red);
 }
 
 /* Rail + detail (PNG 21/22). Stacks to one column on phone (design README:
@@ -180,15 +186,17 @@
   flex-wrap: wrap;
 }
 
-/* SENT pill with the x/y viewed counter (PNG 21). */
+/* SENT pill with the x/y viewed counter (PNG 21). A state, not a control:
+   shield gold, so it stays the gold pill the PNG shows and never competes
+   with a red primary button (T-071). */
 .sessions-sent-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
   border-radius: 999px;
-  background: var(--accent);
-  color: var(--accent-ink, #1b1b1b);
+  background: var(--warn);
+  color: var(--on-warn);
   font-family: var(--display-font);
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -211,8 +219,8 @@
   white-space: nowrap;
 }
 .sessions-watched-pill {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--warn);
+  color: var(--text-warn);
 }
 
 .sessions-kicker {
@@ -290,7 +298,7 @@
   font-size: 10px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-warn);
 }
 .sessions-item-name {
   font-family: var(--body-font);
@@ -433,6 +441,7 @@
   border: 1px solid var(--border);
   background: var(--bg);
 }
+/* Receipts are coach-only reading, never controls: gold. */
 .sessions-receipt-badge {
   flex-shrink: 0;
   display: inline-flex;
@@ -441,8 +450,8 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 1px solid var(--accent);
-  color: var(--accent);
+  border: 1px solid var(--warn);
+  color: var(--text-warn);
   font-family: var(--display-font);
   font-size: 12px;
 }
@@ -466,8 +475,8 @@
   white-space: nowrap;
 }
 .sessions-receipt-viewed {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--warn);
+  color: var(--text-warn);
 }
 
 /* Watch view: the item playing full width on the board, portrait on phone

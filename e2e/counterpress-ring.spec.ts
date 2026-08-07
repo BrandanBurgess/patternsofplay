@@ -349,7 +349,10 @@ test.describe("counterpress ring: the sixth zone, ball relative and moving", () 
 
   // ------------------------------------------------------------------
   // Theme check (verify-ui): the ring is a themed surface, so it is drawn
-  // once per theme. Gold is the interactive colour and red is never one.
+  // once per theme. T-071 moved it off the chrome accent: the ring is zone
+  // language drawn on the pitch, so it reads the BOARD token --zone. That
+  // is the whole point of the two token layers, because the chrome accent
+  // is now the brand red and a red ring would read as a warning.
   // ------------------------------------------------------------------
   test("the ring reads theme variables in all three themes", async ({ page, issues }) => {
     await registerCoach(page);
@@ -378,14 +381,23 @@ test.describe("counterpress ring: the sixth zone, ball relative and moving", () 
         el.remove();
         return rgb;
       });
+      const zoneRgb = await page.evaluate(() => {
+        const el = document.createElement("div");
+        el.style.color = "var(--zone)";
+        document.body.appendChild(el);
+        const rgb = getComputedStyle(el).color;
+        el.remove();
+        return rgb;
+      });
 
       const stroke = await page
         .getByTestId("formations-rondo-ring")
         .evaluate((el) => getComputedStyle(el).stroke);
-      // The ring is tappable, so it is gold: red is a verdict colour on
-      // this page and never a call to action.
-      expect(stroke).toBe(accentRgb);
+      // The ring is gold zone language on the pitch: never the status red,
+      // and never the chrome's interactive accent either (T-071).
+      expect(stroke).toBe(zoneRgb);
       expect(stroke).not.toBe(redRgb);
+      expect(stroke).not.toBe(accentRgb);
       seen.add(stroke);
     }
     // Three themes, three distinct painted values: proves the ring reads a

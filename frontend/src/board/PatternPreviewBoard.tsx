@@ -12,7 +12,7 @@
 import { useEffect, useRef, useState } from "react";
 import { modelToPixel, type ModelPoint, type Orientation, type Size } from "./coords";
 import { PitchMarkings } from "./PitchMarkings";
-import { TOKEN_FILL, type TokenSide } from "./tokens";
+import { TOKEN_FACE, TOKEN_FILL, type TokenSide } from "./tokens";
 import { AnimationOverlay } from "./AnimationOverlay";
 import { PlayerController } from "./player";
 import type { Playback } from "./playback";
@@ -273,7 +273,7 @@ export default function PatternPreviewBoard({
                 r={r}
                 style={{
                   stroke: TOKEN_FILL[token.side],
-                  fill: token.side === "ball" ? TOKEN_FILL.ball : "var(--surface)",
+                  fill: token.side === "ball" ? TOKEN_FILL.ball : TOKEN_FACE,
                 }}
               />
               {token.label && (

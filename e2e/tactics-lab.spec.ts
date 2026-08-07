@@ -320,7 +320,7 @@ test.describe("tactics lab: a player gets the whole lab, because none of it is c
   });
 });
 
-test.describe("tactics lab: themed across all three, gold for edges, red only as status", () => {
+test.describe("tactics lab: themed across all three, brand red interactive, verdicts as status", () => {
   test("chips and controls read theme variables, never a baked-in colour", async ({ page, issues }) => {
     await registerCoach(page);
     await openFormations(page);
@@ -355,8 +355,9 @@ test.describe("tactics lab: themed across all three, gold for edges, red only as
       const chip = page.getByTestId("formations-zone-chip").first();
       seenChip.add(await chip.evaluate((el) => getComputedStyle(el).color));
 
-      // The interactive controls stay gold: red is a verdict colour on this
-      // page and never a call to action.
+      // The interactive controls wear the brand accent, which is NOT the
+      // status red: a verdict on this page must never look like a control
+      // (T-071 keeps the two reds at distinct values for exactly this).
       const grid = page.getByTestId("formations-grid-toggle");
       const gridColor = await grid.evaluate((el) => getComputedStyle(el).borderTopColor);
       expect(gridColor).not.toBe(redRgb);

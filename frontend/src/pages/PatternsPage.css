@@ -1,7 +1,9 @@
 /* Patterns page (Brief step 17, PNG 05-10, 29-31, 15-18, 35). Colors come
-   only from the theme token variables; gold (var(--accent)/var(--glow)) is
-   the only interactive/active color, red never appears here as a call to
-   action. */
+   only from the theme token variables (T-071 founder directive):
+   var(--accent) is the brand red and the only interactive/active colour,
+   var(--warn) is shield gold for labels and non-interactive status, and
+   anything drawn on a pitch (the mini thumbnails) reads the BOARD token
+   layer so the chrome's red can never repaint turf or a team. */
 
 .patterns-page {
   max-width: 1100px;
@@ -14,8 +16,14 @@
   color: var(--text-secondary);
   margin: 0 0 8px;
 }
+/* Failure status: red as text inside a tinted, outlined block, a shape the
+   brand-red accent never takes (T-071). */
 .patterns-error {
-  color: var(--text-red, var(--red));
+  padding: 6px 10px;
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  background: var(--bg-red);
+  color: var(--text-red);
 }
 .patterns-error-overlay {
   position: absolute;
@@ -65,10 +73,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* A label, not a control: shield gold. */
 .patterns-meta-author {
   font-size: 11px;
   letter-spacing: 0.05em;
-  color: var(--accent);
+  color: var(--text-warn);
   white-space: nowrap;
 }
 .patterns-details-btn {
@@ -83,8 +92,8 @@
 }
 
 /* Playing indicator (PNG 05, 09): top-right over the pitch, echoing the
-   ball's own gold glow (design README token table). Never red: red is
-   status/danger only, never used for a positive "in progress" state. */
+   ball's own gold. Nothing here is clickable, so it takes the shield gold
+   --warn family rather than the interactive brand red (T-071). */
 .patterns-playing-pill {
   position: absolute;
   top: 10px;
@@ -96,7 +105,7 @@
   padding: 5px 12px;
   border-radius: 999px;
   background: var(--surface);
-  color: var(--accent);
+  color: var(--text-warn);
   font-family: var(--body-font);
   font-size: 12px;
   white-space: nowrap;
@@ -105,8 +114,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--glow);
-  box-shadow: 0 0 6px var(--glow);
+  background: var(--warn);
+  box-shadow: 0 0 6px var(--warn);
 }
 
 /* Details panel (PNG 10, 18, 31): a right-hand rail on desktop, per library
@@ -194,6 +203,7 @@
   align-items: flex-start;
   gap: 8px;
 }
+/* Step numbers are read, not pressed: gold, not the interactive red. */
 .patterns-details-step-n {
   flex-shrink: 0;
   display: inline-flex;
@@ -202,8 +212,8 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--accent);
-  color: var(--accent-ink, #1b1b1b);
+  background: var(--warn);
+  color: var(--on-warn);
   font-size: 11px;
   font-weight: 600;
 }
@@ -377,7 +387,7 @@
   font-size: 10px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-warn);
 }
 .patterns-tile-name {
   font-size: 13px;
@@ -395,20 +405,23 @@
   border-radius: 4px;
   display: block;
 }
+/* Mini board thumbnails are a PITCH, not chrome: turf, teams, and ball all
+   read BOARD tokens, so they stay a green pitch with a gold and a red team
+   whatever the chrome accent is (T-071). */
 .tile-thumb-bg {
-  fill: var(--bg-stripe);
+  fill: var(--pitch-turf);
 }
 .tile-thumb-token {
   stroke: none;
 }
 .tile-thumb-home {
-  fill: var(--accent);
+  fill: var(--team-home);
 }
 .tile-thumb-away {
-  fill: var(--red);
+  fill: var(--team-away);
 }
 .tile-thumb-ball {
-  fill: var(--glow);
+  fill: var(--ball);
 }
 
 @media (max-width: 700px) {

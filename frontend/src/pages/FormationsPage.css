@@ -1,8 +1,12 @@
 /* Formations page (Brief step 18, PNG 11, 19, 37-39, 43). Colors come only
-   from the theme token variables; gold (var(--accent)/var(--glow)) is the
-   only interactive/active color, red never appears here as a call to
-   action (the on-board tokens are all "home" side, gold, since a formation
-   shows one team's own shape, not an opponent). */
+   from the theme token variables (T-071 founder directive): var(--accent)
+   is the brand red and the only interactive/active colour, var(--warn) is
+   shield gold for verdicts, kickers and other non-interactive emphasis, and
+   everything drawn ON the pitch (keystone rings, the counterpress ring, the
+   positional grid, the mini shape thumbnails) reads the BOARD token layer,
+   so no chrome colour can repaint the pitch. The on-board tokens are all
+   "home" side, gold, since a formation shows one team's own shape, not an
+   opponent. */
 
 .formations-page {
   max-width: 1100px;
@@ -15,8 +19,14 @@
   color: var(--text-secondary);
   margin: 0 0 8px;
 }
+/* Failure status: red text in a tinted, outlined block, never a red fill
+   (T-071: --accent owns the red fills now). */
 .formations-error {
-  color: var(--text-red, var(--red));
+  padding: 6px 10px;
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  background: var(--bg-red);
+  color: var(--text-red);
 }
 
 .formations-stage {
@@ -253,9 +263,12 @@
   width: 100%;
   height: 100%;
 }
+/* The counterpress ring is zone language drawn on the pitch, so it reads the
+   board's --zone token, not the chrome accent (T-071). Its focus ring below
+   is chrome and correctly stays on --accent. */
 .formations-ring {
   fill: none;
-  stroke: var(--accent);
+  stroke: var(--zone);
   stroke-width: 2;
   stroke-dasharray: 7 6;
   pointer-events: none;
@@ -318,16 +331,16 @@
   font-weight: 600;
 }
 .formations-zone-chip[data-verdict="superiority"] {
-  color: var(--accent);
-  border-color: var(--accent);
+  color: var(--text-warn);
+  border-color: var(--warn);
 }
 .formations-zone-chip[data-verdict="parity"] {
   color: var(--text-primary);
   border-color: var(--text-secondary);
 }
 .formations-zone-chip[data-verdict="inferiority"] {
-  color: var(--text-red, var(--red));
-  border-color: var(--text-red, var(--red));
+  color: var(--text-red);
+  border-color: var(--text-red);
 }
 .formations-zone-chip-kind {
   font-family: var(--body-font);
@@ -342,7 +355,8 @@
    answer it with an error colour. */
 .formations-grid-line {
   position: absolute;
-  background: var(--line);
+  background: var(--pitch-line);
+  opacity: 0.5;
 }
 .formations-grid-line-v {
   top: 0;
@@ -356,7 +370,7 @@
 }
 .formations-grid-band {
   position: absolute;
-  background: var(--accent);
+  background: var(--zone);
   opacity: 0.18;
 }
 .formations-grid-band-v {
@@ -560,7 +574,7 @@
 .formations-rotation-item-shape {
   font-family: var(--display-font);
   font-size: 11px;
-  color: var(--accent);
+  color: var(--text-warn);
   white-space: nowrap;
 }
 .formations-rotation-card h3 {
@@ -602,7 +616,7 @@
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-warn);
 }
 .formations-balance-body {
   margin: 0;
@@ -615,10 +629,10 @@
 /* Zone card read lines. Verdict colours are status, never a call to
    action: nothing here is clickable. */
 .formations-zone-read[data-verdict="superiority"] {
-  color: var(--accent);
+  color: var(--text-warn);
 }
 .formations-zone-read[data-verdict="inferiority"] {
-  color: var(--text-red, var(--red));
+  color: var(--text-red);
 }
 .formations-zone-fallback {
   color: var(--text-secondary);
@@ -664,7 +678,7 @@
   margin: 0 0 4px;
   font-family: var(--display-font);
   font-size: 12px;
-  color: var(--accent);
+  color: var(--text-warn);
 }
 
 /* Bottom sheet (Brief step 18: "swipe-up sheet with shape thumbnails and
@@ -791,7 +805,7 @@
   font-size: 10px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-warn);
 }
 .formations-tile-name {
   font-size: 13px;
@@ -809,11 +823,12 @@
   border-radius: 4px;
   display: block;
 }
+/* Shape thumbnails are miniature pitches: BOARD tokens only (T-071). */
 .formations-tile-thumb-bg {
-  fill: var(--bg-stripe);
+  fill: var(--pitch-turf);
 }
 .formations-tile-thumb-token {
-  fill: var(--accent);
+  fill: var(--team-home);
   stroke: none;
 }
 
@@ -869,7 +884,7 @@
   font-family: var(--display-font);
   font-weight: 500;
   font-size: 13px;
-  color: var(--accent);
+  color: var(--text-warn);
 }
 
 .personnel-slot {
@@ -994,8 +1009,10 @@
   line-height: 1.4;
   color: var(--text-primary);
 }
+/* A clash warning is an advisory, so it takes the shield gold --warn family
+   (T-071): warnings must never wear the interactive brand red. */
 .personnel-balance-note[data-severity="warning"] {
-  border-left-color: var(--accent);
+  border-left-color: var(--warn);
 }
 .personnel-balance-note[data-severity="none"] {
   color: var(--text-secondary);
