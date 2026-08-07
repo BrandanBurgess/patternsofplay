@@ -254,3 +254,153 @@ def test_flank_corridor_row_split_downgrades_back_to_one_row(fresh_db_url: str) 
     assert json.loads(merged.trains_pattern_codes) == ["A1", "A2", "F1"]
     assert merged.source_ref == "bible:3G.2"
     assert merged.content_version == "1.0.0"
+
+
+def _insert_post_0006_counterpress_row(conn) -> None:
+    """A rondo_zones row in the exact shape a database seeded between
+    0006 landing and T-103's seed rewrite would still hold: the old
+    zone_key `counterpress` with its fixed polygon, using only the
+    columns the pre-T-103 seed file ever set for this row (zone_kind is
+    given explicitly here as 'polygon', the value scripts/seed.py's
+    upsert would have left in place via 0006's own server_default,
+    since the pre-T-103 seed file never mentioned zone_kind for this
+    row at all)."""
+    conn.execute(
+        text(
+            "INSERT INTO rondo_zones "
+            "(formation_code, zone_key, polygon_json, rondo_name, teaches, "
+            "trains_pattern_codes, source_ref, content_version, zone_kind) "
+            "VALUES (:formation_code, :zone_key, :polygon_json, :rondo_name, "
+            ":teaches, :trains_pattern_codes, :source_ref, :content_version, "
+            ":zone_kind)"
+        ),
+        {
+            "formation_code": "433",
+            "zone_key": "counterpress",
+            "polygon_json": json.dumps(
+                [{"x": 30, "y": 10}, {"x": 70, "y": 10}, {"x": 70, "y": 90}, {"x": 30, "y": 90}]
+            ),
+            "rondo_name": "4v4+3 (the counterpress moment)",
+            "teaches": (
+                "The five-second swarm is the neutral-player transition game "
+                "played for real stakes, wherever the ball is lost."
+            ),
+            "trains_pattern_codes": json.dumps(["C1"]),
+            "source_ref": "bible:3G.2",
+            "content_version": "1.0.0",
+            "zone_kind": "polygon",
+        },
+    )
+
+
+def _insert_counterpress_ring_row(conn, formation_code: str) -> None:
+    """A rondo_zones row in T-103's current shape, standing in for the
+    counterpress_ring row a re-run of the seeder has already written
+    alongside the stale orphan above (an upsert-only seeder adds the new
+    zone_key without ever touching the old one). Proves 0007 deletes
+    only the retired zone_key and leaves its replacement untouched."""
+    conn.execute(
+        text(
+            "INSERT INTO rondo_zones "
+            "(formation_code, zone_key, polygon_json, rondo_name, teaches, "
+            "trains_pattern_codes, source_ref, content_version, canonical_rondo, "
+            "zone_kind, radius) "
+            "VALUES (:formation_code, :zone_key, :polygon_json, :rondo_name, "
+            ":teaches, :trains_pattern_codes, :source_ref, :content_version, "
+            ":canonical_rondo, :zone_kind, :radius)"
+        ),
+        {
+            "formation_code": formation_code,
+            "zone_key": "counterpress_ring",
+            "polygon_json": json.dumps(
+                [{"x": 50, "y": 0}, {"x": 100, "y": 0}, {"x": 100, "y": 100}, {"x": 50, "y": 100}]
+            ),
+            "rondo_name": "4v4+3 (the counterpress ring)",
+            "teaches": "Lose the ball in their half and the swarm is the pivot.",
+            "trains_pattern_codes": json.dumps(["C1"]),
+            "source_ref": "doc06:2.3",
+            "content_version": "1.1.0",
+            "canonical_rondo": "4v4 plus 3",
+            "zone_kind": "ball_relative_circle",
+            "radius": 18,
+        },
+    )
+
+
+def test_orphan_counterpress_row_deleted_on_upgrade_to_0007(fresh_db_url: str) -> None:
+    """T-111 / Platform DoD: proves the exact upgrade path a persistent-
+    disk deploy seeded before T-103 would hit. Builds a DB up to 0006
+    (the pre-0007 head, with T-101's rondo_zones columns already
+    present), inserts a stale `counterpress` row (the shape a pre-T-103
+    seed run left behind) alongside a `counterpress_ring` row (the shape
+    a subsequent, post-T-103 seed run also wrote for the same
+    formation, since scripts/seed.py's upsert-only seeder adds the new
+    zone without ever removing the old one), then upgrades to head
+    (0007) and asserts: the orphan `counterpress` row is gone, and the
+    `counterpress_ring` row is completely untouched. That is what makes
+    the 4-3-3 render six rondo zones again instead of seven."""
+    cfg = _alembic_config()
+    command.upgrade(cfg, "0006")
+
+    engine = create_engine(fresh_db_url)
+    with engine.begin() as conn:
+        _insert_formation_433(conn)
+        _insert_post_0006_counterpress_row(conn)
+        _insert_counterpress_ring_row(conn, "433")
+    engine.dispose()
+
+    command.upgrade(cfg, "head")
+
+    engine = create_engine(fresh_db_url)
+    with engine.connect() as conn:
+        rows = {
+            row.zone_key: row
+            for row in conn.execute(
+                text(
+                    "SELECT zone_key, polygon_json, rondo_name, teaches, "
+                    "trains_pattern_codes, source_ref, content_version, "
+                    "canonical_rondo, zone_kind, radius "
+                    "FROM rondo_zones WHERE formation_code = '433'"
+                )
+            ).fetchall()
+        }
+    engine.dispose()
+
+    assert "counterpress" not in rows
+    ring = rows["counterpress_ring"]
+    assert ring.rondo_name == "4v4+3 (the counterpress ring)"
+    assert ring.zone_kind == "ball_relative_circle"
+    assert ring.radius == 18
+    assert ring.canonical_rondo == "4v4 plus 3"
+
+
+def test_orphan_counterpress_deletion_is_idempotent_on_a_db_with_no_such_row(
+    fresh_db_url: str,
+) -> None:
+    """The normal case: any database seeded on or after T-103 never had
+    a `counterpress` row to begin with, which is exactly why this bug is
+    invisible to a from-zero build or to CI. 0007's delete must match
+    zero rows and succeed rather than error, so a database with no
+    orphan is unaffected. test_fresh_db_builds_from_zero_via_the_full_
+    migration_chain already exercises this end to end; this test isolates
+    the same guarantee at the 0006 -> 0007 step, with a counterpress_ring
+    row present to prove nothing else gets touched either."""
+    cfg = _alembic_config()
+    command.upgrade(cfg, "0006")
+
+    engine = create_engine(fresh_db_url)
+    with engine.begin() as conn:
+        _insert_formation_433(conn)
+        _insert_counterpress_ring_row(conn, "433")
+    engine.dispose()
+
+    command.upgrade(cfg, "head")
+
+    engine = create_engine(fresh_db_url)
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text("SELECT zone_key FROM rondo_zones WHERE formation_code = '433'")
+        ).fetchall()
+    engine.dispose()
+
+    assert {row.zone_key for row in rows} == {"counterpress_ring"}
