@@ -820,3 +820,68 @@ class TeamFormationOut(BaseModel):
     created_by_user_id: int
     created_at: datetime
     slots: list[TeamFormationSlotOut]
+
+
+# ---------------------------------------------------------------------------
+# Unit balance evaluation (T-110, doc 06 sections 2.6 / 3.1 / 5.3).
+# Coach-only, exactly like FitWarningOut above: doc 06 section 5.3 says
+# unit balance is "coach-only, both in the UI and at the API", so no
+# player-role payload has a field for any of these (CLAUDE.md rule 5).
+# ---------------------------------------------------------------------------
+
+
+class UnitBalanceSlotIn(BaseModel):
+    """One slot's current archetype pick. `archetype_code` is nullable
+    because doc 06 section 5.3 makes an unassigned slot a first-class
+    state, not an error."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    slot: str = Field(min_length=1, max_length=30)
+    archetype_code: str | None = None
+
+
+class UnitBalanceRequest(BaseModel):
+    """Body of the live balance evaluation. Carries only the archetype
+    picks: no team_id (CLAUDE.md rule 4) and no player ids, because unit
+    balance is evaluated on archetypes alone, which is what lets the panel
+    work against an empty roster."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    slots: list[UnitBalanceSlotIn] = Field(default_factory=list)
+
+
+class UnitBalanceNoteOut(BaseModel):
+    """One fired unit_balance_rules row. Same shape as FitWarningOut
+    carries a fired role_clashes row (doc 06 section 3.1: "reuse its
+    evaluation shape so the two engines read alike"). `message` is the
+    seeded warning_copy verbatim, never composed here."""
+
+    code: str
+    unit: str
+    flank: Flank | None
+    severity: Literal["note", "warning"]
+    message: str
+    slots: list[str]
+
+
+class UnitBalanceUnitOut(BaseModel):
+    unit: str
+    # Set only for wide_unit, which occurs once per touchline.
+    flank: Flank | None
+    slots: list[str]
+    assigned_slots: list[str]
+    is_complete: bool
+    notes: list[UnitBalanceNoteOut]
+
+
+class UnitBalanceResponse(BaseModel):
+    """`units_not_evaluated` is part of the contract, not debug output: a
+    unit the formation does not contain must be visibly absent rather than
+    silently scored empty, so the panel can say why a 4-3-3 shows no
+    double-pivot section."""
+
+    formation_code: str
+    units: list[UnitBalanceUnitOut]
+    units_not_evaluated: list[str]
