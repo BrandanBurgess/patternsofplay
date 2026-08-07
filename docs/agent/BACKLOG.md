@@ -40,7 +40,7 @@ Dispatch rule for this epic: give a subagent its ticket row plus **only** the do
 
 | ID | Title | Doc 06 §§ | Agent | Model | Deps | Parallel-safe with | Status |
 |---|---|---|---|---|---|---|---|
-| T-100 | Scope amendment: move 4 rows to IN in Brief §1, add doc 06 to the CLAUDE.md source table, no code | 0 | platform | sonnet | none | none (solo, first) | todo |
+| T-100 | Scope amendment: move 4 rows to IN in Brief §1, add doc 06 to the CLAUDE.md source table, no code | 0 | platform | sonnet | none | none (solo, first) | done |
 | T-101 | Schema + Alembic: formation_phases, rotation_systems, position_archetypes, archetype_combinations, unit_balance_rules, formation_matchups, rondo_zones new columns + L/R corridor data migration, team_formations, team_formation_slots; scoped layer for both team-world tables + cross-team read test | 3 | platform | sonnet | T-100 | T-104 | todo |
 | T-102 | Seeds: position_archetypes (all 10 slot families), archetype_combinations, unit_balance_rules; validator extensions (duty vocabulary closed, key_attribute_keys subset of the six, cost line required) | 2.6, 3.1 | content-seeder | opus | T-101 | T-103, T-104 | todo |
 | T-103 | Seeds: formation_phases (6 formations x 3-5 variants), rotation_systems (14 incl. animation specs), rondo_zones for all 6 formations at 6 zones, formation_matchups (15 pairs), 10 reference systems as identities kind=reference_system; validator: phase slot-set equality, risk line required | 2.3, 2.4, 2.5, 2.8, 3.1 | content-seeder | opus | T-101 | T-102, T-104 | todo |
