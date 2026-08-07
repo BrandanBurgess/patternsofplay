@@ -6,6 +6,11 @@ Draw a pattern on a live board that shows you which passes are on and which are
 covered, record it the way you would draw it on a whiteboard, and send it to the
 squad's phones. You see who watched it.
 
+**Try it: <https://patterns-of-play.onrender.com>** . Sign in as
+`coach@example.com` / `demo-pass-2026` (or `player@example.com`, same password).
+It is a free instance, so the first request after a quiet spell takes about a
+minute to wake up, and the demo team is rebuilt on every restart.
+
 ![The whiteboard with the live lane graph](docs/screenshots/01-whiteboard-lanes.png)
 
 ## Why a coach cares
@@ -100,6 +105,24 @@ as a coach). The code decides the role, not the account.
 Other targets: `make verify` (copy scan, permission suite, lint, typecheck, unit
 and integration tests, and the Playwright journeys on both viewports),
 `make screenshots` (rebuilds the demo database and recaptures `docs/screenshots/`).
+
+## Deployment
+
+`render.yaml` describes a single Docker web service that serves the SPA and the
+API from one origin (`Dockerfile`, `scripts/start.sh`). Pushing to `main`
+redeploys it.
+
+The live instance runs on Render's free plan, which has **no persistent disk**.
+The SQLite file is rebuilt on every boot, which is why `POP_SEED_DEMO=true` is
+set: the demo team, its content and its logins come back on every restart, so
+the credentials above always work and the demo always opens in the same state.
+Anything created while poking around does not outlive the instance, and a free
+instance sleeps after about fifteen minutes of quiet.
+
+To make it durable for a real club: raise `plan` to `starter`, attach a disk
+mounted at `/data`, and set `POP_SEED_DEMO=false`. `DATABASE_URL` already points
+there, so nothing else changes. Litestream replication (doc 04 section 2) is the
+step after that, not before it.
 
 ## Stack and architecture
 
