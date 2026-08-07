@@ -1,0 +1,247 @@
+{
+  "content_version": "1.1.0",
+  "table": "formation_matchups",
+  "note": "doc 06 section 2.8. One row per unordered pair, normalised so ours_code <= theirs_code by string order, which is why every `route` line names the shape it is written from. The engine computes where the spare man is and where we are short numerically for any pair; these rows add the coached read on top, in doc 06's own three steps: our_edges_json is step one, their_edges_json is step two, and route plus route_kind is step three. Reference systems as pseudo-opponents are NOT seeded here: ours_code and theirs_code are foreign keys into formations.code, so a reference system cannot be an opponent without a schema change, which is out of scope for T-103.",
+  "items": [
+    {
+      "ours_code": "343",
+      "theirs_code": "352",
+      "our_edges_json": [
+        "Our back three is three against their two strikers, so the middle defender can carry into midfield with nobody assigned to him.",
+        "Our wide forwards start inside their wing backs, who cannot hold the width and mark them at the same time."
+      ],
+      "their_edges_json": [
+        "Their three central midfielders outnumber our two, so the centre belongs to them until a wide forward drops in.",
+        "Each of our wing backs defends a full flank alone the moment theirs push on."
+      ],
+      "route": "The 3-4-3 goes around: the free centre back carries until a striker commits, then the ball is switched to the wing back running behind their wing back.",
+      "route_kind": "around",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "343",
+      "theirs_code": "4231",
+      "our_edges_json": [
+        "Our back three is three against their lone nine, so one defender is always spare to carry out.",
+        "Our wing backs start beyond their wingers, who then have to track a whole flank or leave them free."
+      ],
+      "their_edges_json": [
+        "Their double pivot plus their ten is three against our two central midfielders.",
+        "The space in front of our back three, where their ten receives, has nobody permanently responsible for it."
+      ],
+      "route": "The 3-4-3 goes around: the spare centre back carries until their winger steps in, and the wing back outside him is free for the cutback.",
+      "route_kind": "around",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "343",
+      "theirs_code": "433",
+      "our_edges_json": [
+        "Our wing backs are free whenever their wingers stay high, because their fullbacks are already occupied by our wide forwards.",
+        "Their single pivot cannot screen both half-spaces, so one of our central midfielders receives on the turn."
+      ],
+      "their_edges_json": [
+        "Their midfield three is three against our two, so we lose the centre unless a wide forward drops in.",
+        "Their wingers attack the space behind our advanced wing backs, which is this shape's standing weakness."
+      ],
+      "route": "The 3-4-3 goes through: fix their single pivot with one central midfielder, then play the half-space their stepping eight has already left.",
+      "route_kind": "through",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "343",
+      "theirs_code": "442",
+      "our_edges_json": [
+        "Our back three is three against their two strikers, so a defender carries out with the ball every single time.",
+        "Our wide forwards sit inside their wide midfielders and outside their centre backs, in a zone their shape gives to nobody."
+      ],
+      "their_edges_json": [
+        "Their two central midfielders match our two, so the centre is even and their banks stay compact.",
+        "Their two strikers pin our wide centre backs the moment our wing backs push on."
+      ],
+      "route": "The 3-4-3 goes through: the spare centre back carries past the first line, which pulls a central midfielder out and opens the half-space for the wide forward.",
+      "route_kind": "through",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "343",
+      "theirs_code": "541",
+      "our_edges_json": [
+        "Our back three is three against one, so two defenders are permanently spare and can step into midfield unopposed.",
+        "Our wing backs meet a bank of four with no fullback behind it, so nobody picks them up until the byline."
+      ],
+      "their_edges_json": [
+        "Their four across the middle is four against our two central midfielders inside the block.",
+        "Their five defenders cover the width of the box, so there is no space behind to run into."
+      ],
+      "route": "The 3-4-3 goes around: overload one side to drag the block across, then switch to the free wing back and attack the cutback rather than the cross.",
+      "route_kind": "around",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "352",
+      "theirs_code": "4231",
+      "our_edges_json": [
+        "Our three centre backs face one striker, so two are spare and one can step into midfield with the ball.",
+        "Our three central midfielders are three against their double pivot until their ten drops in to help."
+      ],
+      "their_edges_json": [
+        "Their wingers attack the space behind our wing backs, the known weakness of the shape.",
+        "Their ten sits between our midfield and our back three, where nobody is permanently responsible."
+      ],
+      "route": "The 3-5-2 goes through: a stepping centre back makes it four against two centrally, then the ball goes to a striker dropping off their pivot.",
+      "route_kind": "through",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "352",
+      "theirs_code": "433",
+      "our_edges_json": [
+        "Our wing backs are free against their fullbacks whenever their wingers hold the touchline.",
+        "Our two strikers occupy both their centre backs, so their fullbacks cannot tuck in to help."
+      ],
+      "their_edges_json": [
+        "Their wingers start beyond our wing backs, so a turnover is a three against three at best.",
+        "Their front three matches our back three, so we build without a spare man unless a midfielder drops in."
+      ],
+      "route": "The 3-5-2 goes around: drop a midfielder beside the centre backs to manufacture the spare man, then release the far wing back behind their winger.",
+      "route_kind": "around",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "352",
+      "theirs_code": "442",
+      "our_edges_json": [
+        "Our three central midfielders are three against their two, the oldest overload in the book.",
+        "Our three centre backs face two strikers, so one of them is always free to carry."
+      ],
+      "their_edges_json": [
+        "Their wide midfielders drop onto our wing backs, so our width costs two players to win one.",
+        "Their two strikers sit on our wide centre backs the moment the middle one steps out."
+      ],
+      "route": "The 3-5-2 goes through: the free centre back carries until a central midfielder commits, then the third midfielder receives in the space he left.",
+      "route_kind": "through",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "352",
+      "theirs_code": "541",
+      "our_edges_json": [
+        "Our three centre backs against their one striker leaves two spare, so we build with a permanent extra man.",
+        "Our two strikers pin their middle defenders, which stops the back five sliding as one unit."
+      ],
+      "their_edges_json": [
+        "Their midfield four is four against our three inside the block.",
+        "There is no space behind a deep back five, so our wing backs run into a wall rather than a channel."
+      ],
+      "route": "The 3-5-2 goes around: walk the ball forward with the spare defenders, then attack the outside shoulder of their wide centre back with a striker.",
+      "route_kind": "around",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "4231",
+      "theirs_code": "433",
+      "our_edges_json": [
+        "Our double pivot plus the ten is three against their three, and their single pivot cannot screen both half-spaces.",
+        "Our fullbacks are free whenever their wingers stay high, because their eights are occupied centrally."
+      ],
+      "their_edges_json": [
+        "Their eights attack the two spaces beside our double pivot, which is this shape's standing weakness.",
+        "Our lone nine faces two centre backs with no partner to fix them."
+      ],
+      "route": "The 4-2-3-1 goes through: the ten receives on the blind side of their single pivot, the one player who cannot cover both half-spaces at once.",
+      "route_kind": "through",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "4231",
+      "theirs_code": "442",
+      "our_edges_json": [
+        "Our double pivot plus the ten is three against their two central midfielders.",
+        "Their strikers cannot press two centre backs and screen both our pivots at the same time."
+      ],
+      "their_edges_json": [
+        "Their two strikers occupy both our centre backs, so our pivots have to come and fetch the ball themselves.",
+        "Their banks of four stay compact, so the space we win is in front of them rather than inside them."
+      ],
+      "route": "The 4-2-3-1 goes through: split the centre backs to draw one striker, then the free pivot turns and finds the ten between their lines.",
+      "route_kind": "through",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "4231",
+      "theirs_code": "541",
+      "our_edges_json": [
+        "Our four builders face one presser, so we hold three spare players before the ball has even moved.",
+        "Our fullbacks reach the byline unopposed until their wide midfielder drops all the way onto them."
+      ],
+      "their_edges_json": [
+        "Their midfield four is four against our three in the centre of the block.",
+        "Our lone nine is one against three centre backs, with nobody running ahead of the ball."
+      ],
+      "route": "The 4-2-3-1 goes around: pull the block to one side, then switch and attack the cutback zone, because there is nothing behind a deep back five.",
+      "route_kind": "around",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "433",
+      "theirs_code": "442",
+      "our_edges_json": [
+        "Our midfield three is three against their two, the cleanest central overload in the game.",
+        "Our wingers hold the width against their fullbacks while their wide midfielders start narrow beside their central pair."
+      ],
+      "their_edges_json": [
+        "Their two strikers pin both our centre backs, so our pivot receives under real pressure every time.",
+        "The space behind our fullbacks is where their wide midfielders and strikers counter."
+      ],
+      "route": "The 4-3-3 goes through: one eight drops to draw a central midfielder out, then the other receives turned in the half-space he vacated.",
+      "route_kind": "through",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "433",
+      "theirs_code": "541",
+      "our_edges_json": [
+        "Our back four plus the pivot faces one presser, so we can build with as many spare players as we want.",
+        "Their wing backs cannot mark our wingers and stay inside the back five at the same time."
+      ],
+      "their_edges_json": [
+        "Their four across the middle is four against our three inside the block.",
+        "There is no space behind their last line, so runs in behind have nowhere to arrive."
+      ],
+      "route": "The 4-3-3 goes around: hold both wingers on the touchline to stretch the five, then attack the cutback from the corner of their box.",
+      "route_kind": "around",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    },
+    {
+      "ours_code": "442",
+      "theirs_code": "541",
+      "our_edges_json": [
+        "Our two strikers face three centre backs but occupy the middle two, which stops the block sliding cleanly.",
+        "Our fullbacks are free because their wide midfielders start narrow, beside their central pair."
+      ],
+      "their_edges_json": [
+        "Their four in midfield matches our four, so we win no overload anywhere in the centre.",
+        "Their five defenders own the width of the box, so a cross meets numbers rather than space."
+      ],
+      "route": "The 4-4-2 goes over: fix the block with width, then attack the far post and the second ball, because there is no route through and little space around.",
+      "route_kind": "over",
+      "source_ref": "doc06:2.8",
+      "content_version": "1.1.0"
+    }
+  ]
+}

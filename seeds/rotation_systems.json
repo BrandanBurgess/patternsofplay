@@ -1,0 +1,895 @@
+{
+  "content_version": "1.1.0",
+  "table": "rotation_systems",
+  "note": "doc 06 section 2.5. Structural rotations (who changes job), distinct from the movement patterns already seeded as library_items R1, R12 and R13. Every row states its cost in `risk`: a rotation library that lists only benefits is marketing, not coaching, so the validator refuses a row without one. Slot names in what_moves_json and animation_spec_json are the rotation's own generic names, not formation slot ids, because one rotation applies across several formations whose slot vocabularies differ.",
+  "items": [
+    {
+      "code": "rot_invert_fb_pivot",
+      "name": "Inverted fullback into the pivot",
+      "family": "wide",
+      "applies_to_formations": ["433", "4231", "442"],
+      "produces_shape": "3-2-5",
+      "trigger": "A goal kick, or centre-back circulation against a two-striker press.",
+      "what_moves_json": [
+        {"slot": "fullback", "from": {"x": 22, "y": 12}, "to": {"x": 46, "y": 40}, "becomes": "pivot"},
+        {
+          "slot": "far_fullback",
+          "from": {"x": 22, "y": 88},
+          "to": {"x": 30, "y": 74},
+          "becomes": "third_cb"
+        }
+      ],
+      "coaching_points_json": [
+        "The fullback steps inside while the ball is travelling, not once it has arrived, so the pivot line is already a two when the receiver looks up.",
+        "The winger ahead of him now holds that touchline alone, and has to stay high and wide to keep their fullback pinned.",
+        "The far fullback tucks in at the same moment: a back three that forms late is a back two for the first three seconds."
+      ],
+      "risk": "The flank behind him is empty on the turnover, so this needs a winger who defends or a wide centre back who can cover the channel.",
+      "requires_profile_json": {
+        "fullback": {
+          "archetypes": ["fb_inverter"],
+          "foot": null,
+          "attributes": ["positional_discipline", "passing_range"]
+        },
+        "far_fullback": {
+          "archetypes": ["fb_defender", "fb_underlapper"],
+          "foot": null,
+          "attributes": ["positional_discipline"]
+        }
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "cb", "role_hint": "CB", "start": {"x": 22, "y": 62}},
+          {"slot": "six", "role_hint": "DM", "start": {"x": 42, "y": 50}},
+          {"slot": "fullback", "role_hint": "FB", "start": {"x": 22, "y": 12}},
+          {"slot": "far_fullback", "role_hint": "FB", "start": {"x": 22, "y": 88}},
+          {"slot": "winger", "role_hint": "W", "start": {"x": 78, "y": 15}}
+        ],
+        "ball": {"holder_slot": "cb"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "The centre back carries out and the first line comes to meet him.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "The fullback steps inside beside the six while the far fullback tucks into the back line.",
+            "moves": [
+              {"slot": "fullback", "to": {"x": 46, "y": 40}, "arc": "inside"},
+              {"slot": "far_fullback", "to": {"x": 30, "y": 74}, "arc": "inside"}
+            ]
+          },
+          {
+            "n": 3,
+            "caption": "The pivot is a two, so the free man receives on the half-turn.",
+            "moves": [{"slot": "winger", "to": {"x": 84, "y": 10}}],
+            "ball_to": {"bind_slot": "fullback", "trajectory": "ground"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": "Philipp Lahm under Guardiola at Bayern, Oleksandr Zinchenko at Arsenal. Not a licence: names are editorial reference points only.",
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_invert_fb_high",
+      "name": "Fullback into the eight line",
+      "family": "wide",
+      "applies_to_formations": ["433", "4231"],
+      "produces_shape": "3-1-6",
+      "trigger": "Their block is already pinned deep and we need another body between the lines.",
+      "what_moves_json": [{"slot": "fullback", "from": {"x": 22, "y": 88}, "to": {"x": 66, "y": 74}, "becomes": "eight"}],
+      "coaching_points_json": [
+        "He arrives at the height of the eights, not between them and the ball, so he is a receiver rather than another circulator.",
+        "The single screener has to sit centrally and hold: the moment he chases the ball there is nobody behind six players."
+      ],
+      "risk": "Only one screener sits behind six attacking players, so this is a shape for chasing a game, not a default setting.",
+      "requires_profile_json": {
+        "fullback": {
+          "archetypes": ["fb_inverter", "fb_underlapper"],
+          "foot": null,
+          "attributes": ["pressing_engine", "carrying_1v1"]
+        },
+        "screener": {
+          "archetypes": ["six_destroyer", "six_metronome"],
+          "foot": null,
+          "attributes": ["positional_discipline"]
+        }
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "fullback", "role_hint": "FB", "start": {"x": 22, "y": 88}},
+          {"slot": "screener", "role_hint": "DM", "start": {"x": 44, "y": 50}},
+          {"slot": "eight", "role_hint": "CM", "start": {"x": 62, "y": 68}},
+          {"slot": "cb", "role_hint": "CB", "start": {"x": 26, "y": 60}}
+        ],
+        "ball": {"holder_slot": "cb"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "The block is already deep, so circulation in front of it achieves nothing.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "The fullback steps inside and forward to the height of the eights.",
+            "moves": [{"slot": "fullback", "to": {"x": 66, "y": 74}, "arc": "inside"}]
+          },
+          {
+            "n": 3,
+            "caption": "Six players now occupy the last two lines, with one screener behind them.",
+            "moves": [{"slot": "eight", "to": {"x": 74, "y": 58}}],
+            "ball_to": {"bind_slot": "fullback", "trajectory": "ground"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": "Arsenal under Arteta with Zinchenko or Timber stepping high. Not a licence: names are editorial reference points only.",
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_cb_step",
+      "name": "Centre back steps into midfield",
+      "family": "first_line",
+      "applies_to_formations": ["433", "4231", "442", "352", "343"],
+      "produces_shape": "3-2-5 or 2-3-5",
+      "trigger": "Their first line refuses to press, so the free man has to come from the back.",
+      "what_moves_json": [{"slot": "cb", "from": {"x": 22, "y": 62}, "to": {"x": 46, "y": 56}, "becomes": "pivot"}],
+      "coaching_points_json": [
+        "He carries into the space rather than passing into it: the point is to make a defender decide, and a pass decides nothing.",
+        "The moment a midfielder comes to him, the pass is already gone into the space that midfielder left.",
+        "The remaining defenders slide across as he goes, so the line stays a line rather than becoming a gap."
+      ],
+      "risk": "If he is caught stepping, the back line is a two against their front two with nobody spare behind it.",
+      "requires_profile_json": {
+        "cb": {
+          "archetypes": ["cb_stepping_pivot", "cb_ball_player"],
+          "foot": null,
+          "attributes": ["passing_range", "carrying_1v1"]
+        }
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "cb", "role_hint": "CB", "start": {"x": 22, "y": 62}},
+          {"slot": "partner_cb", "role_hint": "CB", "start": {"x": 22, "y": 38}},
+          {"slot": "six", "role_hint": "DM", "start": {"x": 42, "y": 44}},
+          {"slot": "opp_striker", "role_hint": null, "start": {"x": 34, "y": 50}, "side": "opponent"}
+        ],
+        "ball": {"holder_slot": "cb"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "Their striker holds his position and refuses to press the ball.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "The centre back carries past him into the pivot line.",
+            "moves": [{"slot": "cb", "to": {"x": 46, "y": 56}}]
+          },
+          {
+            "n": 3,
+            "caption": "Their midfield now has to come out, and the pass goes behind whoever does.",
+            "moves": [{"slot": "six", "to": {"x": 52, "y": 34}}],
+            "ball_to": {"bind_slot": "six", "trajectory": "ground"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": "John Stones for Manchester City, Josko Gvardiol carrying from the left. Not a licence: names are editorial reference points only.",
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_cb_invert_middle",
+      "name": "Middle centre back of a three inverts",
+      "family": "first_line",
+      "applies_to_formations": ["352", "343", "541"],
+      "produces_shape": "2-3-5",
+      "trigger": "The keeper is under pressure and needs a bounce option that does not exist out wide.",
+      "what_moves_json": [{"slot": "middle_cb", "from": {"x": 20, "y": 50}, "to": {"x": 42, "y": 50}, "becomes": "pivot"}],
+      "coaching_points_json": [
+        "He steps in front of the other two, not between them: the whole value is being a forward-facing option the keeper can see.",
+        "The two remaining defenders widen as he leaves, so the keeper still has two angles rather than one."
+      ],
+      "risk": "It gives up the spare central defender against a lone striker who plays on the shoulder of the last man.",
+      "requires_profile_json": {
+        "middle_cb": {
+          "archetypes": ["cb_stepping_pivot", "cb_ball_player"],
+          "foot": null,
+          "attributes": ["passing_range", "positional_discipline"]
+        }
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "keeper", "role_hint": "GK", "start": {"x": 8, "y": 50}},
+          {"slot": "middle_cb", "role_hint": "CB", "start": {"x": 20, "y": 50}},
+          {"slot": "left_cb", "role_hint": "CB", "start": {"x": 22, "y": 28}},
+          {"slot": "right_cb", "role_hint": "CB", "start": {"x": 22, "y": 72}}
+        ],
+        "ball": {"holder_slot": "keeper"},
+        "steps": [
+          {"n": 1, "caption": "The keeper has the ball and both wide options are covered.", "moves": []},
+          {
+            "n": 2,
+            "caption": "The middle defender steps in front of the other two.",
+            "moves": [
+              {"slot": "middle_cb", "to": {"x": 42, "y": 50}},
+              {"slot": "left_cb", "to": {"x": 22, "y": 20}},
+              {"slot": "right_cb", "to": {"x": 22, "y": 80}}
+            ]
+          },
+          {
+            "n": 3,
+            "caption": "The bounce goes through the centre, where nobody expected an option.",
+            "moves": [],
+            "ball_to": {"bind_slot": "middle_cb", "trajectory": "ground"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": "Ruben Amorim's Sporting sides, with the central defender of the three stepping in. Not a licence: names are editorial reference points only.",
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_pivot_drop",
+      "name": "Salida lavolpiana, the pivot drops in",
+      "family": "pivot",
+      "applies_to_formations": ["433", "442", "4231"],
+      "produces_shape": "3-2 build",
+      "trigger": "Two strikers are pressing our two centre backs and we need a third builder.",
+      "what_moves_json": [
+        {"slot": "six", "from": {"x": 42, "y": 50}, "to": {"x": 18, "y": 50}, "becomes": "third_cb"},
+        {"slot": "cb_l", "from": {"x": 20, "y": 35}, "to": {"x": 20, "y": 24}, "becomes": "wide_cb"},
+        {"slot": "cb_r", "from": {"x": 20, "y": 65}, "to": {"x": 20, "y": 76}, "becomes": "wide_cb"}
+      ],
+      "coaching_points_json": [
+        "The centre backs split as he drops, in the same movement: three players arriving at three places at once is what beats a front two.",
+        "He drops to receive facing forward. Dropping to stand with his back to play just moves the problem ten metres.",
+        "Somebody has to take the screening job he vacated, and the team should know who before the ball moves."
+      ],
+      "risk": "It removes the screen in front of the back line, and played badly the counter goes straight through the space he left.",
+      "requires_profile_json": {
+        "six": {
+          "archetypes": ["six_metronome", "six_line_breaker"],
+          "foot": null,
+          "attributes": ["passing_range", "positional_discipline"]
+        }
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "six", "role_hint": "DM", "start": {"x": 42, "y": 50}},
+          {"slot": "cb_l", "role_hint": "CB", "start": {"x": 20, "y": 35}},
+          {"slot": "cb_r", "role_hint": "CB", "start": {"x": 20, "y": 65}},
+          {"slot": "keeper", "role_hint": "GK", "start": {"x": 6, "y": 50}}
+        ],
+        "ball": {"holder_slot": "keeper"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "Two strikers press the pair, so there is no free man in the first line.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "The six drops between the centre backs as they split.",
+            "moves": [
+              {"slot": "six", "to": {"x": 18, "y": 50}},
+              {"slot": "cb_l", "to": {"x": 20, "y": 24}},
+              {"slot": "cb_r", "to": {"x": 20, "y": 76}}
+            ]
+          },
+          {
+            "n": 3,
+            "caption": "Three against two, and the ball goes to whichever of the three is free.",
+            "moves": [],
+            "ball_to": {"bind_slot": "cb_l", "trajectory": "ground"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": "Named for Ricardo La Volpe, later a Guardiola staple with Busquets. Not a licence: names are editorial reference points only.",
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_double_pivot_split",
+      "name": "One of the double pivot drops, the other holds",
+      "family": "pivot",
+      "applies_to_formations": ["4231", "343", "442"],
+      "produces_shape": "3-2-5",
+      "trigger": "The press arrives in a 4-4-2 and our two centre backs are two against two.",
+      "what_moves_json": [
+        {"slot": "pivot_a", "from": {"x": 38, "y": 40}, "to": {"x": 20, "y": 50}, "becomes": "third_cb"},
+        {
+          "slot": "pivot_b",
+          "from": {"x": 38, "y": 60},
+          "to": {"x": 42, "y": 52},
+          "becomes": "single_screen"
+        }
+      ],
+      "coaching_points_json": [
+        "Which pivot drops is decided by the ball, not by the team sheet: whichever one is on the far side of the press has the cleaner journey.",
+        "The partner slides central rather than staying wide, because he is now the only screen and has to cover the middle."
+      ],
+      "risk": "The remaining pivot is alone against their two eights, so every second ball in the centre starts as a one against two.",
+      "requires_profile_json": {
+        "pivot_a": {
+          "archetypes": ["six_metronome", "six_line_breaker"],
+          "foot": null,
+          "attributes": ["passing_range"]
+        },
+        "pivot_b": {
+          "archetypes": ["six_destroyer", "six_shuttler"],
+          "foot": null,
+          "attributes": ["positional_discipline", "pressing_engine"]
+        }
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "pivot_a", "role_hint": "DM", "start": {"x": 38, "y": 40}},
+          {"slot": "pivot_b", "role_hint": "DM", "start": {"x": 38, "y": 60}},
+          {"slot": "cb_l", "role_hint": "CB", "start": {"x": 20, "y": 35}},
+          {"slot": "cb_r", "role_hint": "CB", "start": {"x": 20, "y": 65}}
+        ],
+        "ball": {"holder_slot": "cb_l"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "Their front two splits our two centre backs and there is no spare man.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "One pivot drops between them, the other slides across to screen alone.",
+            "moves": [
+              {"slot": "pivot_a", "to": {"x": 20, "y": 50}},
+              {"slot": "pivot_b", "to": {"x": 42, "y": 52}}
+            ]
+          },
+          {
+            "n": 3,
+            "caption": "The back three plays around the front two while the single screen holds.",
+            "moves": [],
+            "ball_to": {"bind_slot": "pivot_a", "trajectory": "ground"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": "Liverpool under Slot, and Cesc Fabregas's Como. Not a licence: names are editorial reference points only.",
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_wb_asymmetry",
+      "name": "One wing back high, one deep",
+      "family": "wide",
+      "applies_to_formations": ["352", "343", "541"],
+      "produces_shape": "back four to five",
+      "trigger": "We are building down one side against a back four.",
+      "what_moves_json": [
+        {"slot": "wb_far", "from": {"x": 35, "y": 10}, "to": {"x": 28, "y": 12}, "becomes": "fullback"},
+        {
+          "slot": "wb_near",
+          "from": {"x": 35, "y": 90},
+          "to": {"x": 82, "y": 92},
+          "becomes": "last_line_width"
+        },
+        {"slot": "cb_wide", "from": {"x": 20, "y": 25}, "to": {"x": 26, "y": 30}, "becomes": "wide_cb"}
+      ],
+      "coaching_points_json": [
+        "The ball-far wing back drops as the ball travels away from him, so the back four exists before the switch is even considered.",
+        "The near wing back stays on the touchline and does not come to the ball: he is the width, and width that moves inside is not width."
+      ],
+      "risk": "The deep wing back is the only cover on his entire flank, so a switch away from the ball finds him alone against two.",
+      "requires_profile_json": {
+        "wb_far": {
+          "archetypes": ["wb_defensive", "wb_inverted"],
+          "foot": null,
+          "attributes": ["positional_discipline"]
+        },
+        "wb_near": {"archetypes": ["wb_flyer"], "foot": null, "attributes": ["pace", "pressing_engine"]}
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "wb_far", "role_hint": "WB", "start": {"x": 35, "y": 10}},
+          {"slot": "wb_near", "role_hint": "WB", "start": {"x": 35, "y": 90}},
+          {"slot": "cb_wide", "role_hint": "CB", "start": {"x": 20, "y": 25}},
+          {"slot": "cm", "role_hint": "CM", "start": {"x": 48, "y": 55}}
+        ],
+        "ball": {"holder_slot": "cb_wide"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "We build down the right and the ball is travelling away from the left.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "The far wing back drops into the back line, the near one holds the last line.",
+            "moves": [
+              {"slot": "wb_far", "to": {"x": 28, "y": 12}},
+              {"slot": "wb_near", "to": {"x": 82, "y": 92}}
+            ]
+          },
+          {
+            "n": 3,
+            "caption": "Four build the play, five occupy the last line, and one flank is covered by one player.",
+            "moves": [{"slot": "cm", "to": {"x": 60, "y": 70}}],
+            "ball_to": {"bind_slot": "wb_near", "trajectory": "driven"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": "Simone Inzaghi's Inter, with Dimarco high and Darmian tucked in. Not a licence: names are editorial reference points only.",
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_fb_touchline_swap",
+      "name": "Winger inside, fullback outside",
+      "family": "wide",
+      "applies_to_formations": ["433", "4231", "442"],
+      "produces_shape": "2-3-5",
+      "trigger": "Their fullback is tucking narrow to protect the centre back.",
+      "what_moves_json": [
+        {
+          "slot": "winger",
+          "from": {"x": 78, "y": 88},
+          "to": {"x": 76, "y": 70},
+          "becomes": "half_space_receiver"
+        },
+        {
+          "slot": "fullback",
+          "from": {"x": 40, "y": 90},
+          "to": {"x": 78, "y": 94},
+          "becomes": "touchline_width"
+        }
+      ],
+      "coaching_points_json": [
+        "They swap in one movement, not one after the other, so their fullback never gets a moment with nobody to track.",
+        "The winger's first look from the half-space is the pass in behind, because that is the option he did not have on the touchline."
+      ],
+      "risk": "The winger is no longer isolated in a one against one, so a qualitative superiority is traded for a positional one. Know which one you wanted.",
+      "requires_profile_json": {
+        "winger": {
+          "archetypes": ["wf_inside_forward", "wf_raumdeuter"],
+          "foot": "L",
+          "attributes": ["carrying_1v1", "passing_range"]
+        },
+        "fullback": {"archetypes": ["fb_overlapper"], "foot": null, "attributes": ["pace", "pressing_engine"]}
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "winger", "role_hint": "W", "start": {"x": 78, "y": 88}},
+          {"slot": "fullback", "role_hint": "FB", "start": {"x": 40, "y": 90}},
+          {"slot": "eight", "role_hint": "CM", "start": {"x": 55, "y": 70}},
+          {"slot": "opp_fb", "role_hint": null, "start": {"x": 70, "y": 82}, "side": "opponent"}
+        ],
+        "ball": {"holder_slot": "eight"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "Their fullback has tucked in narrow, so the touchline is unguarded.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "The winger comes into the half-space as the fullback runs outside him.",
+            "moves": [
+              {"slot": "winger", "to": {"x": 76, "y": 70}, "arc": "inside"},
+              {"slot": "fullback", "to": {"x": 78, "y": 94}, "arc": "outside"}
+            ]
+          },
+          {
+            "n": 3,
+            "caption": "The ball goes to whichever of the two their fullback did not follow.",
+            "moves": [],
+            "ball_to": {"bind_slot": "winger", "trajectory": "ground"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": null,
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_false_nine_drop",
+      "name": "Nine drops, wingers dive the channels",
+      "family": "front_line",
+      "applies_to_formations": ["433", "4231", "343"],
+      "produces_shape": "4-2-4",
+      "trigger": "The ball reaches a midfielder who is facing forward.",
+      "what_moves_json": [
+        {
+          "slot": "nine",
+          "from": {"x": 85, "y": 50},
+          "to": {"x": 62, "y": 50},
+          "becomes": "between_the_lines"
+        },
+        {
+          "slot": "winger_l",
+          "from": {"x": 78, "y": 15},
+          "to": {"x": 88, "y": 32},
+          "becomes": "channel_runner"
+        },
+        {
+          "slot": "winger_r",
+          "from": {"x": 78, "y": 85},
+          "to": {"x": 88, "y": 68},
+          "becomes": "channel_runner"
+        }
+      ],
+      "coaching_points_json": [
+        "The wingers go the instant he drops, not once he has the ball: the runs are what make the drop a problem.",
+        "This is the same movement the False-9 Drop and Wing Dive card animates, seeded here as a structural change rather than a one-off pattern."
+      ],
+      "risk": "Nobody occupies the centre backs, so if the runs do not go the last line has no pin on it at all.",
+      "requires_profile_json": {
+        "nine": {
+          "archetypes": ["nine_false"],
+          "foot": null,
+          "attributes": ["passing_range", "positional_discipline"]
+        },
+        "winger_l": {"archetypes": ["wf_channel_runner"], "foot": null, "attributes": ["pace"]},
+        "winger_r": {"archetypes": ["wf_channel_runner"], "foot": null, "attributes": ["pace"]}
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "nine", "role_hint": "ST", "start": {"x": 85, "y": 50}},
+          {"slot": "winger_l", "role_hint": "W", "start": {"x": 78, "y": 15}},
+          {"slot": "winger_r", "role_hint": "W", "start": {"x": 78, "y": 85}},
+          {"slot": "eight", "role_hint": "CM", "start": {"x": 55, "y": 50}}
+        ],
+        "ball": {"holder_slot": "eight"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "The midfielder receives facing forward, which is the only trigger needed.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "The nine drops between the lines and both wingers dive the channels.",
+            "moves": [
+              {"slot": "nine", "to": {"x": 62, "y": 50}},
+              {"slot": "winger_l", "to": {"x": 88, "y": 32}, "arc": "inside"},
+              {"slot": "winger_r", "to": {"x": 88, "y": 68}, "arc": "inside"}
+            ]
+          },
+          {
+            "n": 3,
+            "caption": "Their centre back either follows and opens the channel, or lets him turn.",
+            "moves": [],
+            "ball_to": {"bind_slot": "nine", "trajectory": "ground"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": "Lionel Messi under Guardiola, Roberto Firmino at Liverpool. Not a licence: names are editorial reference points only.",
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_box_form",
+      "name": "Two forwards drop to form the box midfield",
+      "family": "front_line",
+      "applies_to_formations": ["343", "352", "433"],
+      "produces_shape": "3-2-2-3",
+      "trigger": "We are winning the centre and want to keep it.",
+      "what_moves_json": [
+        {
+          "slot": "forward_l",
+          "from": {"x": 80, "y": 22},
+          "to": {"x": 62, "y": 34},
+          "becomes": "box_top"
+        },
+        {
+          "slot": "forward_r",
+          "from": {"x": 80, "y": 78},
+          "to": {"x": 62, "y": 66},
+          "becomes": "box_top"
+        }
+      ],
+      "coaching_points_json": [
+        "The two who drop take the half-spaces, not the centre: a box with a flat top is two players marked by one.",
+        "The wing backs must already be high when the box forms, or the shape has four central players and no width at all."
+      ],
+      "risk": "The wide zones are empty except for the wing backs, and two exhausted wing backs is a real cost by the last twenty minutes.",
+      "requires_profile_json": {
+        "forward_l": {
+          "archetypes": ["wf_inside_forward", "ten_between_the_lines"],
+          "foot": null,
+          "attributes": ["passing_range", "positional_discipline"]
+        },
+        "forward_r": {
+          "archetypes": ["wf_inside_forward", "ten_between_the_lines"],
+          "foot": null,
+          "attributes": ["passing_range", "positional_discipline"]
+        }
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "forward_l", "role_hint": "W", "start": {"x": 80, "y": 22}},
+          {"slot": "forward_r", "role_hint": "W", "start": {"x": 80, "y": 78}},
+          {"slot": "pivot_l", "role_hint": "CM", "start": {"x": 44, "y": 40}},
+          {"slot": "pivot_r", "role_hint": "CM", "start": {"x": 44, "y": 60}}
+        ],
+        "ball": {"holder_slot": "pivot_l"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "The double pivot has the ball and their midfield is even with ours.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "Both wide forwards drop into the half-spaces above the pivot.",
+            "moves": [
+              {"slot": "forward_l", "to": {"x": 62, "y": 34}, "arc": "inside"},
+              {"slot": "forward_r", "to": {"x": 62, "y": 66}, "arc": "inside"}
+            ]
+          },
+          {
+            "n": 3,
+            "caption": "Four central players in a box means the carrier always has two forward passes.",
+            "moves": [],
+            "ball_to": {"bind_slot": "forward_l", "trajectory": "ground"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": "Xabi Alonso's Leverkusen, and Manchester City's box seasons. Not a licence: names are editorial reference points only.",
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_press_bait_hold",
+      "name": "Hold the ball dead to invite the presser",
+      "family": "first_line",
+      "applies_to_formations": ["4231", "433", "442"],
+      "produces_shape": "shape unchanged",
+      "trigger": "Their first line is hesitating on the edge of pressing.",
+      "what_moves_json": [
+        {"slot": "cb", "from": {"x": 22, "y": 55}, "to": {"x": 22, "y": 55}, "becomes": "bait"},
+        {
+          "slot": "pivot",
+          "from": {"x": 42, "y": 50},
+          "to": {"x": 34, "y": 44},
+          "becomes": "bounce_option"
+        }
+      ],
+      "coaching_points_json": [
+        "The sole of the foot on the ball, head up, body open. A ball that is still keeps every passing lane open at once.",
+        "The backward pass here is a trigger, not a retreat, and the whole team should move forward when it is played rather than back.",
+        "Rehearse the three exits before you rehearse the bait, because the bait without the exit is just a mistake with better posture."
+      ],
+      "risk": "It is a genuine risk taken on purpose in our own third, so run it only with players who can execute under pressure, and tell them that plainly.",
+      "requires_profile_json": {
+        "cb": {
+          "archetypes": ["cb_ball_player", "cb_stepping_pivot"],
+          "foot": null,
+          "attributes": ["passing_range", "positional_discipline"]
+        },
+        "pivot": {"archetypes": ["six_metronome"], "foot": null, "attributes": ["passing_range"]}
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "cb", "role_hint": "CB", "start": {"x": 22, "y": 55}},
+          {"slot": "pivot", "role_hint": "DM", "start": {"x": 42, "y": 50}},
+          {"slot": "fullback", "role_hint": "FB", "start": {"x": 26, "y": 88}},
+          {"slot": "opp_striker", "role_hint": null, "start": {"x": 36, "y": 52}, "side": "opponent"}
+        ],
+        "ball": {"holder_slot": "cb"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "Their striker hesitates on the edge of pressing, so the ball stops dead.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "The presser commits, and the pivot shows into the space he has left.",
+            "moves": [
+              {"slot": "pivot", "to": {"x": 34, "y": 44}},
+              {"slot": "opp_striker", "to": {"x": 26, "y": 56}}
+            ]
+          },
+          {
+            "n": 3,
+            "caption": "One pass past the first line puts us in a five against four beyond it.",
+            "moves": [{"slot": "fullback", "to": {"x": 42, "y": 92}}],
+            "ball_to": {"bind_slot": "pivot", "trajectory": "ground"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": "Roberto De Zerbi's Brighton. Not a licence: names are editorial reference points only.",
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_gk_plus_one",
+      "name": "Keeper as the spare man in the build",
+      "family": "first_line",
+      "applies_to_formations": ["433", "4231", "442", "352", "343", "541"],
+      "produces_shape": "3-2 plus keeper",
+      "trigger": "The opponent presses with one more player than we are building with.",
+      "what_moves_json": [
+        {"slot": "keeper", "from": {"x": 5, "y": 50}, "to": {"x": 18, "y": 50}, "becomes": "spare_man"},
+        {"slot": "cb_l", "from": {"x": 20, "y": 35}, "to": {"x": 22, "y": 22}, "becomes": "wide_cb"},
+        {"slot": "cb_r", "from": {"x": 20, "y": 65}, "to": {"x": 22, "y": 78}, "becomes": "wide_cb"}
+      ],
+      "coaching_points_json": [
+        "He steps to the edge of the box and stays there: a keeper who drifts is neither a builder nor a goalkeeper.",
+        "He is the apex of the first-line rondo, so his job is to make the extra presser wrong, not to hit the longest pass available.",
+        "Agree the bail-out before the session starts. Every player should know which ball he is allowed to put out of play."
+      ],
+      "risk": "Everything behind the keeper is empty, which makes this the single highest consequence rotation in the book.",
+      "requires_profile_json": {
+        "keeper": {
+          "archetypes": ["gk_ball_player", "gk_sweeper"],
+          "foot": null,
+          "attributes": ["passing_range", "positional_discipline"]
+        }
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "keeper", "role_hint": "GK", "start": {"x": 5, "y": 50}},
+          {"slot": "cb_l", "role_hint": "CB", "start": {"x": 20, "y": 35}},
+          {"slot": "cb_r", "role_hint": "CB", "start": {"x": 20, "y": 65}},
+          {"slot": "six", "role_hint": "DM", "start": {"x": 40, "y": 50}}
+        ],
+        "ball": {"holder_slot": "keeper"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "They press with three against our two centre backs and the pivot.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "The keeper steps to the edge of the box and the defenders widen.",
+            "moves": [
+              {"slot": "keeper", "to": {"x": 18, "y": 50}},
+              {"slot": "cb_l", "to": {"x": 22, "y": 22}},
+              {"slot": "cb_r", "to": {"x": 22, "y": 78}}
+            ]
+          },
+          {
+            "n": 3,
+            "caption": "Four against three in the first line, and the free man is always one pass away.",
+            "moves": [{"slot": "six", "to": {"x": 44, "y": 44}}],
+            "ball_to": {"bind_slot": "cb_r", "trajectory": "ground"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": "Ederson at Manchester City, Manuel Neuer at Bayern. Not a licence: names are editorial reference points only.",
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_ten_drop_pivot",
+      "name": "Ten drops beside the pivot",
+      "family": "pivot",
+      "applies_to_formations": ["4231"],
+      "produces_shape": "4-3-3",
+      "trigger": "Their ten or striker is screening our pivot and we cannot get out.",
+      "what_moves_json": [{"slot": "ten", "from": {"x": 60, "y": 50}, "to": {"x": 44, "y": 58}, "becomes": "eight"}],
+      "coaching_points_json": [
+        "He drops to the side of the screen, not behind it, so the pass to him does not have to travel through the player causing the problem.",
+        "Somebody has to replace him between the lines within a few seconds, usually a winger coming inside, or we have simply run away from the space."
+      ],
+      "risk": "We surrender the player between the lines, which is the whole point of the shape, so this is a temporary fix and never a setting.",
+      "requires_profile_json": {
+        "ten": {
+          "archetypes": ["ten_between_the_lines", "ten_pressing_ten"],
+          "foot": null,
+          "attributes": ["passing_range", "positional_discipline"]
+        }
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "ten", "role_hint": "AM", "start": {"x": 60, "y": 50}},
+          {"slot": "pivot", "role_hint": "DM", "start": {"x": 38, "y": 45}},
+          {"slot": "cb", "role_hint": "CB", "start": {"x": 22, "y": 55}},
+          {"slot": "winger", "role_hint": "W", "start": {"x": 74, "y": 18}}
+        ],
+        "ball": {"holder_slot": "cb"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "Their ten stands on our pivot and the ball cannot leave the first line.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "Our ten drops beside the pivot to make a midfield three.",
+            "moves": [{"slot": "ten", "to": {"x": 44, "y": 58}}]
+          },
+          {
+            "n": 3,
+            "caption": "The three plays out, and a winger comes inside to replace him between the lines.",
+            "moves": [{"slot": "winger", "to": {"x": 62, "y": 34}, "arc": "inside"}],
+            "ball_to": {"bind_slot": "ten", "trajectory": "ground"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": null,
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    },
+    {
+      "code": "rot_overload_isolate",
+      "name": "Overload one side, switch to the isolated winger",
+      "family": "front_line",
+      "applies_to_formations": ["433", "4231", "442", "352", "343", "541"],
+      "produces_shape": "shape unchanged",
+      "trigger": "We have a winger who wins his one against one.",
+      "what_moves_json": [
+        {"slot": "eight", "from": {"x": 55, "y": 50}, "to": {"x": 58, "y": 76}, "becomes": "overload"},
+        {"slot": "nine", "from": {"x": 85, "y": 50}, "to": {"x": 80, "y": 68}, "becomes": "overload"},
+        {
+          "slot": "far_winger",
+          "from": {"x": 78, "y": 12},
+          "to": {"x": 78, "y": 8},
+          "becomes": "isolated_1v1"
+        }
+      ],
+      "coaching_points_json": [
+        "The far winger stays wide and does nothing, which is the hardest instruction in the game to follow for ninety minutes.",
+        "The switch is prepared by a player who can see it before he receives, which usually means the ball goes backward once first."
+      ],
+      "risk": "The switch has to be prepared rather than hopeful, because an unprepared long diagonal is a turnover inside our own build shape.",
+      "requires_profile_json": {
+        "far_winger": {
+          "archetypes": ["wf_touchline_winger", "wf_inside_forward"],
+          "foot": null,
+          "attributes": ["carrying_1v1", "pace"]
+        }
+      },
+      "animation_spec_json": {
+        "slots": [
+          {"slot": "eight", "role_hint": "CM", "start": {"x": 55, "y": 50}},
+          {"slot": "nine", "role_hint": "ST", "start": {"x": 85, "y": 50}},
+          {"slot": "far_winger", "role_hint": "W", "start": {"x": 78, "y": 12}},
+          {"slot": "six", "role_hint": "DM", "start": {"x": 42, "y": 50}}
+        ],
+        "ball": {"holder_slot": "eight"},
+        "steps": [
+          {
+            "n": 1,
+            "caption": "Six or seven players commit to the right side and their block slides across.",
+            "moves": []
+          },
+          {
+            "n": 2,
+            "caption": "The overload holds the ball while the far winger simply stays wide.",
+            "moves": [
+              {"slot": "eight", "to": {"x": 58, "y": 76}},
+              {"slot": "nine", "to": {"x": 80, "y": 68}},
+              {"slot": "far_winger", "to": {"x": 78, "y": 8}}
+            ]
+          },
+          {
+            "n": 3,
+            "caption": "The ball goes back to the pivot, then across, and the winger is one against one.",
+            "moves": [],
+            "ball_to": {"bind_slot": "far_winger", "trajectory": "driven"}
+          }
+        ],
+        "loop": true
+      },
+      "exemplar_note": null,
+      "source_ref": "doc06:2.5",
+      "content_version": "1.1.0"
+    }
+  ]
+}

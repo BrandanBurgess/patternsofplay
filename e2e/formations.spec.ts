@@ -74,9 +74,10 @@ test.describe("formations: board-first shape, keystone keycards, details, rondo 
     await expect(page.getByTestId("formations-details-panel")).toHaveCount(0);
 
     // --- Rondo Map: toggle, six tappable zones, each shows its rondo and
-    // linked patterns (Brief step 18 DoD; seeds/rondo_zones.json, 433 only;
-    // six not five since T-101/migration 0006 split flank_corridor into
-    // flank_corridor_left and flank_corridor_right) ---
+    // linked patterns (Brief step 18 DoD; seeds/rondo_zones.json; six not
+    // five since T-101/migration 0006 split flank_corridor into
+    // flank_corridor_left and flank_corridor_right, and T-103 replaced
+    // counterpress with doc 06's ball-relative counterpress_ring) ---
     await page.getByTestId("formations-rondo-toggle").click();
     await expect(page.getByTestId("formations-rondo-active-toggle")).toBeVisible();
     await expect(page.getByTestId("rondo-zone")).toHaveCount(6);
@@ -109,9 +110,27 @@ test.describe("formations: board-first shape, keystone keycards, details, rondo 
     await expect(page.getByTestId("formations-sheet-body")).toHaveCount(0);
     await expect(page.getByTestId("formations-meta-bar")).toContainText("3-4-3");
 
-    // 3-4-3 has no seeded rondo map: the toggle stays present but disabled
-    // (do not invent a rondo map beyond what seeds/rondo_zones.json carries).
-    await expect(page.getByTestId("formations-rondo-toggle")).toBeDisabled();
+    // T-103 seeded the rondo map on all six formations (doc 06 section 2.3),
+    // so the 3-4-3 now carries its own six zones with its own polygons
+    // rather than leaving the toggle disabled.
+    await expect(page.getByTestId("formations-rondo-toggle")).toBeEnabled();
+    await page.getByTestId("formations-rondo-toggle").click();
+    await expect(page.getByTestId("rondo-zone")).toHaveCount(6);
+    // The 3-4-3's own polygon, not the 4-3-3's: a back three's zones are
+    // geometrically different from a back four's (doc 06 section 2.3).
+    // counterpress_ring is deliberately not the zone clicked here. It is a
+    // ball-relative circle whose polygon bounds their whole half, so it
+    // sits underneath the last-line polygon in the current overlay; the
+    // renderer that reads zone_kind is a later ticket's job.
+    await page.locator('[data-zone-key="midfield_box"]').click();
+    await expect(page.getByTestId("formations-zone-title")).toHaveText(
+      "5v3 (the midfield box)",
+    );
+    await expect(page.getByTestId("formations-zone-teaches")).toContainText(
+      "Two central midfielders holding the middle",
+    );
+    await page.getByTestId("formations-rondo-active-toggle").click();
+    await expect(page.getByTestId("rondo-zone")).toHaveCount(0);
 
     // Its own keystones still tap to their own keycards.
     await page.locator('[data-token-id="cm_l"]').click();
