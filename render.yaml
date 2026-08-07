@@ -1,0 +1,42 @@
+# Render blueprint (T-060). One Docker web service serving the SPA and the
+# API from a single origin (see backend/app/main.py for why one origin).
+#
+# STORAGE, read this before pointing a real club at it: the `free` plan has
+# no persistent disk, so the SQLite file lives in the container filesystem
+# and is lost on every deploy and on every cold start after the instance
+# idles out. That is deliberate for a DEMO instance, and POP_SEED_DEMO below
+# is what makes it survivable: the demo team, its content and its logins are
+# rebuilt from scratch on every boot, so the credentials in the README always
+# work and the demo always opens in the same state. Anything a coach creates
+# while poking around does not outlive the instance.
+#
+# To make it durable: raise `plan` to `starter` (paid), then attach a disk
+# mounted at /data. DATABASE_URL already points there, so nothing else has to
+# change. Litestream replication (doc 04 section 2) is the next step after
+# that, not before it: replicating a disk that does not exist yet is nothing.
+
+services:
+  - type: web
+    name: patterns-of-play
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: ohio
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      # Generated once by Render and then held stable, so existing session
+      # cookies survive a redeploy. Never the app/config.py fallback.
+      - key: JWT_SECRET
+        generateValue: true
+      # Session cookies are https-only in a deployed environment, and this
+      # is also the flag scripts/start.sh gates the JWT_SECRET check on.
+      - key: COOKIE_SECURE
+        value: "true"
+      # Rebuild the demo team on every boot. Turn this off for a real club.
+      - key: POP_SEED_DEMO
+        value: "true"
+      - key: DATABASE_URL
+        value: sqlite:////data/pop.db
