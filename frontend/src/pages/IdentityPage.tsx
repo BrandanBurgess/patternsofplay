@@ -291,7 +291,7 @@ export function IdentityPage({ orientation }: IdentityPageProps) {
             )}
           </div>
 
-          <div className="patterns-sheet">
+          <div className={`patterns-sheet${sheetOpen ? " patterns-sheet-open" : ""}`}>
             <button
               type="button"
               className="patterns-sheet-handle"

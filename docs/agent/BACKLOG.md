@@ -20,12 +20,12 @@ Model: sonnet default; opus = hard ticket, never downgrade.
 | T-032 | Formations page (PNG 11, 19, 37-39, 43) + keystone pulse/keycards + Rondo Map (PNG 32, 36) | 18 | screens | sonnet | T-031 | T-033 | done |
 | T-033 | Roster page (PNG 12, 20): CRUD, chips, 6 sliders, double-exposure warning coach-only | 19 | screens | sonnet | T-004, T-011 | T-032 | done |
 | T-034 | Identity page (PNG 13, 33, 40-42, 44, 45): 4 scripted animations, 2 static shapes, detail slots, pass-risk, cult corner | 20 | screens | sonnet | T-031 | T-033 | done |
-| T-040 | Role gating UI + API 403 enforcement, permission test suite both roles (Brief §3 table, every row) | 21 | collab | sonnet | T-030..T-034 | T-041 | doing |
+| T-040 | Role gating UI + API 403 enforcement, permission test suite both roles (Brief §3 table, every row) | 21 | collab | sonnet | T-030..T-034 | T-041 | done |
 | T-041 | Playstyle suggestion flow (PNG 24, 25, 27) | 22 | collab | sonnet | T-033 | T-040 | done |
-| T-042 | Sessions: draft builder + picker w/ thumbnails, send, receipts, player view w/ Watch deep-link + Mark as watched (PNG 21-23, 26, 28) | 23 | collab | sonnet | T-031, T-040 | none | todo |
+| T-042 | Sessions: draft builder + picker w/ thumbnails, send, receipts, player view w/ Watch deep-link + Mark as watched (PNG 21-23, 26, 28) | 23 | collab | sonnet | T-031, T-040 | none | done |
 | T-043 | Founder decision 2026-07-16: role-scoped join codes (player + coach code, migration), join codes coach-only in API payloads, head coach (creator) removes members + edits member roles, permission tests | founder | platform | sonnet | T-003, T-040 | T-041 | done |
-| T-050 | Phone pass: icon rail, stacked grids, portrait boards all surfaces, cross-device save/replay test | 24 | screens | sonnet | T-030..T-042 | none | todo |
-| T-051 | Hardening: full em-dash sweep, permission suite in CI, demo-path e2e (Brief §6 narrative as one Playwright journey, both viewports) | 25 | verifier | sonnet | T-050 | none | todo |
+| T-050 | Phone pass: icon rail, stacked grids, portrait boards all surfaces, cross-device save/replay test | 24 | screens | sonnet | T-030..T-042 | none | done |
+| T-051 | Hardening: full em-dash sweep, permission suite in CI, demo-path e2e (Brief §6 narrative as one Playwright journey, both viewports) | 25 | verifier | sonnet | T-050 | none | done |
 | T-060 | Deploy: Render service (persistent volume), Litestream to object storage, env config, prod Turso decision point, smoke journey vs prod URL | doc 04 §2 | platform | sonnet | T-051 | none | todo |
 
 Sequencing: T-001 solo → (T-002 ∥ T-003 ∥ T-004) → (T-010/011 ∥ T-020/021/022) → screens fan-out → collab → phone → hardening → deploy.

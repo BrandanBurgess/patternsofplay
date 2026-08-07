@@ -1,4 +1,4 @@
-.PHONY: bootstrap dev migrate lint typecheck test e2e verify seed seed-demo demo check-copy permissions
+.PHONY: bootstrap dev migrate lint typecheck test e2e verify seed seed-demo demo check-copy permissions screenshots
 
 VENV := .venv
 PY := $(VENV)/bin/python
@@ -67,6 +67,15 @@ demo:
 	$(PY) -m alembic -c backend/alembic.ini upgrade head
 	$(PY) scripts/seed.py
 	$(PY) scripts/seed_demo.py
+
+# Marketing shots for docs/screenshots/ and the README. Reseeds the demo
+# database first so the captures always show the same content, then drives
+# the real UI (e2e/screenshots.spec.ts, which skips unless POP_SCREENSHOTS
+# is set, so `make verify` never rewrites the images). Stop any running
+# `make dev` first: this drops and rebuilds the database underneath it.
+screenshots: demo
+	POP_SCREENSHOTS=1 npx playwright test e2e/screenshots.spec.ts \
+		--project=desktop --timeout=60000 --global-timeout=300000
 
 verify: check-copy permissions lint typecheck test e2e
 	@echo "verify: all green"

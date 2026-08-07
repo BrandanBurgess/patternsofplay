@@ -57,9 +57,54 @@ Open items surfaced to the founder, awaiting reaction (NOT blocking):
 - Roster row <-> user linkage: name-match auto-claim in roster.py _claim_matching_row. T-042's player session views key off membership, not roster rows, but be aware of it.
 - Alembic head: 0005_identity_age_hint. Chain 0001..0005 proven from zero.
 
+## Session 3 (build to demo, single agent on `integration`)
+
+Ran under docs/agent/BUILD_TO_DEMO.md, which supersedes the orchestrator
+protocol above: one agent, one branch, no worktrees, no per-ticket PRs.
+T-042, T-050 and T-051 all landed, plus the demo seed and the README pass.
+
+Decisions taken while building (none reopen a closed question):
+
+1. Session RECIPIENTS are fixed at send time. Receipts are written for every
+   player-role member when the coach sends, and a player's session list is
+   gated on having one of those receipt rows. Someone who joins afterwards
+   does not appear in an already-sent session's denominator and does not see
+   it. Doc 03 section 6 says receipts exist "for every recipient at send
+   time"; this is that read, and it keeps the x/y counter stable.
+2. A player DOES see their own `you_watched` flag (it is what the Mark as
+   watched button reads). The coach-only line the design README draws is
+   "players never see each OTHER's status", so the player payload carries no
+   receipts list and no counter at all, only their own state.
+3. A sent session is immutable (edits 409). It is the record of what the
+   team was actually told.
+4. There is no persisted "selected formation" or "team identity" anywhere in
+   doc 03's schema, and Formations/Identity are board-first browse surfaces
+   with local selection. The demo seed therefore expresses "a shape is set"
+   through the one place the app does persist board state: the team's live
+   `boards` row, seeded with the 4-3-3 shape and two confirmed lanes. No new
+   table, no invented surface (Brief section 1 scope rule).
+5. Search is now hyphen-insensitive across all four browse surfaces
+   (frontend/src/pages/search.ts). The Brief's own demo narrative types
+   "third man" and the content is named "Third-Man Run", so the narrative
+   previously found nothing.
+
+Gaps found and closed while checking the product against the PNGs:
+
+- `.ctl-ghost` was only ever defined scoped to the save bar and saved-pattern
+  rows, so every later reuse rendered as a default browser button.
+- The four auth/onboarding screens had no styling at all (they predate the
+  token system). Now token-styled, no DOM change.
+- The swipe-up sheets pushed the page taller instead of overlaying it as a
+  bottom drawer (PNG 07/38/40), which scrolled the header and the top of the
+  board off screen.
+- The ball's gold trace while RECORDING (design README, PNG 03) was never
+  implemented: only playback drew a trail. Now drawn by the same overlay.
+- Keystone tokens showed Chromium's blue focus ring on the pitch.
+- The rondo zone card was clipped by the sheet handle.
+
 ## Queue for the next session
 
-1. T-042 sessions (collab): draft builder + picker w/ thumbnails, send, receipts, player view w/ Watch deep-link + Mark as watched (PNG 21-23, 26, 28). Deps all met. Must also un-skip/implement the two skipped permission-suite rows. Suggested ports 8142/5542.
-2. T-050 phone pass (screens): icon rail, stacked grids, portrait boards all surfaces, cross-device save/replay test. Deps: T-042.
-3. T-051 hardening (verifier): full em-dash sweep, permission suite in CI, demo-path e2e (Brief §6 narrative, one Playwright journey, both viewports). Deps: T-050.
-4. T-060 deploy (platform): Render + Litestream + prod Turso decision. STOP for the founder's deploy credentials decision before any deploy action.
+1. T-060 deploy (platform): Render + Litestream + prod Turso decision. STOP
+   for the founder's deploy credentials decision before any deploy action.
+2. Founder review items still open from session 2 (T-041 name-match roster
+   claim, T-043 hard-delete member removal, identity age_hint editorial QA).

@@ -35,6 +35,20 @@
 .token-keystone {
   cursor: pointer;
 }
+/* A keystone is a real button (role="button", tabIndex 0), so Chromium
+   paints its default focus ring on it, in the browser's own blue, right on
+   top of the pitch. Gold is the only interactive colour on this product
+   (design README), so the pointer case drops the ring entirely and the
+   keyboard case gets a gold one instead: the affordance stays, the stray
+   colour goes. */
+.token-keystone:focus {
+  outline: none;
+}
+.token-keystone:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 50%;
+}
 .token-keystone .token-face {
   animation: keystone-pulse 1.8s ease-in-out infinite;
 }

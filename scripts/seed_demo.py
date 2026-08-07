@@ -61,6 +61,22 @@ PLAYER_EMAIL = "player@example.com"
 PLAYER_NAME = "Jordan Tavares"
 DEMO_PASSWORD = "demo-pass-2026"
 
+# Four more player accounts on the team. They exist so the receipts view
+# reads like a real squad rather than a list of one: a session's counter is
+# only meaningful next to several names, some Viewed and some Not yet
+# (PNG 21's "3/4 viewed"). Each name matches a roster row, so each receipt
+# renders with that player's jersey badge. They share the demo password;
+# only PLAYER_EMAIL is the one to sign in as during a demo.
+SQUAD_ACCOUNTS: list[tuple[str, str]] = [
+    ("sam@example.com", "Sam Okonkwo"),
+    ("elias@example.com", "Elias Moreau"),
+    ("marco@example.com", "Marco Silva"),
+    ("luca@example.com", "Luca Ferrante"),
+]
+# Who has already watched the seeded session (PLAYER_NAME always has, so a
+# coach opening the app sees a counter that has moved).
+WATCHED_BY = {PLAYER_NAME, "Sam Okonkwo", "Marco Silva"}
+
 TEAM_NAME = "Riverside United U18"
 TEAM_AGE_GROUP = "U18"
 TEAM_LEVEL = "Varsity"
@@ -71,6 +87,11 @@ COACH_JOIN_CODE = "STAFF7"
 
 RECORDING_NAME = "Our build-out vs press"
 SESSION_TITLE = "Tuesday, wide overloads"
+# A second session left as a DRAFT, so the rail shows both states and a
+# coach has something to send live in front of the room (PNG 21/22).
+DRAFT_TITLE = "Matchday prep, pressing triggers"
+DRAFT_NOTE = "Short one. Just the trigger pattern. Look for the back-pass cue."
+DRAFT_LIBRARY_CODE = "D1"
 SESSION_NOTE = (
     "Watch both of these before Tuesday. First twenty minutes we walk the third-man run, "
     "then we scrimmage with the build-out as the theme. If their winger presses the "
@@ -275,7 +296,7 @@ def upsert_membership(db, team: Team, user: User, role_on_team: str) -> TeamMemb
     return member
 
 
-def upsert_roster(db, team: Team, player_user: User) -> None:
+def upsert_roster(db, team: Team, accounts_by_name: dict[str, int]) -> None:
     roles = {r.code: r for r in db.query(Role).all()}
     for name, jersey, foot, role_code, flank, awr, dwr, attrs in ROSTER:
         role = roles.get(role_code)
@@ -295,11 +316,12 @@ def upsert_roster(db, team: Team, player_user: User) -> None:
         row.flank = flank
         row.awr = awr
         row.dwr = dwr
-        # The player account's own row, already linked (the API does the
-        # same thing by name match on the player's first roster fetch,
+        # Each player account's own roster row, already linked (the API does
+        # the same thing by name match on that player's first roster fetch,
         # app/routers/roster.py; doing it here means the demo does not
-        # depend on the order screens are opened in).
-        row.user_id = player_user.id if name == PLAYER_NAME else None
+        # depend on the order screens are opened in, and it is what puts a
+        # jersey badge on their read receipt).
+        row.user_id = accounts_by_name.get(name)
         db.flush()
 
         for key, value in zip(ATTRIBUTE_KEYS, attrs, strict=True):
@@ -327,9 +349,17 @@ def upsert_board(db, team: Team) -> None:
         board = Board(team_id=team.id, name="Whiteboard")
         db.add(board)
     board.tokens_json = default_board_tokens()
+    # Two lanes a coach would actually lock in a build-out, chosen so that
+    # neither is BLOCKED in the default shape: a confirmed lane renders
+    # solid bright gold only while it is clear, and turns dashed red the
+    # moment an opponent stands in it (design README). Picking a pair with
+    # an opponent already sitting on the line would open the demo on a
+    # board that looks entirely red. The keeper-to-centre-back and
+    # centre-back-to-centre-back lines are both clear of the mirrored
+    # opponent shape, so the whiteboard opens showing gold.
     board.confirmed_lanes_json = [
-        {"a": "home-4", "b": "home-5"},  # pivot to stepping centre-back
-        {"a": "home-2", "b": "home-8"},  # right back to the eight inside
+        {"a": "home-1", "b": "home-5"},  # keeper to the stepping centre-back
+        {"a": "home-5", "b": "home-6"},  # centre-back to centre-back, across
     ]
     board.blocking_threshold = 7.0
     board.marking_threshold = 10.0
@@ -369,83 +399,121 @@ def upsert_recording(db, team: Team, coach: User) -> SavedPattern:
     return pattern
 
 
-def upsert_session(db, team: Team, coach: User, pattern: SavedPattern, player_user: User) -> None:
-    """One sent session with two items (a library preset and the coach's own
-    recording) and one receipt already marked watched, so the coach's x/y
-    counter reads 1 of 1 the moment the page opens."""
-    library_item = (
-        db.query(LibraryItem).filter(LibraryItem.code == SESSION_LIBRARY_CODE).one_or_none()
-    )
-    if library_item is None:
+def _library_item(db, code: str) -> LibraryItem:
+    item = db.query(LibraryItem).filter(LibraryItem.code == code).one_or_none()
+    if item is None:
         raise SystemExit(
-            f"seed_demo: library item {SESSION_LIBRARY_CODE} is missing. "
+            f"seed_demo: library item {code} is missing. "
             "Run scripts/seed.py (or `make demo`, which does) first."
         )
+    return item
 
+
+def _session_row(db, team: Team, title: str) -> TrainingSession:
     session = (
         db.query(TrainingSession)
-        .filter(TrainingSession.team_id == team.id, TrainingSession.title == SESSION_TITLE)
+        .filter(TrainingSession.team_id == team.id, TrainingSession.title == title)
         .one_or_none()
     )
-    now = utcnow()
     if session is None:
-        session = TrainingSession(team_id=team.id, title=SESSION_TITLE)
+        session = TrainingSession(team_id=team.id, title=title)
         db.add(session)
-    session.created_by = coach.id
-    session.coach_note = SESSION_NOTE
-    session.status = "sent"
-    session.sent_at = now - timedelta(days=1)
-    db.flush()
+    return session
 
-    # Items are rewritten wholesale: two rows, in order, every run.
+
+def _set_items(db, session: TrainingSession, items: list[tuple[str, int]]) -> None:
+    """Items are rewritten wholesale on every run: (item_kind, id) in order."""
     for stale in db.query(SessionItem).filter(SessionItem.session_id == session.id).all():
         db.delete(stale)
     db.flush()
-    db.add(
-        SessionItem(
-            session_id=session.id,
-            position=0,
-            item_kind="library",
-            library_item_id=library_item.id,
+    for position, (kind, row_id) in enumerate(items):
+        db.add(
+            SessionItem(
+                session_id=session.id,
+                position=position,
+                item_kind=kind,
+                library_item_id=row_id if kind == "library" else None,
+                saved_pattern_id=row_id if kind == "saved_pattern" else None,
+            )
         )
-    )
-    db.add(
-        SessionItem(
-            session_id=session.id,
-            position=1,
-            item_kind="saved_pattern",
-            saved_pattern_id=pattern.id,
-        )
+
+
+def upsert_sessions(
+    db,
+    team: Team,
+    coach: User,
+    pattern: SavedPattern,
+    accounts_by_name: dict[str, int],
+) -> None:
+    """Two sessions, so the rail shows both states the design specifies:
+
+    SENT: two items (a library preset and the coach's own recording), a
+    coach note, and a receipt per player member with a few already watched,
+    so the x/y counter has moved before anyone touches anything.
+
+    DRAFT: one item and a note, ready for a coach to press Send to players
+    live in the room.
+    """
+    now = utcnow()
+
+    sent = _session_row(db, team, SESSION_TITLE)
+    sent.created_by = coach.id
+    sent.coach_note = SESSION_NOTE
+    sent.status = "sent"
+    sent.sent_at = now - timedelta(days=1)
+    db.flush()
+    _set_items(
+        db,
+        sent,
+        [
+            ("library", _library_item(db, SESSION_LIBRARY_CODE).id),
+            ("saved_pattern", pattern.id),
+        ],
     )
 
-    receipt = (
-        db.query(SessionReceipt)
-        .filter(
-            SessionReceipt.session_id == session.id,
-            SessionReceipt.player_user_id == player_user.id,
+    # doc 03 section 6: one receipt per recipient, written at send time.
+    for name, user_id in accounts_by_name.items():
+        receipt = (
+            db.query(SessionReceipt)
+            .filter(
+                SessionReceipt.session_id == sent.id,
+                SessionReceipt.player_user_id == user_id,
+            )
+            .one_or_none()
         )
-        .one_or_none()
-    )
-    if receipt is None:
-        receipt = SessionReceipt(session_id=session.id, player_user_id=player_user.id)
-        db.add(receipt)
-    receipt.viewed_at = now - timedelta(hours=14)
+        if receipt is None:
+            receipt = SessionReceipt(session_id=sent.id, player_user_id=user_id)
+            db.add(receipt)
+        receipt.viewed_at = now - timedelta(hours=14) if name in WATCHED_BY else None
+
+    draft = _session_row(db, team, DRAFT_TITLE)
+    draft.created_by = coach.id
+    draft.coach_note = DRAFT_NOTE
+    draft.status = "draft"
+    draft.sent_at = None
+    db.flush()
+    _set_items(db, draft, [("library", _library_item(db, DRAFT_LIBRARY_CODE).id)])
 
 
 def main() -> int:
     db = SessionLocal()
     try:
         coach = upsert_user(db, email=COACH_EMAIL, display_name=COACH_NAME, role="coach")
-        player_user = upsert_user(
-            db, email=PLAYER_EMAIL, display_name=PLAYER_NAME, role="player"
-        )
         team = upsert_team(db, coach)
         upsert_membership(db, team, coach, "coach")
-        upsert_membership(db, team, player_user, "player")
-        upsert_roster(db, team, player_user)
+
+        # display_name -> user id, for every player account on the team.
+        # Drives both the roster-row linkage and the session receipts.
+        accounts_by_name: dict[str, int] = {}
+        for email, display_name in [(PLAYER_EMAIL, PLAYER_NAME), *SQUAD_ACCOUNTS]:
+            user = upsert_user(db, email=email, display_name=display_name, role="player")
+            upsert_membership(db, team, user, "player")
+            accounts_by_name[display_name] = user.id
+
+        upsert_roster(db, team, accounts_by_name)
         upsert_board(db, team)
         pattern = upsert_recording(db, team, coach)
-        upsert_session(db, team, coach, pattern, player_user)
+        upsert_sessions(db, team, coach, pattern, accounts_by_name)
         db.commit()
     except Exception:
         db.rollback()
@@ -453,11 +521,14 @@ def main() -> int:
     finally:
         db.close()
 
+    watched = len(WATCHED_BY)
+    recipients = 1 + len(SQUAD_ACCOUNTS)
     print("seed-demo: demo team ready")
     print(f"  team          {TEAM_NAME} ({TEAM_AGE_GROUP}, {TEAM_LEVEL})")
     print(f"  roster        {len(ROSTER)} players, one double-exposure flank warning")
     print(f"  recording     {RECORDING_NAME}")
-    print(f"  session       {SESSION_TITLE} (sent, 1 of 1 viewed)")
+    print(f"  sessions      {SESSION_TITLE} (sent, {watched} of {recipients} viewed)")
+    print(f"                {DRAFT_TITLE} (draft, ready to send)")
     print("")
     print("  Sign in at http://127.0.0.1:5173")
     print(f"    coach       {COACH_EMAIL} / {DEMO_PASSWORD}")

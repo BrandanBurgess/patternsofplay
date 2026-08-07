@@ -339,7 +339,7 @@ export function FormationsPage({ orientation }: FormationsPageProps) {
             )}
           </div>
 
-          <div className="formations-sheet">
+          <div className={`formations-sheet${sheetOpen ? " formations-sheet-open" : ""}`}>
             <button
               type="button"
               className="formations-sheet-handle"
