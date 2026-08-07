@@ -24,7 +24,7 @@
 | Deliveries library, F1-F8 tiles + details | PNG 29 | Bible 3F.0 vocabulary, F1-F8 entries | IN |
 | Rotations library: R1, R12, R13 | PNG 30, 31 | Bible 5B.1, 5B.5 | IN |
 | Formations: 6 presets, keystones, details | PNG 11, 19, 37-39, 43 | Bible Section 4 | IN |
-| Rondo Map overlay (5 zones) | PNG 32, 36 | Bible 3G.2 | IN |
+| Rondo Map overlay (6 zones, all formations) | PNG 32, 36; doc 06 §0 | Bible 3G.2 | IN, all formations, 6 zones (left and right flank corridors split) |
 | Roster: roles, AWR/DWR, 6 sliders | PNG 12, 20 | Bible 1.2, 1.3, Section 2 | IN |
 | Fit warning: double-exposure flank, coach-only | PNG 12 | Bible 2B.3 Flank Balance, 2B.4 | IN (this warning only) |
 | Player playstyle suggestion + coach review | PNG 24, 25, 27 | README roles table | IN |
@@ -34,13 +34,16 @@
 | Coach / Player permission model | README table, role toggle | README principles | IN, exactly as specified |
 | Phone layouts, portrait boards, coordinate mapping | PNG 14-20, 23, 28, 34-36, 43-45; README formula | README | IN |
 | Synergy glow on whiteboard | Not in any screen | Bible 2B.1, 8.1 suggests it | OUT of UI; synergy data seeded |
-| Full clash warning set | Only double-exposure designed | Bible 2B.4 | OUT beyond the designed warning; data seeded |
+| Full clash warning set | Only double-exposure designed; doc 06 §0 designs the unit-balance surface | Bible 2B.4 | IN for unit-balance warnings only; other Bible 2B.4 clashes stay OUT |
 | Identity-shifted fit thresholds | No surface | Bible 5.7 table | OUT; profile data seeded |
-| Formation matchup overlay | No surface | Bible 3G.3 | OUT; matchup data seeded |
-| F14-F16, crossing selectors, Four-Run Box, auto footedness | No surface | Bible 3F | OUT; F5 rule ships as card copy only |
+| Formation matchup overlay | Doc 06 §0 (epic designs the surface) | Bible 3G.3 | IN; opposition toggle plus live per-zone superiority on the Formations board |
+| F14-F16, crossing selectors, Four-Run Box | No surface | Bible 3F | OUT; F5 rule ships as card copy only |
+| Auto footedness | Doc 06 §0 (epic designs the surface) | Bible 3F | IN; derives from players.preferred_foot, already in roster data |
 | National styles (S7), Canada card | No surface | Bible 7 | OUT; may seed as inactive data |
 | Training-session / drill planner, rondo auto-suggest | No surface | Bible 3G.1 | OUT; rondo-to-concept mapping seeded |
 | Club layer, video, payments, parent view | No surface | PRD later phases | OUT |
+
+**Founder decision (2026-08-07, approved by the founder):** auto footedness, the formation matchup overlay, and unit-balance clash warnings move from OUT to IN; the Rondo Map overlay scope expands to all six formations and six zones (flank corridors split left and right). Bible 2B.4's other clashes, F14-F16, crossing selectors, and the Four-Run Box stay OUT. See `docs/source/06_Tactical_Depth_Spec.md` §0 for the full amendment and the epic that builds it.
 
 ---
 

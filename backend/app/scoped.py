@@ -10,14 +10,26 @@ a client-supplied parameter. A route that depends on get_team_scope
 instead of get_db + a team_id argument has no path by which a client
 could name another team's id, because there is no such argument.
 
-Two scoping shapes exist per doc 03:
+Two scoping shapes exist per doc 03 (and doc 06 section 3.2 for the
+Tactics Lab tables T-101 adds on top):
   - Direct: the table carries team_id itself (players, playstyle_suggestions,
-    saved_patterns, boards, sessions). Use .query() / .get() / .add().
+    saved_patterns, boards, sessions, team_formations). Use .query() /
+    .get() / .add().
   - Transitive: the table has no team_id column and scopes through a
     parent FK instead (player_attributes -> players, session_items and
-    session_receipts -> sessions). Use .query_via().
+    session_receipts -> sessions, team_formation_slots ->
+    team_formations). Use .query_via().
 This mirrors doc 03's own column lists exactly rather than adding a
-team_id doc 03 does not list on those child tables.
+team_id doc 03 does not list on those child tables, and doc 06 section 3.2
+explicitly calls for team_formation_slots to scope "transitively through
+team_formation_id, same pattern as player_attributes".
+
+Both query() and query_via() are generic over any mapped model (they read
+team_id off the model/parent class via getattr, not a hardcoded table
+list), so TeamFormation and TeamFormationSlot need no new methods here,
+only the calls above: TeamScope.query(TeamFormation) and
+TeamScope.query_via(TeamFormationSlot, TeamFormation,
+TeamFormationSlot.team_formation_id == TeamFormation.id).
 """
 
 from typing import Any, TypeVar

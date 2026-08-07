@@ -73,11 +73,13 @@ test.describe("formations: board-first shape, keystone keycards, details, rondo 
     await page.getByTestId("formations-details-close").click();
     await expect(page.getByTestId("formations-details-panel")).toHaveCount(0);
 
-    // --- Rondo Map: toggle, five tappable zones, each shows its rondo and
-    // linked patterns (Brief step 18 DoD; seeds/rondo_zones.json, 433 only) ---
+    // --- Rondo Map: toggle, six tappable zones, each shows its rondo and
+    // linked patterns (Brief step 18 DoD; seeds/rondo_zones.json, 433 only;
+    // six not five since T-101/migration 0006 split flank_corridor into
+    // flank_corridor_left and flank_corridor_right) ---
     await page.getByTestId("formations-rondo-toggle").click();
     await expect(page.getByTestId("formations-rondo-active-toggle")).toBeVisible();
-    await expect(page.getByTestId("rondo-zone")).toHaveCount(5);
+    await expect(page.getByTestId("rondo-zone")).toHaveCount(6);
 
     await page.locator('[data-zone-key="midfield_box"]').click();
     await expect(page.getByTestId("formations-zone-card")).toBeVisible();

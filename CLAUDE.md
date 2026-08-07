@@ -11,7 +11,8 @@ You are the ORCHESTRATOR (largest model in this session). You plan, dispatch, re
 | docs/source/03_Data_Model_and_Tactical_Content_Spec.md | Schema, seed rules, animation spec format | Platform + content-seeder + board tickets |
 | docs/source/04_Tech_Stack_Decision_Note.md | Stack decisions (FastAPI, SQLAlchemy 2 + Alembic, SQLite WAL, Litestream, React + Vite) | T-001 and any infra question |
 | docs/source/01_PRD_v2_Patterns_of_Play.md | Product intent, later phases | Ambiguity resolution only |
-On conflict: Brief wins scope, design README wins visuals and permissions, Bible wins content, doc 03 wins schema. Do not relitigate doc 04 decisions.
+| docs/source/06_Tactical_Depth_Spec.md | Tactical Depth epic (T-100 series): the scope amendment, formation matchup overlay, Rondo Map (6 zones, all formations), auto footedness, unit-balance clash warnings | Any T-100 epic ticket, section by section |
+On conflict: Brief wins scope, design README wins visuals and permissions, Bible wins content, doc 03 wins schema. Do not relitigate doc 04 decisions. Within the T-100 epic, doc 06 wins on everything doc 06 speaks to; doc 03 still wins on general schema conventions, the design README still wins on visual language and the permission table, the Bible still wins wherever it already speaks, and doc 04 stack decisions are not reopened.
 
 ## Non-negotiable rules (all agents)
 1. One ticket = one branch = one worktree = one PR. Never touch main.

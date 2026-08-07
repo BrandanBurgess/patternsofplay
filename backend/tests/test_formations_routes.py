@@ -5,7 +5,8 @@ team_id), but still requires authentication like every other route. Seeds
 via the real scripts/seed.py loader (same in-process import convention as
 test_seed_content.py's idempotency test) rather than hand-built fixtures,
 so this exercises the actual seeded content: 6 formations, 13 keystones,
-5 rondo zones (all on 433, per seeds/rondo_zones.json's own note).
+6 rondo zones (all on 433, per seeds/rondo_zones.json's own note; 6 not 5
+since T-101/migration 0006 split flank_corridor into left/right).
 """
 
 import importlib.util
@@ -111,7 +112,14 @@ def test_rondo_zones_show_their_rondo_and_linked_patterns(client: TestClient) ->
     formations = {f["code"]: f for f in coach.get("/api/formations").json()}
     f433 = formations["433"]
     zones = {z["zone_key"]: z for z in f433["rondo_zones"]}
-    assert set(zones) == {"first_line", "midfield_box", "flank_corridor", "last_line", "counterpress"}
+    assert set(zones) == {
+        "first_line",
+        "midfield_box",
+        "flank_corridor_left",
+        "flank_corridor_right",
+        "last_line",
+        "counterpress",
+    }
 
     midfield = zones["midfield_box"]
     assert midfield["rondo_name"] == "5v3 (the midfield box)"
