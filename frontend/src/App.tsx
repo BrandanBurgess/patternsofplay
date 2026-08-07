@@ -63,11 +63,11 @@ function MinimalShell({ children }: { children: ReactNode }) {
         <h1 className="app-brand">
           {/* Decorative, see AppShell.tsx: the visible text is the
               accessible name App.test.tsx asserts on. */}
+          {/* Single asset, no srcSet: see AppShell.tsx for why (T-070
+              follow-up). */}
           <img
             className="app-brand-mark"
             src="/shield-mark-96.png"
-            srcSet="/shield-mark-96.png 96w, /shield-mark-144.png 144w"
-            sizes="28px"
             alt=""
             aria-hidden="true"
           />

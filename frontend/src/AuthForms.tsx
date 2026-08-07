@@ -39,7 +39,14 @@ export function AuthForms({ onAuthenticated }: { onAuthenticated: () => void }) 
 
   return (
     <section className="auth-forms">
-      <img className="auth-lockup" src="/logo-lockup.png" alt="Patterns of Play" />
+      {/* Decorative (T-070 follow-up): MinimalShell's h1 above this
+          screen already exposes "Patterns of Play" as the page's
+          accessible name (App.test.tsx and the e2e journeys assert on
+          that heading), so this img stays out of the accessibility tree
+          instead of re-announcing the same text a second time, the same
+          alt="" + aria-hidden pattern AppShell.tsx and App.tsx use for
+          the nav/topbar shield mark. */}
+      <img className="auth-lockup" src="/logo-lockup.png" alt="" aria-hidden="true" />
       <form onSubmit={handleSubmit} className="auth-form">
         <h2>{mode === "register" ? "Register" : "Log in"}</h2>
         {mode === "register" && (

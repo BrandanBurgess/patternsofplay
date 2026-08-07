@@ -202,6 +202,175 @@ def find_grass_start_row(rgba: Image.Image, row_start: int, row_end: int) -> int
     return row_end
 
 
+def find_grass_end_row(rgba: Image.Image, row_start: int, row_end: int) -> int:
+    """Last row (top to bottom) with grass-green pixels, scanning downward
+    from find_grass_start_row's result toward the bottom of the source
+    art. Everything below this row is the freestanding flat "PATTERNS OF
+    PLAY" wordmark banner, not the grass base: a caller that wants "shield
+    + stars + grass, no wordmark" crops here instead of at full_box's
+    bottom (see the T-070 follow-up: that flat wordmark is white text with
+    no backing once the red field is keyed out, illegible on light theme
+    grounds, so the lockup drops it and lets the shield's own arched
+    lettering carry the name instead)."""
+    px = rgba.load()
+    w = rgba.width
+    last = row_start
+    for y in range(row_start, row_end):
+        hits = 0
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if a > 16 and g - r > 20 and g - b > 15 and r < 120:
+                hits += 1
+                if hits > 5:
+                    last = y
+                    break
+    return last
+
+
+def row_extents(rgba: Image.Image, alpha_thresh: int = 16):
+    """Per-row (min_x, max_x) of opaque pixels, or None for an empty row.
+    One O(w*h) pass so find_shield_top_row can answer "what would the
+    windowed bbox width be starting at row y" in O(1) per row instead of
+    rescanning every pixel for every candidate row."""
+    px = rgba.load()
+    w, h = rgba.size
+    extents: list[tuple[int, int] | None] = [None] * h
+    for y in range(h):
+        left = right = None
+        for x in range(w):
+            if px[x, y][3] > alpha_thresh:
+                if left is None:
+                    left = x
+                right = x
+        if left is not None:
+            extents[y] = (left, right)
+    return extents
+
+
+def find_shield_top_row(extents, top: int, grass_row: int) -> int:
+    """First row (top to bottom) at which the shield's own silhouette has
+    reached its stable full width: the row above which the windowed bbox
+    [row, grass_row) would still be widened by the star arc and the two
+    small decorative maple-leaf sprigs that flank it. Those cannot be
+    separated from the shield by colour or a simple connected-component
+    pass (in the source art the centre star's point and the sprigs touch
+    the shield's shoulders, so all of it is one connected opaque blob,
+    same shape as the trapped-letter problem remove_background's
+    docstring describes for the wordmark). Reference width is measured
+    just above the grass line, where only the shield itself can possibly
+    still be present; walking down from the top of the art until the
+    windowed width settles to that reference finds the row where the
+    stars and sprigs drop out of the window. Used only to build a
+    stars-free favicon crop (T-070 follow-up: the star arc dissolves into
+    noise at 16px). The nav rail mark and apple-touch-icon keep the star
+    arc and are unaffected."""
+    ref_top = max(top, grass_row - 80)
+    suffix_min: list[int | None] = [None] * grass_row
+    suffix_max: list[int | None] = [None] * grass_row
+    cur_min = cur_max = None
+    for y in range(grass_row - 1, top - 1, -1):
+        e = extents[y]
+        if e is not None:
+            l, r = e
+            cur_min = l if cur_min is None else min(cur_min, l)
+            cur_max = r if cur_max is None else max(cur_max, r)
+        suffix_min[y] = cur_min
+        suffix_max[y] = cur_max
+    ref_min, ref_max = suffix_min[ref_top], suffix_max[ref_top]
+    if ref_min is None:
+        return top
+    ref_width = ref_max - ref_min
+    for y in range(top, grass_row):
+        if suffix_min[y] is None:
+            continue
+        if suffix_max[y] - suffix_min[y] <= ref_width + 2:
+            return y
+    return top
+
+
+def largest_red_component(rgba: Image.Image):
+    """4-connected component analysis (see remove_background) restricted
+    to red-dominant pixels, returns (mask, mean_colour) for the LARGEST
+    such component. In the source art this is always the solid maple-leaf
+    fill: the only other red-dominant shape at this scale is the thin
+    ring circumscribing it, which despite its long perimeter has far
+    fewer pixels (a stroke, not a fill) and is never the largest
+    component. Classified by "red dominant over green and blue" rather
+    than distance to one sampled reference pixel, so this keeps working
+    if the art's exact red hue ever shifts."""
+    w, h = rgba.size
+    px = rgba.load()
+    candidate = bytearray(w * h)
+    for y in range(h):
+        row = y * w
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if a > 16 and r - g > 40 and r - b > 40 and r > 100:
+                candidate[row + x] = 1
+
+    visited = bytearray(w * h)
+    best: list[int] = []
+    for start in range(w * h):
+        if not candidate[start] or visited[start]:
+            continue
+        visited[start] = 1
+        comp = [start]
+        q = deque([start])
+        while q:
+            cur = q.popleft()
+            cy, cx = divmod(cur, w)
+            for nx, ny in ((cx - 1, cy), (cx + 1, cy), (cx, cy - 1), (cx, cy + 1)):
+                if 0 <= nx < w and 0 <= ny < h:
+                    nidx = ny * w + nx
+                    if candidate[nidx] and not visited[nidx]:
+                        visited[nidx] = 1
+                        comp.append(nidx)
+                        q.append(nidx)
+        if len(comp) > len(best):
+            best = comp
+
+    mask = bytearray(w * h)
+    r_total = g_total = b_total = 0
+    for idx in best:
+        mask[idx] = 1
+        y, x = divmod(idx, w)
+        pr, pg, pb, _ = px[x, y]
+        r_total += pr
+        g_total += pg
+        b_total += pb
+    n = max(len(best), 1)
+    mean_color = (r_total // n, g_total // n, b_total // n)
+    return Image.frombytes("L", (w, h), bytes(255 * v for v in mask)), mean_color
+
+
+def build_favicon_mini(crop: Image.Image) -> Image.Image:
+    """Flatten a shield-only crop to two flat colours for the 16px favicon
+    (T-070 follow-up): shield navy everywhere the source has any opacity,
+    with only the leaf's own connected component (largest_red_component)
+    painted back on top in its own colour. Drops the gold border, the
+    thin red ring and the arched "PATTERNS OF PLAY" lettering: none of
+    that fine detail survives resampling to 16px, it just reads as
+    grey-brown noise (see the shipped-before comparison in the follow-up
+    report), so the mini favicon ships only the two shapes that actually
+    do survive at that size."""
+    w, h = crop.size
+    px = crop.load()
+    alpha_mask = bytearray(w * h)
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] > 16:
+                alpha_mask[y * w + x] = 1
+    leaf_mask, leaf_color = largest_red_component(crop)
+
+    out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    alpha_im = Image.frombytes("L", (w, h), bytes(255 * v for v in alpha_mask))
+    navy_layer = Image.new("RGBA", (w, h), ICON_BACKDROP + (255,))
+    out.paste(navy_layer, (0, 0), alpha_im)
+    leaf_layer = Image.new("RGBA", (w, h), leaf_color + (255,))
+    out.paste(leaf_layer, (0, 0), leaf_mask)
+    return out
+
+
 def pad(box, amount, size):
     left, top, right, bottom = box
     w, h = size
@@ -250,47 +419,91 @@ def main() -> None:
     full_box = pad(bbox_in_rows(rgba, 0, h), 6, (w, h))
 
     # Shield + star-arc only, excluding the grass base and the wordmark
-    # below it (nav rail mark and favicon source): crop above the row
-    # where grass green first appears.
+    # below it (nav rail mark and apple-touch-icon source): crop above the
+    # row where grass green first appears.
     grass_row = find_grass_start_row(rgba, full_box[1], full_box[3])
     shield_box = pad(bbox_in_rows(rgba, full_box[1], grass_row), 6, (w, h))
 
-    full_lockup = rgba.crop(full_box)
-    shield_mark = rgba.crop(shield_box)
+    # Shield + stars + grass, excluding the flat wordmark banner below the
+    # grass (T-070 follow-up, defect 1): that banner is white text with no
+    # backing once the red field is keyed out, near-invisible on the
+    # board theme's light background. The shield's own arched "PATTERNS OF
+    # PLAY" lettering, white on navy, carries the name instead and reads
+    # on any ground.
+    grass_end = find_grass_end_row(rgba, grass_row, full_box[3])
+    lockup_box = pad(bbox_in_rows(rgba, full_box[1], grass_end), 6, (w, h))
 
-    # 1. Full lockup, transparent background: shield + stars + grass +
-    # wordmark, for the sign-in screen. Downscaled from the ~700x800
-    # native crop to a size that still renders crisply at typical sign-in
-    # display widths (roughly 240-320 CSS px) at 2x density.
+    # Shield only, no star arc and no decorative leaf sprigs (T-070
+    # follow-up, defect 2): the star arc dissolves into noise at 16px, so
+    # the favicon crops tighter than the nav rail mark. See
+    # find_shield_top_row's docstring for why this needs its own row scan
+    # instead of reusing shield_box's top.
+    favicon_top = find_shield_top_row(row_extents(rgba), full_box[1], grass_row)
+    favicon_box = pad(bbox_in_rows(rgba, favicon_top, grass_row), 4, (w, h))
+
+    full_lockup = rgba.crop(lockup_box)
+    shield_mark = rgba.crop(shield_box)
+    favicon_detail = rgba.crop(favicon_box)
+    favicon_mini = build_favicon_mini(favicon_detail)
+
+    # 1. Full lockup, transparent background: shield + stars + grass for
+    # the sign-in screen (no flat wordmark banner, see above). Downscaled
+    # from the native crop to a size that still renders crisply at typical
+    # sign-in display widths (roughly 240-320 CSS px) at 2x density.
     lockup_w = 640
     lockup_h = round(full_lockup.height * (lockup_w / full_lockup.width))
     full_lockup_out = full_lockup.resize((lockup_w, lockup_h), Image.LANCZOS)
     size_lockup = save_png(full_lockup_out, PUBLIC / "logo-lockup.png")
 
     # 2. Shield mark, transparent background, nav rail (28-40px render).
-    # Shipped at 2x and 3x density per a ~48px logical size so the browser
-    # never has to upscale, and never has to downscale a 1024px source.
-    mark_sizes = {"96": 96, "144": 144}
-    mark_out_bytes = {}
-    for label, target_h in mark_sizes.items():
-        target_w = round(shield_mark.width * (target_h / shield_mark.height))
-        resized = shield_mark.resize((target_w, target_h), Image.LANCZOS)
-        mark_out_bytes[label] = save_png(resized, PUBLIC / f"shield-mark-{label}.png")
+    # Shipped at 2x density for a ~28-32px logical size (a 3x device needs
+    # 84-96px, which this already covers), so a single asset is enough:
+    # no srcSet, no second candidate nobody's viewport can ever select
+    # (T-070 follow-up, defect 3: that used to be shield-mark-144.png).
+    mark_out_bytes = save_png(
+        shield_mark.resize(
+            (round(shield_mark.width * (96 / shield_mark.height)), 96), Image.LANCZOS
+        ),
+        PUBLIC / "shield-mark-96.png",
+    )
 
-    # 3. Favicon set. Same shield+stars crop (consistent brand mark across
-    # nav rail and browser tab); at 16px the star arc mostly dissolves into
-    # texture but the navy shield silhouette and the red leaf keep it
-    # readable, which is what a favicon needs to survive at that size.
-    favicon_sizes = [16, 32, 48]
+    # 3. Favicon set (T-070 follow-up, defect 2). Two sizes, not three:
+    # nothing in this app requests a 48px favicon (no manifest.json, no
+    # browserconfig.xml tile), so it was dead weight the same way
+    # shield-mark-144 was. 16px is designed for, not downsampled to: the
+    # flattened navy-shield-plus-leaf mark (favicon_mini) is what actually
+    # survives that small; 32px keeps the full engraved detail (gold
+    # border, ring, arched lettering), which is legible at that size.
+    favicon_sources = {16: favicon_mini, 32: favicon_detail}
     favicon_bytes = {}
-    for size in favicon_sizes:
-        target_w = round(shield_mark.width * (size / shield_mark.height))
-        resized = shield_mark.resize((target_w, size), Image.LANCZOS)
-        # Favicons are square; center the (narrower than tall) shield mark
-        # on a transparent square canvas so it isn't squashed.
+    for size, source in favicon_sources.items():
+        target_w = round(source.width * (size / source.height))
+        resized = source.resize((target_w, size), Image.LANCZOS)
+        # Favicons are square; center the (narrower than tall) mark on a
+        # transparent square canvas so it isn't squashed.
         canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
         canvas.paste(resized, ((size - resized.width) // 2, (size - resized.height) // 2), resized)
         favicon_bytes[size] = save_png(canvas, PUBLIC / f"favicon-{size}.png")
+
+    # favicon.ico (T-070 follow-up, defect 2): Chrome requests
+    # /favicon.ico at the document root by habit even when <link
+    # rel="icon"> is present, and that request 404ed with nothing at that
+    # path. Built from the same flattened mini mark as favicon-16.png (an
+    # ICO's job here is just to resolve that implicit request cleanly; a
+    # modern browser prefers the <link>-declared PNGs for the actual tab
+    # icon whenever they're present). Square canvas first so Pillow's
+    # multi-size ICO writer downsamples without distorting the aspect
+    # ratio.
+    ico_canvas_size = 64
+    ico_target_w = round(favicon_mini.width * (ico_canvas_size / favicon_mini.height))
+    ico_resized = favicon_mini.resize((ico_target_w, ico_canvas_size), Image.LANCZOS)
+    ico_master = Image.new("RGBA", (ico_canvas_size, ico_canvas_size), (0, 0, 0, 0))
+    ico_master.paste(
+        ico_resized, ((ico_canvas_size - ico_resized.width) // 2, 0), ico_resized
+    )
+    ico_path = PUBLIC / "favicon.ico"
+    ico_master.save(ico_path, format="ICO", sizes=[(16, 16), (32, 32)])
+    size_ico = ico_path.stat().st_size
 
     # apple-touch-icon: opaque backing (iOS renders transparency as black),
     # shield mark centered with ~12% padding on the shield-navy backdrop.
@@ -313,14 +526,15 @@ def main() -> None:
     # Review composites (not shipped, gitignored build/ dir): eyeball the
     # background key over both a near-black and a near-white ground.
     composite_review(full_lockup_out, "logo-lockup")
-    composite_review(Image.open(PUBLIC / "shield-mark-144.png"), "shield-mark")
+    composite_review(Image.open(PUBLIC / "shield-mark-96.png"), "shield-mark")
     composite_review(Image.open(PUBLIC / "favicon-32.png"), "favicon-32")
+    composite_review(Image.open(PUBLIC / "favicon-16.png"), "favicon-16")
 
     print(f"logo-lockup.png: {size_lockup} bytes ({lockup_w}x{lockup_h})")
-    for label, target_h in mark_sizes.items():
-        print(f"shield-mark-{label}.png: {mark_out_bytes[label]} bytes")
-    for size in favicon_sizes:
+    print(f"shield-mark-96.png: {mark_out_bytes} bytes")
+    for size in sorted(favicon_sources):
         print(f"favicon-{size}.png: {favicon_bytes[size]} bytes")
+    print(f"favicon.ico: {size_ico} bytes")
     print(f"apple-touch-icon.png: {size_touch} bytes ({touch_size}x{touch_size})")
     print(f"Review composites written to {REVIEW_DIR}")
 

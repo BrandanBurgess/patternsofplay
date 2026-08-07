@@ -117,11 +117,14 @@ export function AppShell({
               getByRole("heading", { name: "Patterns of Play" })). An img
               with its own alt text here would double up the name, so this
               one stays alt="" and aria-hidden. */}
+          {/* Single asset, no srcSet (T-070 follow-up): rendered at a
+              ~28-32px logical size, so a 3x device needs 84-96px and this
+              96px source already covers it. shield-mark-144.png used to
+              sit in a srcSet candidate list a 96w entry already dominated,
+              so nothing ever downloaded it. */}
           <img
             className="app-brand-mark"
             src="/shield-mark-96.png"
-            srcSet="/shield-mark-96.png 96w, /shield-mark-144.png 144w"
-            sizes="28px"
             alt=""
             aria-hidden="true"
           />
