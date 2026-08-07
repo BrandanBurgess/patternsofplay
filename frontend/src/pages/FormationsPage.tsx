@@ -22,6 +22,14 @@
 // data-source="seeded". If a coach can confuse one for the other, the whole
 // epic is pointless.
 //
+// T-112 restores the sixth rondo zone. The counterpress ring is a CIRCLE
+// around the ball (doc 06 section 2.3), never the polygon seeded beside it,
+// and it is always renderable because section 2.3 hands it a centre for the
+// no-ball case: the centroid of our three most advanced. Section 5.1's
+// "only renders when a ball is placed" clause assumes a ball affordance
+// this page does not have; section 2.3 defines the object and wins. The
+// ring moves when the phase does, which is the whole teaching point.
+//
 // LANDSCAPE MODEL COORDS THROUGHOUT (CLAUDE.md rule 8). Opponent shapes are
 // handed to morphToPhase in THEIR OWN frame exactly as seeded, and crossed
 // into ours in exactly one place (mirrorOpponentShape) for the engine's
@@ -38,6 +46,7 @@ import {
   countZone,
   findFreeMen,
   gridOccupancy,
+  pointInCircle,
   pointInPolygon,
   JDP_GRID,
 } from "../board/superiority";
@@ -49,7 +58,12 @@ import type {
   ZoneCount,
 } from "../board/superiorityTypes";
 import type { Playback } from "../board/playback";
-import { listFormations, type FormationKeystoneWire, type FormationOutWire } from "../formationsApi";
+import {
+  listFormations,
+  type FormationKeystoneWire,
+  type FormationOutWire,
+  type RondoZoneWire,
+} from "../formationsApi";
 import { listLibraryItems } from "../libraryApi";
 import {
   getFormationMatchup,
@@ -60,6 +74,7 @@ import {
 } from "../tacticsApi";
 import { animationSpecPreview } from "./patternPreview";
 import {
+  BALL_RELATIVE_CIRCLE,
   breachCheck,
   COUNTERPRESS_RING_ZONE_KEY,
   defaultOpponentVariant,
@@ -70,10 +85,11 @@ import {
   NO_SEEDED_MATCHUP_NOTE,
   PHASE_SEGMENTS,
   polygonCentroid,
+  ringCentre,
+  rondoDisplayName,
   shortLine,
   slotLabel,
   spareLine,
-  splitRondoName,
   variantsForPhase,
   zoneReadLine,
   type PhaseKey,
@@ -90,6 +106,11 @@ function humanizeSlug(slug: string): string {
  *  one of Rondo map, Rotations and Grid may be open at once, which is the
  *  mutual exclusion T-032 already had between Details and the Rondo map. */
 type Overlay = "rondo" | "rotations" | "grid" | null;
+
+/** The circle arm of T-104's zone union, which is what the counterpress
+ *  ring is (doc 06 section 2.3). Narrowed once here so the ring's centre
+ *  and radius are reachable without a cast at every use. */
+type CircleZone = Extract<SuperiorityZone, { kind: "circle" }>;
 
 /** Which meta bar control has its reading surface open. Desktop renders it
  *  as a floating rail, phone as a bottom sheet (doc 06 section 5.4), same
@@ -456,24 +477,55 @@ export function FormationsPage({ orientation }: FormationsPageProps) {
   // ------------------------------------------------------------------
 
   /**
-   * The zones the engine counts inside: every seeded rondo zone EXCEPT the
-   * counterpress ring.
+   * The five POLYGON zones. These partition the pitch, which is what makes
+   * them the right input to buildRead: "where are we spare" and "where are
+   * we short" only mean something across zones that do not overlap.
    *
-   * Doc 06 section 5.1 says the ring "only renders when a ball is placed or
-   * a phase with a defined ball position is active". There is no ball on
-   * this page and formation_phases has no ball column (doc 06 section 3.1),
-   * which T-105 deliberately did not invent one for, so neither condition
-   * can hold and the ring never renders. It is left out rather than drawn
-   * as its seeded polygon: that polygon is a BOUND on where the ring may
-   * sit (half the pitch), not a zone, and counting bodies in half a pitch
-   * would be a meaningless ratio dressed up as a real one.
+   * The counterpress ring is deliberately not in here. It is a circle
+   * around the ball (doc 06 section 2.3) that overlaps whatever it happens
+   * to be sitting on, so feeding it to buildRead would double count the
+   * same players and could hand the route read a zone that is not a place
+   * to play through at all. It gets counted on its own, below, and shows
+   * its own chip and its own card.
    */
-  const superiorityZones = useMemo<SuperiorityZone[]>(() => {
+  const polygonZones = useMemo<SuperiorityZone[]>(() => {
     if (!selected) return [];
     return selected.rondo_zones
       .filter((z) => z.zone_key !== COUNTERPRESS_RING_ZONE_KEY)
       .map((z) => ({ zoneKey: z.zone_key, kind: "polygon" as const, polygon: z.polygon }));
   }, [selected]);
+
+  /** The seeded counterpress ring row, or null on a formation without one. */
+  const ringRow = useMemo<RondoZoneWire | null>(
+    () => selected?.rondo_zones.find((z) => z.zone_key === COUNTERPRESS_RING_ZONE_KEY) ?? null,
+    [selected]
+  );
+
+  /**
+   * The ring's centre for the phase currently on the board, in landscape
+   * model coords. Null passed for the ball because this page has no ball
+   * and does not invent one: doc 06 section 2.3's fallback is the centroid
+   * of our three most advanced, which is why the ring is renderable here at
+   * all. It recomputes with `ourSlots`, so selecting a phase moves it.
+   */
+  const ringCentrePoint = useMemo(() => ringCentre(ourSlots, null), [ourSlots]);
+
+  /**
+   * The ring as the engine's own circle zone. Radius comes off the seeded
+   * row (18 model units), never a literal here, and a row that is not a
+   * ball_relative_circle or carries no radius yields no ring rather than a
+   * guess.
+   */
+  const ringZone = useMemo<CircleZone | null>(() => {
+    if (!ringRow || !ringCentrePoint) return null;
+    if (ringRow.zone_kind !== BALL_RELATIVE_CIRCLE || ringRow.radius === null) return null;
+    return {
+      zoneKey: ringRow.zone_key,
+      kind: "circle",
+      centre: ringCentrePoint,
+      radius: ringRow.radius,
+    };
+  }, [ringRow, ringCentrePoint]);
 
   const freeMen = useMemo<FreeMan[]>(
     () => (theirSlotsOurFrame.length > 0 ? findFreeMen(ourSlots, theirSlotsOurFrame) : []),
@@ -481,20 +533,32 @@ export function FormationsPage({ orientation }: FormationsPageProps) {
   );
   const freeSlots = useMemo(() => new Set(freeMen.map((f) => f.slot)), [freeMen]);
 
+  const opposed = theirSlotsOurFrame.length > 0 && ourSlots.length > 0;
+
   /**
-   * Live ratios. Null means no opposition is placed, which is the ONLY
-   * state in which a seeded fallback chip is allowed on screen.
+   * Live ratios across the five polygon zones. Null means no opposition is
+   * placed, which is the ONLY state in which a seeded fallback chip is
+   * allowed on screen.
    */
   const zoneCounts = useMemo<ZoneCount[] | null>(() => {
-    if (theirSlotsOurFrame.length === 0 || ourSlots.length === 0) return null;
-    return superiorityZones.map((z) => countZone(z, ourSlots, theirSlotsOurFrame, freeSlots));
-  }, [superiorityZones, ourSlots, theirSlotsOurFrame, freeSlots]);
+    if (!opposed) return null;
+    return polygonZones.map((z) => countZone(z, ourSlots, theirSlotsOurFrame, freeSlots));
+  }, [polygonZones, ourSlots, theirSlotsOurFrame, freeSlots, opposed]);
+
+  /** The ring's own live ratio, on the same rule as every other zone.
+   *  countZone already understands a circle, so there is no second
+   *  containment test anywhere in this page. */
+  const ringCount = useMemo<ZoneCount | null>(() => {
+    if (!opposed || !ringZone) return null;
+    return countZone(ringZone, ourSlots, theirSlotsOurFrame, freeSlots);
+  }, [ringZone, ourSlots, theirSlotsOurFrame, freeSlots, opposed]);
 
   const countByZone = useMemo(() => {
     const map = new Map<string, ZoneCount>();
     for (const c of zoneCounts ?? []) map.set(c.zoneKey, c);
+    if (ringCount) map.set(ringCount.zoneKey, ringCount);
     return map;
-  }, [zoneCounts]);
+  }, [zoneCounts, ringCount]);
 
   const read = useMemo(
     () => (zoneCounts ? buildRead(zoneCounts, seededMatchup) : null),
@@ -506,36 +570,54 @@ export function FormationsPage({ orientation }: FormationsPageProps) {
   const zoneNameOf = useCallback(
     (zoneKey: string) => {
       const zone = selected?.rondo_zones.find((z) => z.zone_key === zoneKey);
-      return zone ? splitRondoName(zone.rondo_name).displayName.toLowerCase() : zoneKey;
+      return zone ? rondoDisplayName(zone.rondo_name).toLowerCase() : zoneKey;
     },
     [selected]
   );
 
-  /** The free man a parity zone's positional edge is actually about. */
+  /** The free man a parity zone's positional edge is actually about. Reads
+   *  the ring the same way it reads a polygon, through the engine's own
+   *  containment tests rather than a second copy of them. */
   const freeManInZone = useCallback(
     (zoneKey: string): FreeMan | null => {
-      const zone = superiorityZones.find((z) => z.zoneKey === zoneKey);
-      if (!zone || zone.kind !== "polygon") return null;
+      const zone = [...polygonZones, ...(ringZone ? [ringZone] : [])].find(
+        (z) => z.zoneKey === zoneKey
+      );
+      if (!zone) return null;
       for (const fm of freeMen) {
         const p = ourSlots.find((s) => s.slot === fm.slot);
-        if (p && pointInPolygon({ x: p.x, y: p.y }, zone.polygon)) return fm;
+        if (!p) continue;
+        const inside =
+          zone.kind === "circle"
+            ? pointInCircle({ x: p.x, y: p.y }, zone.centre, zone.radius)
+            : pointInPolygon({ x: p.x, y: p.y }, zone.polygon);
+        if (inside) return fm;
       }
       return null;
     },
-    [superiorityZones, freeMen, ourSlots]
+    [polygonZones, ringZone, freeMen, ourSlots]
   );
 
   // ------------------------------------------------------------------
   // Board overlays
   // ------------------------------------------------------------------
 
+  /**
+   * The board's tappable polygons: the five polygon zones only.
+   *
+   * The counterpress ring is filtered out here and drawn as a circle by the
+   * ring layer below instead. Its seeded polygon_json bounds the half of
+   * the pitch the ring is coached in; drawing it would put an eleven-a-side
+   * count in the same visual language as a real 4v2, which is why T-106
+   * refused to. Six zones on screen, five of them polygons.
+   */
   const zones = useMemo<PreviewZone[]>(() => {
     if (!selected || overlay !== "rondo") return [];
     return selected.rondo_zones
       .filter((z) => z.zone_key !== COUNTERPRESS_RING_ZONE_KEY)
       .map((z) => ({
         key: z.zone_key,
-        label: splitRondoName(z.rondo_name).displayName,
+        label: rondoDisplayName(z.rondo_name),
         corners: z.polygon,
         active: z.zone_key === activeZoneKey,
       }));
@@ -823,13 +905,83 @@ export function FormationsPage({ orientation }: FormationsPageProps) {
                   data-orientation={orientation}
                   data-testid="formations-chip-layer"
                 >
-                  {selected.rondo_zones
-                    .filter((z) => z.zone_key !== COUNTERPRESS_RING_ZONE_KEY)
-                    .map((z) => {
-                      const centre = polygonCentroid(z.polygon);
+                  {/* The counterpress ring (doc 06 section 2.3). A CIRCLE
+                      around the ball, never the polygon seeded beside it,
+                      and always renderable because section 2.3 gives it a
+                      centre for the no-ball case. Drawn with a viewBox of
+                      0 0 100 100 and preserveAspectRatio="none", which is
+                      exactly normalized render space: modelToRender puts
+                      the centre in it and the radius is the same number on
+                      both axes, so the shape on screen is the same locus
+                      pointInCircle counts inside, in either orientation.
+                      Non-scaling stroke keeps the line an even width
+                      despite the non-uniform scale. */}
+                  {ringZone && ringRow && (
+                    <svg
+                      className="formations-ring-layer"
+                      viewBox="0 0 100 100"
+                      preserveAspectRatio="none"
+                      data-testid="formations-ring-layer"
+                    >
+                      {(() => {
+                        const c = modelToRender(ringZone.centre, orientation);
+                        const active = activeZoneKey === ringZone.zoneKey;
+                        const geom = {
+                          cx: c.left,
+                          cy: c.top,
+                          rx: ringZone.radius,
+                          ry: ringZone.radius,
+                          vectorEffect: "non-scaling-stroke" as const,
+                        };
+                        return (
+                          <>
+                            <ellipse
+                              {...geom}
+                              className="formations-ring"
+                              data-testid="formations-rondo-ring"
+                              data-ring-zone={ringZone.zoneKey}
+                              data-active={active}
+                            />
+                            {/* The only part of the ring that takes a tap:
+                                a transparent band along the line itself,
+                                pointer-events: stroke, so the ring's large
+                                interior passes every tap through to the
+                                polygon zone underneath it. */}
+                            <ellipse
+                              {...geom}
+                              className="formations-ring-hit"
+                              data-testid="formations-ring-hit"
+                              role="button"
+                              tabIndex={0}
+                              aria-label={`${rondoDisplayName(ringRow.rondo_name)}, read this zone`}
+                              aria-pressed={active}
+                              onClick={() => handleZoneClick(ringZone.zoneKey)}
+                              onKeyDown={(e) => {
+                                if (e.key !== "Enter" && e.key !== " ") return;
+                                e.preventDefault();
+                                handleZoneClick(ringZone.zoneKey);
+                              }}
+                            />
+                          </>
+                        );
+                      })()}
+                    </svg>
+                  )}
+
+                  {selected.rondo_zones.map((z) => {
+                      // Five zones anchor their chip on their polygon. The
+                      // ring anchors on its centre, so the chip travels
+                      // with it exactly as the circle does.
+                      const isRing = z.zone_key === COUNTERPRESS_RING_ZONE_KEY;
+                      const centre = isRing ? ringCentrePoint : polygonCentroid(z.polygon);
+                      if (!centre) return null;
+                      if (isRing && !ringZone) return null;
                       const r = modelToRender(centre, orientation);
                       const count = countByZone.get(z.zone_key) ?? null;
-                      const seeded = splitRondoName(z.rondo_name).seededRatio;
+                      // The SEEDED fallback, straight off the wire. It is
+                      // never derived from anything on screen and is only
+                      // ever shown when no opposition is placed.
+                      const seeded = z.canonical_rondo ?? "";
                       if (!count && !seeded) return null;
                       const kind = count?.superiorityKind;
                       return (
@@ -842,6 +994,7 @@ export function FormationsPage({ orientation }: FormationsPageProps) {
                           // elements answering to the same selector would
                           // make every existing zone journey ambiguous.
                           data-chip-zone={z.zone_key}
+                          data-chip-kind={isRing ? "ring" : "polygon"}
                           data-source={count ? "computed" : "seeded"}
                           data-verdict={count ? count.verdict : undefined}
                           style={{ left: `${r.left}%`, top: `${r.top}%` }}
@@ -950,13 +1103,26 @@ export function FormationsPage({ orientation }: FormationsPageProps) {
                     </button>
                   </div>
                   <h3 data-testid="formations-zone-title">
-                    {splitRondoName(activeZone.rondo_name).displayName}
+                    {rondoDisplayName(activeZone.rondo_name)}
                   </h3>
+
+                  {/* Doc 06 section 2.3: the ring is the one zone that is
+                      not a place on the pitch. Saying so is the teaching
+                      point, so the card says it before it says anything
+                      about counts. */}
+                  {activeZone.zone_key === COUNTERPRESS_RING_ZONE_KEY && activeZone.radius !== null && (
+                    <p className="formations-zone-note" data-testid="formations-ring-note">
+                      This zone moves. It is a circle of radius {activeZone.radius} around the ball at the moment
+                      you lose it, so rest defence is read relative to the ball and not to the pitch. With no ball
+                      on the board it centres on your three most advanced players, which is why it travels every
+                      time the shape does.
+                    </p>
+                  )}
 
                   {(() => {
                     const count = countByZone.get(activeZone.zone_key);
                     if (!count) {
-                      const seeded = splitRondoName(activeZone.rondo_name).seededRatio;
+                      const seeded = activeZone.canonical_rondo ?? "";
                       return (
                         <p className="formations-zone-fallback" data-testid="formations-zone-fallback">
                           {seeded ? `Canonical rondo here: ${seeded}. ` : ""}

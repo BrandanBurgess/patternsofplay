@@ -136,6 +136,67 @@ def test_rondo_zones_show_their_rondo_and_linked_patterns(client: TestClient) ->
     assert {z["zone_key"] for z in f442["rondo_zones"]} == set(zones)
 
 
+def test_the_counterpress_ring_arrives_as_a_ball_relative_circle(client: TestClient) -> None:
+    """doc 06 section 2.3, T-112. The ring is a circle of radius 18 model
+    units that follows the ball, not the polygon seeded next to it. Without
+    zone_kind and radius on the wire the page cannot tell the two apart, so
+    it either draws the polygon (an eleven-a-side count dressed up as a
+    4v2) or draws nothing, which is what shipped between T-106 and T-112."""
+    coach = _coach_with_team()
+    formations = {f["code"]: f for f in coach.get("/api/formations").json()}
+
+    for code, formation in formations.items():
+        zones = {z["zone_key"]: z for z in formation["rondo_zones"]}
+        ring = zones["counterpress_ring"]
+        assert ring["zone_kind"] == "ball_relative_circle", code
+        assert ring["radius"] == 18, code
+        # The bounding polygon still ships. It is what the seed carries and
+        # what a later surface may use to bound where the ring can sit; the
+        # renderer's contract is that it never DRAWS it for this zone.
+        assert len(ring["polygon"]) >= 3, code
+
+        for key, zone in zones.items():
+            if key == "counterpress_ring":
+                continue
+            assert zone["zone_kind"] == "polygon", f"{code}.{key}"
+            assert zone["radius"] is None, f"{code}.{key}"
+
+
+def test_every_rondo_zone_carries_its_no_opposition_fallback_label(client: TestClient) -> None:
+    """canonical_rondo is the chip shown when no opposition is placed
+    (doc 06 section 5.1). It is a SEEDED label and never a computed count,
+    which is why the page renders it muted; the point of putting it on the
+    wire is that the page stops splitting the ratio back out of
+    rondo_name."""
+    coach = _coach_with_team()
+    formations = {f["code"]: f for f in coach.get("/api/formations").json()}
+
+    for code, formation in formations.items():
+        for zone in formation["rondo_zones"]:
+            assert zone["canonical_rondo"], f"{code}.{zone['zone_key']}"
+
+    zones = {z["zone_key"]: z for z in formations["433"]["rondo_zones"]}
+    assert zones["midfield_box"]["canonical_rondo"] == "5v3"
+    assert zones["counterpress_ring"]["canonical_rondo"] == "4v4 plus 3"
+
+
+def test_rondo_zones_arrive_in_the_map_order(client: TestClient) -> None:
+    """First-line build-up through to the counterpress moment (Bible 3G.2).
+    Asserted rather than assumed because the zone key changed in T-103 and
+    the router's ordering tuple did not follow it until T-112."""
+    coach = _coach_with_team()
+    formations = {f["code"]: f for f in coach.get("/api/formations").json()}
+    for code, formation in formations.items():
+        assert [z["zone_key"] for z in formation["rondo_zones"]] == [
+            "first_line",
+            "midfield_box",
+            "flank_corridor_left",
+            "flank_corridor_right",
+            "last_line",
+            "counterpress_ring",
+        ], code
+
+
 def test_em_dash_never_appears_in_a_formations_response(client: TestClient) -> None:
     coach = _coach_with_team()
     body = coach.get("/api/formations").text
