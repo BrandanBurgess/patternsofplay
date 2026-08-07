@@ -118,18 +118,22 @@ def test_rondo_zones_show_their_rondo_and_linked_patterns(client: TestClient) ->
         "flank_corridor_left",
         "flank_corridor_right",
         "last_line",
-        "counterpress",
+        # T-103: doc 06 section 2.3 renames the zone and redefines it as a
+        # ball-relative circle rather than a fixed polygon.
+        "counterpress_ring",
     }
 
     midfield = zones["midfield_box"]
     assert midfield["rondo_name"] == "5v3 (the midfield box)"
-    assert midfield["trains_pattern_codes"] == ["B8", "A5"]
+    # T-103 seeded doc 06 section 2.3's own "trains" list for this zone.
+    assert midfield["trains_pattern_codes"] == ["A5", "B8"]
     assert len(midfield["polygon"]) == 4
     assert all({"x", "y"} <= set(pt) for pt in midfield["polygon"])
 
-    # Only 433 carries a seeded rondo map today (seeds/rondo_zones.json note).
+    # T-103 seeded the rondo map on all six formations, so every formation
+    # now carries the full set of six zones rather than only the 4-3-3.
     f442 = formations["442"]
-    assert f442["rondo_zones"] == []
+    assert {z["zone_key"] for z in f442["rondo_zones"]} == set(zones)
 
 
 def test_em_dash_never_appears_in_a_formations_response(client: TestClient) -> None:

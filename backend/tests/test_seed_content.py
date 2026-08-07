@@ -280,8 +280,11 @@ def test_seed_loader_is_idempotent_and_never_touches_team_tables() -> None:
         "library_items": 23,
         "formations": 6,
         "formation_keystones": 13,
-        "rondo_zones": 6,  # T-101/migration 0006 split flank_corridor into left/right
-        "identities": 27,
+        # T-101/migration 0006 split flank_corridor into left/right; T-103
+        # then seeded doc 06 section 2.3's six zones on all six formations
+        # (6 x 6), and added ten reference systems to the 27 identities.
+        "rondo_zones": 36,
+        "identities": 37,
     }
 
     exit_code_2 = seed.main()

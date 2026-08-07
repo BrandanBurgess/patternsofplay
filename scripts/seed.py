@@ -24,6 +24,8 @@ from app.models import (  # noqa: E402
     ArchetypeCombination,
     Formation,
     FormationKeystone,
+    FormationMatchup,
+    FormationPhase,
     Identity,
     LibraryItem,
     PositionArchetype,
@@ -32,6 +34,7 @@ from app.models import (  # noqa: E402
     RoleClash,
     RoleSynergy,
     RondoZone,
+    RotationSystem,
     UnitBalanceRule,
 )
 
@@ -53,6 +56,12 @@ TABLE_CONFIG: dict[str, tuple[type, list[str], list[str]]] = {
     "position_archetypes": (PositionArchetype, ["code"], []),
     "archetype_combinations": (ArchetypeCombination, ["code"], []),
     "unit_balance_rules": (UnitBalanceRule, ["code"], []),
+    # T-103. formation_phases and formation_matchups are the two library
+    # tables whose natural key is a pair rather than a `code`, same as
+    # formation_keystones and rondo_zones above.
+    "rotation_systems": (RotationSystem, ["code"], []),
+    "formation_phases": (FormationPhase, ["formation_code", "variant_code"], []),
+    "formation_matchups": (FormationMatchup, ["ours_code", "theirs_code"], []),
 }
 
 
@@ -99,6 +108,10 @@ LOAD_ORDER = [
     "identities_archetypes.json",
     "identities_reference_teams.json",
     "identities_cult_corner.json",
+    # Reference systems (doc 06 section 2.5) are identities, and
+    # formation_phases.reference_code is a foreign key into identities.code,
+    # so they load before any phase row can point at one.
+    "identities_reference_systems.json",
     # position_archetypes before archetype_combinations because a
     # combination's slots_json names archetype codes. There is no database
     # FK between the two (slots_json is JSON, doc 06 section 3.1), so this
@@ -107,6 +120,12 @@ LOAD_ORDER = [
     "position_archetypes.json",
     "archetype_combinations.json",
     "unit_balance_rules.json",
+    # rotation_systems before formation_phases because a phase's
+    # uses_rotations names rotation codes (JSON, so no database FK, but the
+    # validator resolves it and the reading order should match).
+    "rotation_systems.json",
+    "formation_phases.json",
+    "formation_matchups.json",
 ]
 
 
@@ -173,6 +192,9 @@ def main() -> int:
             "position_archetypes": session.query(PositionArchetype).count(),
             "archetype_combinations": session.query(ArchetypeCombination).count(),
             "unit_balance_rules": session.query(UnitBalanceRule).count(),
+            "rotation_systems": session.query(RotationSystem).count(),
+            "formation_phases": session.query(FormationPhase).count(),
+            "formation_matchups": session.query(FormationMatchup).count(),
         }
     finally:
         session.close()
