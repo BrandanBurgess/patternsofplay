@@ -23,23 +23,19 @@ score" -- all of it 403s for a player token, tested in
 tests/test_tactics_routes.py per this module's own docstring below the
 route.
 
-Known scope gap (flagged per CLAUDE.md rule 7 rather than invented): doc
-06 section 5.3 lists a fourth suggestion-ranking criterion, "whether the
-resulting unit passes its balance rules" (unit_balance_rules). Evaluating
-that requires knowing which of a formation's eleven named slots belong to
-which unit_balance_rules.unit grouping (back_line, midfield_three, ...).
-No table in the T-101 schema provides that mapping: archetype_combinations
-.slots_json is a [{slot_family, archetype_code}] COMBINATION TEMPLATE
-(doc 06 section 3.1), not a per-formation slot membership list, and
-position_archetypes.slot_family reuses the ten position_codes (GK, CB,
-FB, WB, DM, CM, AM, W, ST, SS; app/models/roster.py PositionCode), a
-finer taxonomy than unit_balance_rules.unit with no declared crosswalk
-between the two vocabularies. Rather than invent one, this router
-implements the other three ranking criteria in full (attribute fit
-against key_attribute_keys, foot fit against foot_hint and the slot's
-side, AWR/DWR match) and omits the balance-pass criterion; a follow-up
-ticket should add the crosswalk once T-102/T-103's real vocabulary exists
-to check assumptions against.
+The scope gap T-108 flagged here (doc 06 never says which of a
+formation's eleven slots belong to which unit_balance_rules.unit) is
+closed by T-110: `slot_family` is now seeded per slot on
+seeds/formations.json, and app/units.py holds the fixed
+slot_family-to-unit crosswalk plus the evaluator. POST
+/api/formations/{code}/balance below is the coach-only surface for it.
+GET /api/archetypes/suggest still ranks on three criteria rather than
+four: doc 06 section 5.3's fourth criterion asks whether "the RESULTING
+unit passes its balance rules", which needs the other ten slots' current
+picks, and that route takes a single slot_family and no formation
+context. The balance route evaluates the whole eleven at once instead,
+which is how the panel actually uses it (section 5.3: "evaluates
+unit_balance_rules live as archetypes change").
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -62,6 +58,7 @@ from app.models import (
     RotationSystem,
     TeamFormation,
     TeamFormationSlot,
+    UnitBalanceRule,
     User,
 )
 from app.schemas import (
@@ -76,8 +73,13 @@ from app.schemas import (
     TeamFormationOut,
     TeamFormationSlotOut,
     TeamFormationWriteRequest,
+    UnitBalanceNoteOut,
+    UnitBalanceRequest,
+    UnitBalanceResponse,
+    UnitBalanceUnitOut,
 )
 from app.scoped import TeamScope, get_team_scope
+from app.units import evaluate_unit_balance, units_absent
 
 router = APIRouter(prefix="/api", tags=["tactics"])
 
@@ -314,6 +316,95 @@ def suggest_archetypes(
         for _score, _foot, wr_match, archetype, foot_fit in ranked[:3]
     ]
     return ArchetypeSuggestResponse(slot_family=slot_family, player_id=player_id, suggestions=suggestions)
+
+
+# ---------------------------------------------------------------------------
+# Unit balance evaluation (doc 06 sections 2.6 / 3.1 / 5.3), coach-only.
+# ---------------------------------------------------------------------------
+
+
+@router.post("/formations/{code}/balance", response_model=UnitBalanceResponse)
+def evaluate_balance(
+    code: str,
+    payload: UnitBalanceRequest,
+    ctx: CurrentMembership = Depends(require_role_on_team("coach")),
+    db: Session = Depends(get_db),
+) -> UnitBalanceResponse:
+    """Evaluate the seeded unit_balance_rules against one formation's
+    current archetype picks.
+
+    POST rather than GET because doc 06 section 5.3 evaluates this "live as
+    archetypes change", against the personnel panel's UNSAVED state: the
+    eleven picks are the input and there is no saved row to name yet. It
+    computes and persists nothing, and touches no team-world table, so
+    there is no scoped query here to make; `require_role_on_team("coach")`
+    is what resolves the caller's team, and no team_id ever comes off the
+    request (CLAUDE.md rule 4).
+
+    Coach-only: doc 06 section 5.3 says unit balance is coach-only "both in
+    the UI and at the API", the same standing as roster fit warnings, so a
+    player token gets 403 here rather than an empty list
+    (tests/test_permissions.py and tests/test_tactics_routes.py).
+    """
+    formation = db.get(Formation, code)
+    if formation is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Formation not found")
+
+    positions = formation.positions_json or []
+    known_slots = {p.get("slot") for p in positions}
+    assignments: dict[str, str | None] = {}
+    for slot_in in payload.slots:
+        if slot_in.slot not in known_slots:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Slot '{slot_in.slot}' is not part of formation {code}",
+            )
+        assignments[slot_in.slot] = slot_in.archetype_code
+
+    codes = [c for c in assignments.values() if c is not None]
+    archetypes = {
+        a.code: a
+        for a in (
+            db.query(PositionArchetype).filter(PositionArchetype.code.in_(codes)).all()
+            if codes
+            else []
+        )
+    }
+    unknown = sorted(set(codes) - set(archetypes))
+    if unknown:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Unknown archetype_code: {unknown[0]}",
+        )
+
+    rules = db.query(UnitBalanceRule).order_by(UnitBalanceRule.code).all()
+    evaluations = evaluate_unit_balance(positions, assignments, archetypes, rules)
+
+    return UnitBalanceResponse(
+        formation_code=code,
+        units=[
+            UnitBalanceUnitOut(
+                unit=e.unit,
+                flank=e.flank,
+                slots=list(e.slots),
+                assigned_slots=list(e.assigned_slots),
+                is_complete=e.is_complete,
+                notes=[
+                    UnitBalanceNoteOut(
+                        code=n.code,
+                        unit=n.unit,
+                        flank=n.flank,
+                        severity=n.severity,  # type: ignore[arg-type]
+                        message=n.message,
+                        slots=list(n.slots),
+                    )
+                    for n in e.notes
+                ],
+            )
+            for e in evaluations
+        ],
+        units_not_evaluated=units_absent(positions),
+    )
 
 
 # ---------------------------------------------------------------------------

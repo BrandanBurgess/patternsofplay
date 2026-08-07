@@ -393,6 +393,9 @@ def main() -> int:
                     require(bool(extras.get(field)), f"{fname} {code}: extras_json missing '{field}'")
 
     formation_codes: set[str] = set()
+    # Every slot family any formation actually uses, checked against the
+    # seeded archetypes further down (T-110).
+    formation_slot_families: set[str] = set()
     if "formations.json" in files:
         formation_items = files["formations.json"]["items"]
         check_duplicates("formations.json", formation_items, lambda i: i["code"])
@@ -412,6 +415,27 @@ def main() -> int:
                     f"formations.json {code}: positions_json slot '{slot.get('slot')}' "
                     f"references unknown position_code '{pc}'",
                 )
+                # T-110 / doc 06 section 2.6: every slot declares its slot
+                # family, because position_code is too coarse to carry the
+                # football. It cannot separate a back three's outer defender
+                # (cb_wide) from its middle one (cb_central), nor a six from
+                # an eight when both are CM. app/units.py's crosswalk turns
+                # this field into unit membership, so a missing or drifted
+                # value silently removes a unit from the balance evaluation
+                # rather than failing loudly. Hence both halves of the check.
+                sf = slot.get("slot_family")
+                require(
+                    sf is not None,
+                    f"formations.json {code}: positions_json slot '{slot.get('slot')}' "
+                    "is missing required field 'slot_family'",
+                )
+                if sf is not None:
+                    require(
+                        sf in SLOT_FAMILIES,
+                        f"formations.json {code}: positions_json slot '{slot.get('slot')}' "
+                        f"slot_family '{sf}' not in {sorted(SLOT_FAMILIES)}",
+                    )
+                    formation_slot_families.add(sf)
 
     if "formation_keystones.json" in files:
         keystone_items = files["formation_keystones.json"]["items"]
@@ -710,6 +734,17 @@ def main() -> int:
         archetype_items = files[fname]["items"]
         check_duplicates(fname, archetype_items, lambda i: i["code"])
         position_archetype_codes = {i["code"]: i.get("slot_family") for i in archetype_items}
+
+        # T-110: the third half of the slot_family drift guard. A formation
+        # may only name a family that some archetype actually belongs to,
+        # otherwise doc 06 section 5.3's picker opens on an empty list for
+        # that slot and the coach has nothing to choose.
+        seeded_families = {sf for sf in position_archetype_codes.values() if sf}
+        for used in sorted(formation_slot_families - seeded_families):
+            errors.append(
+                f"formations.json: slot_family '{used}' is used by a formation slot but no "
+                f"{fname} row belongs to it, so that slot's archetype picker would be empty"
+            )
 
         for item in archetype_items:
             code = item["code"]
