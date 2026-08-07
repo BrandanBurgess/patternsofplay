@@ -39,6 +39,7 @@ export function AuthForms({ onAuthenticated }: { onAuthenticated: () => void }) 
 
   return (
     <section className="auth-forms">
+      <img className="auth-lockup" src="/logo-lockup.png" alt="Patterns of Play" />
       <form onSubmit={handleSubmit} className="auth-form">
         <h2>{mode === "register" ? "Register" : "Log in"}</h2>
         {mode === "register" && (

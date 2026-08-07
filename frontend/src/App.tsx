@@ -61,7 +61,16 @@ function MinimalShell({ children }: { children: ReactNode }) {
     <div className="app-shell">
       <header className="app-topbar">
         <h1 className="app-brand">
-          <span className="app-brand-dot" aria-hidden="true" />
+          {/* Decorative, see AppShell.tsx: the visible text is the
+              accessible name App.test.tsx asserts on. */}
+          <img
+            className="app-brand-mark"
+            src="/shield-mark-96.png"
+            srcSet="/shield-mark-96.png 96w, /shield-mark-144.png 144w"
+            sizes="28px"
+            alt=""
+            aria-hidden="true"
+          />
           Patterns of Play
         </h1>
         <ThemeSwitcher />

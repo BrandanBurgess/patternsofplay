@@ -112,7 +112,19 @@ export function AppShell({
     <div className="app-shell">
       <header className="app-topbar">
         <h1 className="app-brand">
-          <span className="app-brand-dot" aria-hidden="true" />
+          {/* Decorative: the visible "Patterns of Play" text below is the
+              h1's accessible name (App.test.tsx asserts
+              getByRole("heading", { name: "Patterns of Play" })). An img
+              with its own alt text here would double up the name, so this
+              one stays alt="" and aria-hidden. */}
+          <img
+            className="app-brand-mark"
+            src="/shield-mark-96.png"
+            srcSet="/shield-mark-96.png 96w, /shield-mark-144.png 144w"
+            sizes="28px"
+            alt=""
+            aria-hidden="true"
+          />
           Patterns of Play
         </h1>
         <div className="app-topbar-end">
