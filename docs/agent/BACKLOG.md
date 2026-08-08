@@ -76,8 +76,8 @@ grass green `#3B7A44`.
 
 | ID | Title | Source | Agent | Model | Deps | Parallel-safe with | Status |
 |---|---|---|---|---|---|---|---|
-| T-070 | Logo integration: derivative assets in `frontend/public/` (transparent-background shield mark, full lockup, favicon set), sign-in lockup, nav-rail shield mark replacing `app-brand-dot`, favicon + tab title. Keeps the App.test.tsx "Patterns of Play" heading assertion passing | founder | screens | sonnet | none | T-071 | todo |
-| T-071 | Palette: `pitch` default becomes the red brand theme; `dark` and `board` restyled to the brand. Board decoupled from chrome tokens (real `--pitch-*`, `--team-*`, `--lane-*` tokens) so a red accent cannot turn the pitch red or collapse home/away. AA contrast. Amends the design README token table and the `tokens.css` header comment | founder | screens | opus | none | T-070 | todo |
+| T-070 | Logo integration: derivative assets in `frontend/public/` (transparent-background shield mark, full lockup, favicon set), sign-in lockup, nav-rail shield mark replacing `app-brand-dot`, favicon + tab title. Keeps the App.test.tsx "Patterns of Play" heading assertion passing | founder | screens | sonnet | none | T-071 | done |
+| T-071 | Palette: `pitch` default becomes the red brand theme; `dark` and `board` restyled to the brand. Board decoupled from chrome tokens (real `--pitch-*`, `--team-*`, `--lane-*` tokens) so a red accent cannot turn the pitch red or collapse home/away. AA contrast. Amends the design README token table and the `tokens.css` header comment | founder | screens | opus | none | T-070 | done |
 | T-072 | QA sweep: every main screen x both viewports x all three themes. Fixes styling and sizing regressions including ones that predate this epic. Screenshot review, not a green test run | founder | verifier | opus | T-070, T-071 | none | todo |
 | T-074 | README refresh: lead with the logo, recapture `docs/screenshots/` against the rebranded UI, show off the design | founder | screens | sonnet | T-072 | none | todo |
 
