@@ -52,13 +52,20 @@ export function defaultBoardTokens(): Token[] {
 }
 
 // Colors resolve from CSS variables so the three themes and future per-team
-// colors (teams.colors_json) drive them: home = interactive gold (--accent),
-// away = status red (--red), ball = gold glow (--glow). --team-home and
-// --team-away are the future per-team override points; the theme tokens are
-// the live values. No hardcoded colors live in components; these var()
-// strings are the single indirection point.
+// colors (teams.colors_json) drive them. These are BOARD tokens, defined per
+// theme in styles/tokens.css, and they are deliberately NOT chrome tokens:
+// before T-071 home fell back to var(--accent) and away to var(--red), so a
+// red brand accent would have painted both teams the same colour and made the
+// board unreadable. --team-home / --team-away are also the per-team override
+// point (teams.colors_json) when that lands; there is no chrome fallback to
+// collapse into. No hardcoded colors live in components; these var() strings
+// are the single indirection point.
 export const TOKEN_FILL: Record<TokenSide, string> = {
-  home: "var(--team-home, var(--accent))",
-  away: "var(--team-away, var(--red))",
-  ball: "var(--glow)",
+  home: "var(--team-home)",
+  away: "var(--team-away)",
+  ball: "var(--ball)",
 };
+
+// The disc behind a player token's ring and number. Board token, not the
+// chrome's --surface: a token sits on turf, not on a card.
+export const TOKEN_FACE = "var(--token-face)";

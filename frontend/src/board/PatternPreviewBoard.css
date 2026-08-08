@@ -2,7 +2,9 @@
    pages that play a declarative spec or a recording without the
    whiteboard's drag/record/toolbar chrome (Patterns page now; Formations
    and Identity are the same shape per the design README and will reuse
-   this, Brief steps 18 and 20). Colors are theme tokens only. */
+   this, Brief steps 18 and 20). Colors are theme tokens only: anything on
+   the pitch reads a BOARD token, anything that is an interaction affordance
+   reads the chrome (T-071, styles/tokens.css). */
 
 .pattern-preview {
   position: relative;
@@ -29,18 +31,18 @@
 }
 
 /* Formations keystones (Brief step 18, design README: "Pulsing gold dot
-   (formations): keystone position, tap for its blurb"). Gold is the only
-   interactive color, so the pulse and the tap affordance both read off
-   --glow/--accent, never a new hardcoded color. */
+   (formations): keystone position, tap for its blurb"). The pulse is football
+   language on the pitch, so it reads the BOARD token --keystone, not the
+   chrome accent (T-071): a red brand accent must not be able to turn a
+   keystone into what looks like a warning. */
 .token-keystone {
   cursor: pointer;
 }
 /* A keystone is a real button (role="button", tabIndex 0), so Chromium
    paints its default focus ring on it, in the browser's own blue, right on
-   top of the pitch. Gold is the only interactive colour on this product
-   (design README), so the pointer case drops the ring entirely and the
-   keyboard case gets a gold one instead: the affordance stays, the stray
-   colour goes. */
+   top of the pitch. A focus ring is chrome, not football, so the pointer case
+   drops the ring entirely and the keyboard case gets one in the product's own
+   interactive colour instead: the affordance stays, the stray colour goes. */
 .token-keystone:focus {
   outline: none;
 }
@@ -55,22 +57,24 @@
 @keyframes keystone-pulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 4px var(--glow));
+    filter: drop-shadow(0 0 4px var(--keystone));
     opacity: 1;
   }
   50% {
-    filter: drop-shadow(0 0 10px var(--glow));
+    filter: drop-shadow(0 0 10px var(--keystone));
     opacity: 0.75;
   }
 }
 
 /* Rondo Map overlay (Brief step 18, PNG 32/36): dashed gold zones, tappable.
    Sits behind tokens (paint order in PatternPreviewBoard.tsx); red never
-   appears here, this is a navigation/teaching aid, not a status. */
+   appears here, this is a navigation/teaching aid, not a status. Board token
+   --zone, the same language as the whiteboard's zone overlays: these are
+   places on the pitch, so the chrome's brand red must not reach them. */
 .rondo-zone-poly {
-  fill: var(--accent);
+  fill: var(--zone);
   fill-opacity: 0.08;
-  stroke: var(--accent);
+  stroke: var(--zone);
   stroke-width: 2;
   stroke-dasharray: 6 5;
   cursor: pointer;
@@ -82,6 +86,6 @@
 .rondo-zone-label {
   font-family: var(--display-font);
   font-size: 13px;
-  fill: var(--accent);
+  fill: var(--zone);
   pointer-events: none;
 }

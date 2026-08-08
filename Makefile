@@ -68,9 +68,12 @@ test:
 e2e:
 	npx playwright test
 
+# Static source guards. check_palette.py is here rather than in the vitest
+# suite because it reads the shipped CSS text, which vitest stubs out.
 check-copy:
 	$(PY) scripts/check_copy.py
 	$(PY) scripts/validate_seeds.py
+	$(PY) scripts/check_palette.py
 
 # The Brief section 3 permission table, every row (backend/tests/test_permissions.py).
 # `make test` already runs it, but this target also fails when a row is

@@ -104,8 +104,8 @@ export function ourPhaseTokens(ours: readonly SlotPos[], opts: OurTokenOptions =
  *
  * `theirsOwnFrame` is the seeded phase exactly as stored. Side is "away", which
  * is the colour the board already defines for recorded opponents
- * (tokens.ts TOKEN_FILL.away, var(--team-away, var(--red))): doc 06 section 5.1
- * asks for that colour by name rather than a new one.
+ * (tokens.ts TOKEN_FILL.away, the board token var(--team-away)): doc 06
+ * section 5.1 asks for that colour by name rather than a new one.
  */
 export function opponentPhaseTokens(
   theirsOwnFrame: readonly SlotPos[],

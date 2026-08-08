@@ -225,12 +225,13 @@ test.describe("whiteboard: matches across all three themes", () => {
       await page.getByTestId(`theme-switch-${theme}`).click();
       await expect(page.locator("html")).toHaveAttribute("data-theme", theme);
       await expect(page.getByTestId("board")).toBeVisible();
-      // The always-active Select tool is gold in every theme's own accent
-      // (design README: gold is the only interactive color).
+      // The always-active Select tool wears every theme's own accent, which
+      // T-071 made the brand red (the design README's gold-only rule is
+      // superseded by the founder palette directive of 2026-08-07).
       seenAccent.add(await accentBg());
       seenSurface.add(await surfaceBg());
-      // Record, before it is ever pressed, must NOT render in the red status
-      // color (red is never a call to action).
+      // Record, before it is ever pressed, is not an active tool, so it must
+      // not carry the accent fill an active tool does.
       const recordBg = await page
         .getByTestId("record")
         .evaluate((el) => getComputedStyle(el).backgroundColor);

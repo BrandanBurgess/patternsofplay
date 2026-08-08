@@ -142,7 +142,7 @@ test.describe("formations: board-first shape, keystone keycards, details, rondo 
   });
 });
 
-test.describe("formations: matches across all three themes, gold-only interactive, red never a CTA", () => {
+test.describe("formations: matches across all three themes, brand red interactive, gold for status", () => {
   test("keystone pulse, details, and rondo controls are theme-driven, never red", async ({ page, issues }) => {
     await registerCoach(page);
     await page.getByTestId("nav-formations").click();
