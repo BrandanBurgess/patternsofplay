@@ -16,7 +16,7 @@
 // And it covers the invariant the whole ticket exists for: changing --accent
 // must not be able to change what the pitch or a lane looks like. Test one
 // proves that in a real browser by overriding the chrome accent at runtime.
-// frontend/src/styles/tokens.test.ts proves the same split statically.
+// scripts/check_palette.py proves the same split statically.
 
 import { test, expect, assertCleanPage, registerCoach, registerPlayer } from "./fixtures";
 import type { Locator, Page } from "@playwright/test";

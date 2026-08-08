@@ -24,8 +24,9 @@
    would have turned the pitch red and made "this pass is on" and "this
    pass is blocked" the same colour. Changing --accent must not be able to
    change what the pitch or a lane looks like. e2e/palette.spec.ts proves
-   it at runtime and frontend/src/styles/tokens.test.ts proves it at build
-   time; both fail if the two layers are recoupled.
+   it at runtime and scripts/check_palette.py proves it statically (it runs
+   inside `make check-copy`, so `make verify` covers it); both fail if the
+   two layers are recoupled.
 
    CHROME COLOUR RULES
    -------------------
@@ -47,8 +48,9 @@
    three themes. The chrome goes red for the brand; the pitch does not.
 
    Contrast: every text pair clears WCAG AA 4.5:1 and every graphical pair
-   that carries meaning clears 3:1. Ratios are asserted in tokens.test.ts,
-   so a future edit that dims a token fails the suite rather than shipping.
+   that carries meaning clears 3:1. Ratios are asserted in
+   scripts/check_palette.py, so a future edit that dims a token fails the
+   suite rather than shipping.
    --token-face is the one deliberate exception: it is the disc behind a
    token, and a token is identified by its ring and its number, both of
    which clear 3:1 against the turf and 4.5:1 against the face. */
