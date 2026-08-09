@@ -13,3 +13,6 @@ test-results/
 *.db-shm
 .DS_Store
 *.egg-info/
+# scripts/build_logo_assets.py review composites: not shipped, regenerated
+# on every run.
+build/logo_review/

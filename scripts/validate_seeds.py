@@ -28,6 +28,10 @@ Rule provenance, so a failing check is traceable back to its source:
   - animation slot references: doc 03 section 4.1, delegated to
     backend/app/specs.py's AnimationSpec so the rule lives in one place.
   - reference team five-part detail template: doc 03 section 5.
+  - Tactics Lab archetypes/combinations/balance rules (T-102): doc 06
+    section 2.6 for the content rules (closed duty vocabulary, 2 to 3 key
+    attributes from the six, every combination states a cost, warning copy
+    reads as a check) and section 3.1 for the column shapes.
 """
 
 from __future__ import annotations
@@ -43,14 +47,109 @@ SEEDS = ROOT / "seeds"
 BACKEND = ROOT / "backend"
 
 sys.path.insert(0, str(BACKEND))
+from app.schemas import ATTRIBUTE_KEYS  # noqa: E402
 from app.specs import AnimationSpec, Trajectory  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 from typing import get_args  # noqa: E402
 
 EM_DASH = "—"
 BANNED_IDENTITY_PHRASES = ["correct", "right way", "off-identity"]
-SOURCE_REF_RE = re.compile(r"^bible:")
+# doc 03 section 7.7 traceability. Content transcribed from the Bible cites
+# "bible:SECTION"; the Tactics Lab tables (T-102/T-103) are written from doc
+# 06, which is a separate source document, so they cite "doc06:SECTION". A
+# ref still has to name one of the two, never nothing.
+SOURCE_REF_RE = re.compile(r"^(bible|doc06):")
 TRAJECTORY_VALUES = set(get_args(Trajectory))
+
+# ---------------------------------------------------------------------------
+# Tactics Lab vocabularies (doc 06 section 2.6 / 3.1, T-102)
+# ---------------------------------------------------------------------------
+
+# The six coach-rated attribute sliders, taken from the single existing
+# source of that vocabulary (app/schemas.py ATTRIBUTE_KEYS, itself Bible
+# 1.3 / app/models/roster.py PlayerAttribute) rather than copied, so a
+# change there cannot leave this validator silently checking a stale list.
+ATTRIBUTE_VOCABULARY = set(ATTRIBUTE_KEYS)
+
+# doc 06 section 2.6: "Slot families: gk, cb_central, cb_wide, fb, wb, six,
+# eight, ten, wide_forward, nine." Archetypes attach to a slot family, not
+# a position code, because the eight in a 4-3-3 and the eight in a 3-5-2
+# are different jobs.
+SLOT_FAMILIES = {
+    "gk", "cb_central", "cb_wide", "fb", "wb",
+    "six", "eight", "ten", "wide_forward", "nine",
+}
+
+# doc 06 section 3.1: "duties_json is what the combination checker runs on.
+# Keep the duty vocabulary closed and small; adding a duty is a spec
+# change, not a seed change." Hence a hard-closed set here.
+DUTY_VOCABULARY = {
+    "tempo", "progression", "rest_defence", "width", "pin",
+    "box_threat", "press_trigger",
+}
+
+UNIT_VOCABULARY = {
+    "midfield_three", "double_pivot", "front_three", "strike_pair",
+    "back_line", "wide_unit", "box_midfield",
+}
+
+# Which slot families may appear in which unit. Catches a combination that
+# puts a nine in a back line, which no other check would notice.
+UNIT_SLOT_FAMILIES = {
+    "midfield_three": {"six", "eight"},
+    "double_pivot": {"six"},
+    "box_midfield": {"six", "eight", "ten"},
+    "front_three": {"wide_forward", "nine"},
+    "strike_pair": {"nine", "ten"},
+    "back_line": {"cb_central", "cb_wide", "fb", "wb"},
+    "wide_unit": {"fb", "wb", "wide_forward"},
+}
+
+# ---------------------------------------------------------------------------
+# Tactics Lab part two: phases, rotations, matchups, rondo map (doc 06
+# sections 2.3/2.4/2.5/2.8 and 3.1, T-103)
+# ---------------------------------------------------------------------------
+
+PHASE_VOCABULARY = {"in_possession", "out_of_possession", "rest_defence", "transition"}
+# The variant codes doc 06 section 2.4 names. A reference-system variant
+# uses its own "ref_..." code and states its phase explicitly, so only the
+# named ones are pinned to a phase here.
+STANDARD_VARIANT_PHASE = {
+    "in_possession": "in_possession",
+    "in_possession_alt": "in_possession",
+    "out_of_possession": "out_of_possession",
+    "out_of_possession_alt": "out_of_possession",
+    "rest_defence": "rest_defence",
+}
+ROTATION_FAMILIES = {"first_line", "pivot", "wide", "front_line"}
+ROUTE_KINDS = {"through", "around", "over"}
+ZONE_KINDS = {"polygon", "ball_relative_circle"}
+RONDO_ZONE_KEYS = {
+    "first_line", "midfield_box", "flank_corridor_left", "flank_corridor_right",
+    "last_line", "counterpress_ring",
+}
+# rest_shape is "'3+2' | '2+3' | '4+1' | '5+2' | null" in doc 06 section
+# 3.1, but section 2.4 also uses 4+2 and the reference systems need 3+1 and
+# 2+4, so section 3.1's list is illustrative rather than closed. Shape
+# rather than membership is what is worth enforcing: two counts that add up
+# to no more than the ten outfield players.
+REST_SHAPE_RE = re.compile(r"^([1-9])\+([1-9])$")
+# doc 06 section 2.5 requires every reference-system card to name its
+# rotations and its one honest risk line, and identities has no column for
+# either. They live in core_idea behind these markers instead of inventing
+# schema this ticket may not change.
+REFERENCE_SYSTEM_MARKERS = ["Formation:", "Rotations:", "Risk:", "Provenance:"]
+
+RULE_KINDS = {"requires_duty", "max_duty", "max_same_archetype"}
+SEVERITIES = {"note", "warning"}
+FOOT_HINTS = {"same_side", "opposite_side", "either"}
+WORK_RATES = {"low", "med", "high"}
+
+# doc 06 section 3.1: unit balance warning_copy "must read as a check not
+# an error", and CLAUDE.md's "curate, never lock" principle says the same
+# thing about identity copy. A coach may want the flagged combination on
+# purpose, so the vocabulary of failure is banned outright.
+BANNED_WARNING_WORDS = ["invalid", "illegal", "wrong", "forbidden", "not allowed", "error"]
 
 # Free-text cross-reference tokenizers for fields that embed codes in prose
 # rather than as a structured list (role_clashes.trigger_expression, doc 03
@@ -82,6 +181,39 @@ CLASH_REQUIRED_FIELDS = ["code", "name", "trigger_expression", "warning_copy", "
 IDENTITY_REQUIRED_FIELDS = [
     "code", "name", "tag_line", "core_idea", "youth_takeaway", "age_hint", "shape_render",
     "source_ref", "content_version",
+]
+# enables_pattern_codes / enables_rotation_codes are legitimately empty on
+# plenty of archetypes (a coverer enables no pattern), so they are checked
+# for resolvability below rather than for presence here.
+ARCHETYPE_REQUIRED_FIELDS = [
+    "code", "slot_family", "name", "definition", "key_attribute_keys",
+    "awr_default", "dwr_default", "duties_json", "needs_around_it",
+    "source_ref", "content_version",
+]
+COMBINATION_REQUIRED_FIELDS = [
+    "code", "unit", "name", "slots_json", "what_it_gives", "what_it_costs",
+    "source_ref", "content_version",
+]
+BALANCE_RULE_REQUIRED_FIELDS = [
+    "code", "unit", "rule_kind", "warning_copy", "severity",
+    "source_ref", "content_version",
+]
+# rest_shape, reference_code and uses_rotations are legitimately null or
+# empty (a high block has no rest shape, most variants are not attributed,
+# and plenty of shapes are reached without a named rotation), so they are
+# checked for validity below rather than for presence here.
+PHASE_REQUIRED_FIELDS = [
+    "formation_code", "variant_code", "phase", "name", "shape_label", "blurb",
+    "positions_json", "trigger", "source_ref", "content_version",
+]
+ROTATION_SYSTEM_REQUIRED_FIELDS = [
+    "code", "name", "family", "applies_to_formations", "produces_shape", "trigger",
+    "what_moves_json", "coaching_points_json", "risk", "animation_spec_json",
+    "source_ref", "content_version",
+]
+MATCHUP_REQUIRED_FIELDS = [
+    "ours_code", "theirs_code", "our_edges_json", "their_edges_json", "route",
+    "route_kind", "source_ref", "content_version",
 ]
 
 errors: list[str] = []
@@ -261,6 +393,9 @@ def main() -> int:
                     require(bool(extras.get(field)), f"{fname} {code}: extras_json missing '{field}'")
 
     formation_codes: set[str] = set()
+    # Every slot family any formation actually uses, checked against the
+    # seeded archetypes further down (T-110).
+    formation_slot_families: set[str] = set()
     if "formations.json" in files:
         formation_items = files["formations.json"]["items"]
         check_duplicates("formations.json", formation_items, lambda i: i["code"])
@@ -280,6 +415,27 @@ def main() -> int:
                     f"formations.json {code}: positions_json slot '{slot.get('slot')}' "
                     f"references unknown position_code '{pc}'",
                 )
+                # T-110 / doc 06 section 2.6: every slot declares its slot
+                # family, because position_code is too coarse to carry the
+                # football. It cannot separate a back three's outer defender
+                # (cb_wide) from its middle one (cb_central), nor a six from
+                # an eight when both are CM. app/units.py's crosswalk turns
+                # this field into unit membership, so a missing or drifted
+                # value silently removes a unit from the balance evaluation
+                # rather than failing loudly. Hence both halves of the check.
+                sf = slot.get("slot_family")
+                require(
+                    sf is not None,
+                    f"formations.json {code}: positions_json slot '{slot.get('slot')}' "
+                    "is missing required field 'slot_family'",
+                )
+                if sf is not None:
+                    require(
+                        sf in SLOT_FAMILIES,
+                        f"formations.json {code}: positions_json slot '{slot.get('slot')}' "
+                        f"slot_family '{sf}' not in {sorted(SLOT_FAMILIES)}",
+                    )
+                    formation_slot_families.add(sf)
 
     if "formation_keystones.json" in files:
         keystone_items = files["formation_keystones.json"]["items"]
@@ -313,6 +469,51 @@ def main() -> int:
                     pc in pattern_codes,
                     f"rondo_zones.json {key}: trains_pattern_codes references unknown code '{pc}'",
                 )
+
+            # doc 06 section 2.3 (T-103): six zones on every formation, and
+            # the counterpress ring is a ball-relative circle rather than a
+            # polygon, which is the whole teaching point of that zone.
+            require(
+                item.get("zone_key") in RONDO_ZONE_KEYS,
+                f"rondo_zones.json {key}: zone_key not in {sorted(RONDO_ZONE_KEYS)}",
+            )
+            zone_kind = item.get("zone_kind")
+            require(
+                zone_kind in ZONE_KINDS,
+                f"rondo_zones.json {key}: zone_kind '{zone_kind}' not in {sorted(ZONE_KINDS)}",
+            )
+            # canonical_rondo is the label shown when no opposition is
+            # placed. With opposition on the board the ratio is computed,
+            # never read from the seed (doc 06 section 2.3), so this field
+            # is a fallback and every row owes one.
+            require(
+                bool(item.get("canonical_rondo")),
+                f"rondo_zones.json {key}: missing canonical_rondo, the no-opposition fallback label",
+            )
+            radius = item.get("radius")
+            if zone_kind == "ball_relative_circle":
+                require(
+                    isinstance(radius, (int, float)) and radius > 0,
+                    f"rondo_zones.json {key}: a ball_relative_circle zone needs a positive radius",
+                )
+            else:
+                require(
+                    radius is None,
+                    f"rondo_zones.json {key}: a polygon zone must not carry a radius",
+                )
+
+        # Every formation carries the full set of six zones: a formation
+        # missing one renders a rondo map with a hole in it rather than an
+        # error, which is the kind of gap only a completeness check finds.
+        by_formation: dict[str, set[str]] = {}
+        for item in rondo_items:
+            by_formation.setdefault(item["formation_code"], set()).add(item["zone_key"])
+        for fc in sorted(formation_codes):
+            missing = RONDO_ZONE_KEYS - by_formation.get(fc, set())
+            require(
+                not missing,
+                f"rondo_zones.json {fc}: missing rondo zone(s) {sorted(missing)}",
+            )
 
     archetype_codes: set[str] = set()
     if "identities_archetypes.json" in files:
@@ -365,7 +566,16 @@ def main() -> int:
     identity_codes: set[str] = set()
     identity_files = [
         f
-        for f in ("identities_archetypes.json", "identities_reference_teams.json", "identities_cult_corner.json")
+        for f in (
+            "identities_archetypes.json",
+            "identities_reference_teams.json",
+            "identities_cult_corner.json",
+            # doc 06 section 2.5 reference systems (T-103) are identities of
+            # kind 'reference_system', so every identity-wide rule above
+            # (required fields, tag_line length, "curate never lock" copy)
+            # applies to them without being restated.
+            "identities_reference_systems.json",
+        )
         if f in files
     ]
     all_identity_items: list[dict] = []
@@ -489,6 +699,534 @@ def main() -> int:
             "role_clashes.json: exactly one clash, 'double_exposure_flank', should be is_active_mvp "
             "(doc 03 section 3 comment)",
         )
+
+    # -----------------------------------------------------------------
+    # Tactics Lab: position_archetypes, archetype_combinations,
+    # unit_balance_rules (doc 06 section 2.6 / 3.1, T-102).
+    # -----------------------------------------------------------------
+
+    rotation_item_codes: set[str] = set()
+    if "rotations.json" in files:
+        rotation_item_codes = {item["code"] for item in files["rotations.json"]["items"]}
+
+    # Two rotation namespaces exist from T-103 onward, and an archetype may
+    # legitimately enable either: the library rotations (R1, R12, R13) are
+    # movement patterns, while rotation_systems (rot_...) are structural
+    # rotations, "who changes job" (doc 06 section 2.5). T-102 seeded
+    # enables_rotation_codes against the library codes, which is true as
+    # written, so those references stay and the check below widens to cover
+    # both rather than silently rejecting one namespace or the other. The
+    # collision guard is what keeps the widening honest: if the two ever
+    # share a code, "resolves" would stop meaning one thing.
+    rotation_system_codes: set[str] = set()
+    if "rotation_systems.json" in files:
+        rotation_system_codes = {item["code"] for item in files["rotation_systems.json"]["items"]}
+    for shared in sorted(rotation_item_codes & rotation_system_codes):
+        errors.append(
+            f"rotation_systems.json {shared}: code collides with the library rotation of the same "
+            "code, so enables_rotation_codes could no longer resolve to one thing"
+        )
+    any_rotation_codes = rotation_item_codes | rotation_system_codes
+
+    position_archetype_codes: dict[str, str] = {}  # code -> slot_family
+    if "position_archetypes.json" in files:
+        fname = "position_archetypes.json"
+        archetype_items = files[fname]["items"]
+        check_duplicates(fname, archetype_items, lambda i: i["code"])
+        position_archetype_codes = {i["code"]: i.get("slot_family") for i in archetype_items}
+
+        # T-110: the third half of the slot_family drift guard. A formation
+        # may only name a family that some archetype actually belongs to,
+        # otherwise doc 06 section 5.3's picker opens on an empty list for
+        # that slot and the coach has nothing to choose.
+        seeded_families = {sf for sf in position_archetype_codes.values() if sf}
+        for used in sorted(formation_slot_families - seeded_families):
+            errors.append(
+                f"formations.json: slot_family '{used}' is used by a formation slot but no "
+                f"{fname} row belongs to it, so that slot's archetype picker would be empty"
+            )
+
+        for item in archetype_items:
+            code = item["code"]
+            require_fields(fname, code, item, ARCHETYPE_REQUIRED_FIELDS)
+            check_source_ref(fname, code, item)
+            # Archetype copy names real players in exemplar_note, so it is
+            # held to the same "curate, never lock" standard as identity
+            # copy (doc 03 section 7.6, CLAUDE.md rule 6).
+            check_no_banned_identity_phrase_anywhere(fname, code, item)
+
+            require(
+                item.get("slot_family") in SLOT_FAMILIES,
+                f"{fname} {code}: slot_family '{item.get('slot_family')}' not in {sorted(SLOT_FAMILIES)}",
+            )
+
+            # doc 06 section 3.1: "2 to 3 key_attribute_keys drawn strictly
+            # from the existing six".
+            attrs = item.get("key_attribute_keys") or []
+            require(
+                2 <= len(attrs) <= 3,
+                f"{fname} {code}: key_attribute_keys has {len(attrs)} entries, doc 06 section 3.1 "
+                "requires 2 to 3",
+            )
+            for attr in attrs:
+                require(
+                    attr in ATTRIBUTE_VOCABULARY,
+                    f"{fname} {code}: key_attribute_keys '{attr}' is not one of the six attributes "
+                    f"{sorted(ATTRIBUTE_VOCABULARY)}",
+                )
+            require(
+                len(set(attrs)) == len(attrs),
+                f"{fname} {code}: key_attribute_keys repeats an attribute",
+            )
+
+            # Closed duty vocabulary: adding one is a spec change, not a
+            # seed change (doc 06 section 3.1).
+            duties = item.get("duties_json") or []
+            for duty in duties:
+                require(
+                    duty in DUTY_VOCABULARY,
+                    f"{fname} {code}: duties_json '{duty}' not in the closed duty vocabulary "
+                    f"{sorted(DUTY_VOCABULARY)}",
+                )
+            require(
+                len(set(duties)) == len(duties),
+                f"{fname} {code}: duties_json repeats a duty",
+            )
+
+            foot = item.get("foot_hint")
+            require(
+                foot is None or foot in FOOT_HINTS,
+                f"{fname} {code}: foot_hint must be null or one of {sorted(FOOT_HINTS)}",
+            )
+            for wr_field in ("awr_default", "dwr_default"):
+                require(
+                    item.get(wr_field) in WORK_RATES,
+                    f"{fname} {code}: {wr_field} must be low|med|high",
+                )
+
+            # "needs_around_it (free text, one line)". Non-empty is covered
+            # by require_fields; the word floor is what keeps filler like
+            # "good players" out, which the ticket calls out by name.
+            needs = item.get("needs_around_it") or ""
+            require(
+                word_count(needs) >= 5,
+                f"{fname} {code}: needs_around_it is {word_count(needs)} words, too thin to be a real "
+                "requirement",
+            )
+
+            for pc in item.get("enables_pattern_codes") or []:
+                require(
+                    pc in pattern_codes,
+                    f"{fname} {code}: enables_pattern_codes references unknown code '{pc}'",
+                )
+            for rc in item.get("enables_rotation_codes") or []:
+                require(
+                    rc in any_rotation_codes,
+                    f"{fname} {code}: enables_rotation_codes references unknown rotation code '{rc}' "
+                    "(neither a library rotation nor a rotation system)",
+                )
+
+    if "archetype_combinations.json" in files:
+        fname = "archetype_combinations.json"
+        combination_items = files[fname]["items"]
+        check_duplicates(fname, combination_items, lambda i: i["code"])
+
+        for item in combination_items:
+            code = item["code"]
+            # what_it_costs is in the required list, so an empty string or a
+            # missing key fails here: doc 06 section 3.1 marks it REQUIRED,
+            # for the same reason rotation_systems.risk is not nullable.
+            require_fields(fname, code, item, COMBINATION_REQUIRED_FIELDS)
+            check_source_ref(fname, code, item)
+            check_no_banned_identity_phrase_anywhere(fname, code, item)
+
+            unit = item.get("unit")
+            require(
+                unit in UNIT_VOCABULARY,
+                f"{fname} {code}: unit '{unit}' not in {sorted(UNIT_VOCABULARY)}",
+            )
+
+            costs = item.get("what_it_costs") or ""
+            require(
+                word_count(costs) >= 5,
+                f"{fname} {code}: what_it_costs is {word_count(costs)} words, too thin to be a real cost",
+            )
+
+            for i, slot in enumerate(item.get("slots_json") or []):
+                label = f"{code}.slots_json[{i}]"
+                archetype_code = slot.get("archetype_code")
+                slot_family = slot.get("slot_family")
+                require(
+                    archetype_code in position_archetype_codes,
+                    f"{fname} {label}: archetype_code '{archetype_code}' does not exist in "
+                    "position_archetypes.json",
+                )
+                require(
+                    slot_family in SLOT_FAMILIES,
+                    f"{fname} {label}: slot_family '{slot_family}' not in {sorted(SLOT_FAMILIES)}",
+                )
+                if archetype_code in position_archetype_codes:
+                    require(
+                        position_archetype_codes[archetype_code] == slot_family,
+                        f"{fname} {label}: archetype '{archetype_code}' belongs to slot family "
+                        f"'{position_archetype_codes[archetype_code]}', not '{slot_family}'",
+                    )
+                if unit in UNIT_SLOT_FAMILIES:
+                    require(
+                        slot_family in UNIT_SLOT_FAMILIES[unit],
+                        f"{fname} {label}: slot family '{slot_family}' cannot appear in unit '{unit}'",
+                    )
+
+            for fc in item.get("home_formations") or []:
+                require(
+                    fc in formation_codes,
+                    f"{fname} {code}: home_formations references unknown formation '{fc}'",
+                )
+
+    if "unit_balance_rules.json" in files:
+        fname = "unit_balance_rules.json"
+        rule_items = files[fname]["items"]
+        check_duplicates(fname, rule_items, lambda i: i["code"])
+
+        for item in rule_items:
+            code = item["code"]
+            require_fields(fname, code, item, BALANCE_RULE_REQUIRED_FIELDS)
+            check_source_ref(fname, code, item)
+
+            require(
+                item.get("unit") in UNIT_VOCABULARY,
+                f"{fname} {code}: unit '{item.get('unit')}' not in {sorted(UNIT_VOCABULARY)}",
+            )
+            rule_kind = item.get("rule_kind")
+            require(
+                rule_kind in RULE_KINDS,
+                f"{fname} {code}: rule_kind '{rule_kind}' not in {sorted(RULE_KINDS)}",
+            )
+            require(
+                item.get("severity") in SEVERITIES,
+                f"{fname} {code}: severity must be note|warning",
+            )
+
+            duty = item.get("duty")
+            if rule_kind in ("requires_duty", "max_duty"):
+                require(
+                    duty in DUTY_VOCABULARY,
+                    f"{fname} {code}: duty '{duty}' not in the closed duty vocabulary "
+                    f"{sorted(DUTY_VOCABULARY)}",
+                )
+            elif rule_kind == "max_same_archetype":
+                require(
+                    duty is None,
+                    f"{fname} {code}: max_same_archetype counts repeated archetypes, so duty must be null",
+                )
+
+            if rule_kind == "requires_duty":
+                require(
+                    isinstance(item.get("min_count"), int),
+                    f"{fname} {code}: requires_duty needs an integer min_count",
+                )
+            elif rule_kind in ("max_duty", "max_same_archetype"):
+                require(
+                    isinstance(item.get("max_count"), int),
+                    f"{fname} {code}: {rule_kind} needs an integer max_count",
+                )
+
+            # "coach-facing, must read as a check not an error" (doc 06
+            # section 3.1). The engine may want the flagged combination.
+            copy_text = (item.get("warning_copy") or "").lower()
+            for banned in BANNED_WARNING_WORDS:
+                require(
+                    banned not in copy_text,
+                    f"{fname} {code}: warning_copy uses '{banned}', which reads as an error rather "
+                    "than a check",
+                )
+            require(
+                "check" in copy_text,
+                f"{fname} {code}: warning_copy never asks the coach to check anything, so it reads "
+                "as a verdict rather than a check",
+            )
+            check_no_banned_identity_phrase_anywhere(fname, code, item)
+
+    # -----------------------------------------------------------------
+    # Tactics Lab part two: rotation_systems, formation_phases,
+    # formation_matchups, reference systems (doc 06 sections 2.3 to 2.8
+    # and 3.1, T-103).
+    # -----------------------------------------------------------------
+
+    if "rotation_systems.json" in files:
+        fname = "rotation_systems.json"
+        rotation_items = files[fname]["items"]
+        check_duplicates(fname, rotation_items, lambda i: i["code"])
+
+        for item in rotation_items:
+            code = item["code"]
+            # `risk` sits in the required list, so an empty string or a
+            # missing key fails right here. doc 06 section 3.1: "risk
+            # REQUIRED, not nullable. A rotation without a stated cost
+            # fails the validator."
+            require_fields(fname, code, item, ROTATION_SYSTEM_REQUIRED_FIELDS)
+            check_source_ref(fname, code, item)
+            # exemplar_note names real players, so rotation copy is held to
+            # the same "curate, never lock" standard as identity copy.
+            check_no_banned_identity_phrase_anywhere(fname, code, item)
+
+            require(
+                item.get("family") in ROTATION_FAMILIES,
+                f"{fname} {code}: family '{item.get('family')}' not in {sorted(ROTATION_FAMILIES)}",
+            )
+            for fc in item.get("applies_to_formations") or []:
+                require(
+                    fc in formation_codes,
+                    f"{fname} {code}: applies_to_formations references unknown formation '{fc}'",
+                )
+
+            # A one-word cost is the marketing version of stating a cost,
+            # same word floor as archetype_combinations.what_it_costs.
+            risk = item.get("risk") or ""
+            require(
+                word_count(risk) >= 8,
+                f"{fname} {code}: risk is {word_count(risk)} words, too thin to be a real cost",
+            )
+
+            require(
+                bool(item.get("coaching_points_json")),
+                f"{fname} {code}: no coaching points, so the rotation teaches nothing",
+            )
+
+            spec = item.get("animation_spec_json")
+            validate_animation_spec(fname, code, "animation_spec_json", spec)
+            spec_slots = {s.get("slot") for s in (spec or {}).get("slots", [])}
+            require(
+                bool(spec) and (spec or {}).get("loop") is True,
+                f"{fname} {code}: a rotation's animation spec loops (doc 03 section 4.1)",
+            )
+
+            for i, move in enumerate(item.get("what_moves_json") or []):
+                label = f"{code}.what_moves_json[{i}]"
+                for field in ("slot", "from", "to", "becomes"):
+                    require(bool(move.get(field)), f"{fname} {label}: missing '{field}'")
+                # The board plays what_moves_json through the same slots the
+                # animation spec defines, so a slot named in one and absent
+                # from the other is a rotation that cannot be animated.
+                require(
+                    move.get("slot") in spec_slots,
+                    f"{fname} {label}: slot '{move.get('slot')}' is not defined in animation_spec_json",
+                )
+                for end in ("from", "to"):
+                    point = move.get(end) or {}
+                    for axis in ("x", "y"):
+                        value = point.get(axis)
+                        require(
+                            isinstance(value, (int, float)) and 0 <= value <= 100,
+                            f"{fname} {label}: {end}.{axis} must be a model coordinate 0 to 100",
+                        )
+
+            profile = item.get("requires_profile_json") or {}
+            for slot, need in profile.items():
+                label = f"{code}.requires_profile_json.{slot}"
+                for ac in need.get("archetypes") or []:
+                    require(
+                        ac in position_archetype_codes,
+                        f"{fname} {label}: archetype '{ac}' does not exist in position_archetypes.json",
+                    )
+                for attr in need.get("attributes") or []:
+                    require(
+                        attr in ATTRIBUTE_VOCABULARY,
+                        f"{fname} {label}: attribute '{attr}' is not one of the six",
+                    )
+                require(
+                    need.get("foot") in (None, "L", "R"),
+                    f"{fname} {label}: foot must be null, 'L' or 'R'",
+                )
+
+            # seeds/roles.json's standing convention. A null note claims
+            # nothing, which is the honest option when unsure.
+            note = item.get("exemplar_note")
+            require(
+                note is None or note.endswith("Not a licence: names are editorial reference points only."),
+                f"{fname} {code}: exemplar_note must end with the standing disclaimer or be null",
+            )
+
+    formation_slots: dict[str, dict[str, str]] = {}
+    if "formations.json" in files:
+        for item in files["formations.json"]["items"]:
+            formation_slots[item["code"]] = {
+                p["slot"]: p.get("position_code") for p in item.get("positions_json") or []
+            }
+
+    phase_reference_codes: set[str] = set()
+    if "formation_phases.json" in files:
+        fname = "formation_phases.json"
+        phase_items = files[fname]["items"]
+        check_duplicates(fname, phase_items, lambda i: f"{i['formation_code']}.{i['variant_code']}")
+
+        for item in phase_items:
+            key = f"{item.get('formation_code')}.{item.get('variant_code')}"
+            require_fields(fname, key, item, PHASE_REQUIRED_FIELDS)
+            check_source_ref(fname, key, item)
+            check_no_banned_identity_phrase_anywhere(fname, key, item)
+
+            require(
+                item.get("phase") in PHASE_VOCABULARY,
+                f"{fname} {key}: phase '{item.get('phase')}' not in {sorted(PHASE_VOCABULARY)}",
+            )
+            expected_phase = STANDARD_VARIANT_PHASE.get(item.get("variant_code"))
+            require(
+                expected_phase is None or item.get("phase") == expected_phase,
+                f"{fname} {key}: variant_code implies phase '{expected_phase}' but the row says "
+                f"'{item.get('phase')}'",
+            )
+            require(
+                word_count(item.get("blurb", "")) <= 25,
+                f"{fname} {key}: blurb is {word_count(item.get('blurb', ''))} words, over the "
+                "25-word limit",
+            )
+
+            fc = item.get("formation_code")
+            require(fc in formation_codes, f"{fname} {key}: unknown formation_code")
+
+            # THE rule of this table (doc 06 section 3.1): the morph
+            # animation binds by slot, so a phase that adds, drops or
+            # renames a slot cannot animate, it can only teleport tokens.
+            if fc in formation_slots:
+                base = formation_slots[fc]
+                seeded = {p.get("slot"): p.get("position_code") for p in item.get("positions_json") or []}
+                extra = sorted(set(seeded) - set(base))
+                missing = sorted(set(base) - set(seeded))
+                require(
+                    not extra,
+                    f"{fname} {key}: positions_json has slot(s) {extra} that the base formation "
+                    "does not have",
+                )
+                require(
+                    not missing,
+                    f"{fname} {key}: positions_json is missing base formation slot(s) {missing}",
+                )
+                require(
+                    len(item.get("positions_json") or []) == len(base),
+                    f"{fname} {key}: positions_json must carry all {len(base)} slots exactly once",
+                )
+                # Slots never change identity across phases: the left back
+                # walking into midfield is still the left back.
+                for slot, pc in seeded.items():
+                    if slot in base:
+                        require(
+                            pc == base[slot],
+                            f"{fname} {key}: slot '{slot}' is position_code '{pc}' here but "
+                            f"'{base[slot]}' in the base formation",
+                        )
+
+            for p in item.get("positions_json") or []:
+                for axis in ("x", "y"):
+                    value = p.get(axis)
+                    require(
+                        isinstance(value, (int, float)) and 0 <= value <= 100,
+                        f"{fname} {key}: slot '{p.get('slot')}' {axis} must be a model "
+                        "coordinate 0 to 100",
+                    )
+
+            rest_shape = item.get("rest_shape")
+            if rest_shape is not None:
+                match = REST_SHAPE_RE.match(rest_shape)
+                require(
+                    match is not None,
+                    f"{fname} {key}: rest_shape '{rest_shape}' must look like '3+2'",
+                )
+                if match:
+                    require(
+                        int(match.group(1)) + int(match.group(2)) <= 10,
+                        f"{fname} {key}: rest_shape '{rest_shape}' asks for more than ten "
+                        "outfield players",
+                    )
+
+            ref = item.get("reference_code")
+            if ref is not None:
+                phase_reference_codes.add(ref)
+                require(
+                    ref in identity_codes,
+                    f"{fname} {key}: reference_code '{ref}' is not an identity",
+                )
+            for rc in item.get("uses_rotations") or []:
+                require(
+                    rc in rotation_system_codes,
+                    f"{fname} {key}: uses_rotations references unknown rotation system '{rc}'",
+                )
+
+    if "formation_matchups.json" in files:
+        fname = "formation_matchups.json"
+        matchup_items = files[fname]["items"]
+        check_duplicates(fname, matchup_items, lambda i: f"{i['ours_code']}.{i['theirs_code']}")
+
+        for item in matchup_items:
+            ours = item.get("ours_code")
+            theirs = item.get("theirs_code")
+            key = f"{ours}.{theirs}"
+            require_fields(fname, key, item, MATCHUP_REQUIRED_FIELDS)
+            check_source_ref(fname, key, item)
+            check_no_banned_identity_phrase_anywhere(fname, key, item)
+
+            require(ours in formation_codes, f"{fname} {key}: unknown ours_code")
+            require(theirs in formation_codes, f"{fname} {key}: unknown theirs_code")
+            # doc 06 section 3.1: normalised at seed time, so the pair is
+            # stored once rather than twice with drifting copy.
+            require(
+                isinstance(ours, str) and isinstance(theirs, str) and ours < theirs,
+                f"{fname} {key}: (ours_code, theirs_code) must be normalised with "
+                "ours_code < theirs_code",
+            )
+            require(
+                item.get("route_kind") in ROUTE_KINDS,
+                f"{fname} {key}: route_kind '{item.get('route_kind')}' not in {sorted(ROUTE_KINDS)}",
+            )
+            # doc 06 section 2.8's three-step read, in order: where our
+            # spare man is, where we are short, which route connects them.
+            # A card missing a step is a card that teaches a different
+            # thing from every other card.
+            require(
+                bool(item.get("our_edges_json")),
+                f"{fname} {key}: no our_edges_json, so step one of the read is missing",
+            )
+            require(
+                bool(item.get("their_edges_json")),
+                f"{fname} {key}: no their_edges_json, so step two of the read is missing",
+            )
+
+    for fname in identity_files:
+        if files[fname].get("kind") != "reference_system":
+            continue
+        for item in files[fname]["items"]:
+            code = item["code"]
+            # doc 06 section 2.5: every card carries base formation, the
+            # phase variant it produces, rotations used, keystone profiles,
+            # a youth takeaway and one honest risk line. identities has no
+            # column for the rotations or the risk line, so core_idea
+            # carries them behind fixed markers.
+            core = item.get("core_idea", "")
+            require(
+                core.startswith("Formation:"),
+                f"{fname} {code}: reference system core_idea must lead with 'Formation:'",
+            )
+            for marker in REFERENCE_SYSTEM_MARKERS:
+                require(
+                    marker in core,
+                    f"{fname} {code}: reference system core_idea is missing its '{marker}' line",
+                )
+            require(
+                bool(item.get("keystone_roles_json")),
+                f"{fname} {code}: reference system names no keystone profiles",
+            )
+            require(
+                item.get("formation_code") is not None,
+                f"{fname} {code}: reference system must name its base formation",
+            )
+            # The phase variant a reference system produces IS a
+            # formation_phases row pointing back at it. Without one the
+            # card describes a shape nothing can render.
+            require(
+                code in phase_reference_codes,
+                f"{fname} {code}: no formation_phases row carries reference_code '{code}', so "
+                "the system names no phase variant",
+            )
 
     if errors:
         print("\n".join(errors))

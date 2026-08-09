@@ -10,8 +10,11 @@
 // drag). It keeps stable nodes keyed by lane pair / token id and only writes
 // changed attributes, so a frame allocates nothing once the set is stable.
 //
-// Colors and dashes live in Board.css classes bound to theme tokens
-// (--accent, --glow, --red). This module sets geometry only, never color.
+// Colors and dashes live in Board.css classes bound to the BOARD token layer
+// (--lane-suggested, --lane-confirmed, --lane-blocked, --intercept, --mark),
+// never the chrome's --accent/--glow/--red: with a red brand accent those
+// would make a confirmed lane and a blocked lane the same colour (T-071).
+// This module sets geometry only, never color.
 
 import { modelToPixel, type ModelPoint, type Orientation, type Size } from "./coords";
 import type { Lane, Mark } from "./lanes";

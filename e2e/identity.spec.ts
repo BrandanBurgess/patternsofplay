@@ -262,7 +262,7 @@ test.describe("identity: five-part Section 6 template, pass-risk, cult corner", 
   });
 });
 
-test.describe("identity: matches across all three themes, gold-only interactive, red never a CTA", () => {
+test.describe("identity: matches across all three themes, brand red interactive, gold for status", () => {
   test("segments, Details, and the pass-risk status colors are theme-driven", async ({
     page,
     issues,

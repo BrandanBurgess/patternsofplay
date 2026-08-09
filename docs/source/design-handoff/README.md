@@ -5,22 +5,55 @@ Top controls switch **Desktop / Phone** frames and the three themes. Everything 
 
 ## Design tokens
 
-Three themes share one CSS-variable token set (`html[data-theme]`), so screens are theme-agnostic.
+> **Source of truth: the founder palette directive of 2026-08-07 (ticket T-071).** It replaces the original gold-accent table and the two rules that sat under it, and it supersedes the values baked into `pop-mvp-mockups.html` and the colours in the numbered PNGs (which still show the old gold chrome). Everything else in this document, layout, interactions, permissions, the board's visual language, is unchanged and still wins.
+
+Three themes share one CSS-variable token set (`html[data-theme]`), so screens are theme-agnostic. The live values are `frontend/src/styles/tokens.css`; `scripts/check_palette.py` fails the build if this table and that file drift apart on the rules below.
+
+Brand constants, sampled from the logo: brand red `#C81C1C`, shield navy `#16304F`, shield gold `#C9A227`, grass green `#3B7A44`.
+
+### Two layers, and they must not be mixed
+
+**1. Chrome tokens.** The application shell.
 
 | Token | Pitch (default) | Dark | Board (light) |
 |---|---|---|---|
-| `--bg` app background | `#0F3C2C` deep pitch green | `#14161A` | `#FAFAF6` |
-| `--bg-stripe` / `--bg-stripe-alt` turf | `#3B7A57` / `#336A4B` mown stripes | flat dark | flat light |
-| `--sidebar-bg` nav / drawers | `#0B2F22` | `#191C21` | `#F1F2EC` |
-| `--surface` cards, toolbars | `#1B4B39` | `#1D2025` | `#FFFFFF` |
-| `--accent` interactive gold | `#E8B923` (trophy gold) | `#4FA8FF` | `#2D6A4F` |
-| `--glow` ball / suggestion | `#FFD65A` | `#7CC1FF` | `#2D6A4F` |
-| `--red` maple status red | `#E23D42` | `#E5484D` | `#C81E2C` |
+| `--bg` app background | `#081422` navy | `#121417` | `#FAFAF6` |
+| `--sidebar-bg` nav / drawers | `#0A1A2B` | `#17191D` | `#F0F1EB` |
+| `--surface` cards, toolbars | `#0F2338` | `#1D2025` | `#FFFFFF` |
+| `--text-primary` / `--text-secondary` | `#F5F3E9` / `#A6BCD4` | `#ECEDEE` / `#9AA1AA` | `#1B2420` / `#58635B` |
+| `--accent` **interactive brand red** | `#EF5350` | `#F4635A` | `#C81C1C` |
+| `--accent-ink` on a filled accent | `#2A0605` | `#2A0605` | `#FFFFFF` |
+| `--glow` accent halo | `#FF8079` | `#FF8B80` | `#E24A44` |
+| `--warn` **advisory shield gold** | `#C9A227` | `#D2AB2E` | `#8A6A08` |
+| `--on-warn` / `--bg-warn` / `--text-warn` | `#241A00` / gold 16% / `#E9C651` | `#201700` / gold 16% / `#E6C24C` | `#FFFFFF` / `#FAF2DA` / `#7A5D06` |
+| `--red` **failure crimson** | `#CF3560` | `#DE3F63` | `#A11331` |
+| `--bg-red` / `--text-red` | crimson 16% / `#FF8FA8` | crimson 16% / `#FF8DA4` | `#FBE9EE` / `#8F1130` |
+
+The dark themes carry a brightened brand red because no deep red can clear 4.5:1 as text on a dark ground; the light theme carries the logo's own `#C81C1C`.
+
+**2. Board tokens.** A football pitch, defined independently in every theme. Nothing in `frontend/src/board/`, and no board surface anywhere else (mini thumbnails, keystone rings, the positional grid overlay), may read a chrome token for a football meaning.
+
+| Token | Pitch (default) | Dark | Board (light) |
+|---|---|---|---|
+| `--pitch-turf` / `--pitch-stripe` mown turf | `#2D6434` / `#28592E` | `#1F4A28` / `#1B4223` | `#D7E6D4` / `#CDDECA` |
+| `--pitch-line` markings | `#DCEADE` | `#C6DCCA` | `#56785C` |
+| `--token-face` the disc behind a token | `#0B1C11` | `#071009` | `#FFFFFF` |
+| `--team-home` / `--team-away` | `#EFC63F` / `#FF8A8C` | `#E9BF46` / `#FA8285` | `#7A5D06` / `#A5151C` |
+| `--ball` | `#FFE27A` | `#F8DD7B` | `#8F6F0A` |
+| `--lane-suggested` / `--lane-confirmed` / `--lane-glow` | `#E8B923` / `#FFD65A` / `#FFE9A0` | `#DDB02A` / `#F6CF5E` / `#FAE5A2` | `#8F6F0A` / `#6F5405` / `#B8951F` |
+| `--lane-blocked` / `--intercept` / `--mark` | `#FF8A8C` | `#FA8285` | `#A5151C` |
+| `--zone` / `--keystone` | `#E8B923` / `#FFD65A` | `#DDB02A` / `#F6CF5E` | `#7A5D06` / `#6F5405` |
+| `--route-badge` / `--route-badge-ink` | `#FFD65A` / `#33280A` | `#F6CF5E` / `#2E2409` | `#6F5405` / `#FFFFFF` |
+
+On the light `board` theme the turf is pale, so every mark on it is deep rather than bright: same football language, different value. There is no `--bg-stripe`: the board used to borrow that chrome token as turf, which is exactly what this split exists to prevent.
 
 Rules the palette encodes:
-- **Gold is the only interactive color** (buttons, active nav, confirmed lanes, ball glow, keystone pulse).
-- **Red is status only** — opposition tokens, blocked lanes, marking rings, fit warnings, record state, live/notification badges. Red is never a call to action.
-- Type: Oswald (display — titles, numbers, section labels) + Inter (body/UI).
+- **The brand red `--accent` is the only interactive colour, and the only red fill**: buttons, active nav, active tabs and tools, focus rings, hover borders, range thumbs.
+- **Shield gold `--warn` carries advisories and read-only emphasis**: fit warnings, unit-balance clash notes, the SENT pill, receipts, verdict chips, author stamps, category labels. Nothing gold is clickable.
+- **`--red` is failure only**, rendered as text, a 1px outline, or a faint `--bg-red` tint, and never as a fill on a control. It is held at a distinctly cooler crimson from the scarlet accent, so the two reds never read as one colour.
+- **The board keeps the football language below**, in all three themes: green turf, gold "the pass is on", red "blocked / opposition / marking". The chrome went red for the brand; the pitch did not. **Changing `--accent` must not be able to change what the pitch or a lane looks like**, which `scripts/check_palette.py` and `e2e/palette.spec.ts` both enforce.
+- Contrast: WCAG AA on every pair that carries meaning, 4.5:1 for text and 3:1 for graphics and borders, computed in `scripts/check_palette.py` rather than eyeballed.
+- Type: Oswald (display, titles, numbers, section labels) + Inter (body/UI).
 
 ## Visual language on the board
 

@@ -23,19 +23,24 @@ router = APIRouter(prefix="/api", tags=["formations"])
 FORMATION_ORDER = ("433", "4231", "442", "352", "343", "541")
 
 # Bible 3G.2's rondo map order (first-line build-up through to the
-# counterpress moment); only 433 carries seeded zones today (seeds/
-# rondo_zones.json), but the ordering applies to any formation that gains
-# a rondo map later. flank_corridor split into left/right (T-101,
-# migration 0006, doc 06 section 3.1); left before right matches the
-# repo's own slot-naming convention (formations.json lists every '_l'
-# slot before its '_r' counterpart, e.g. fb_l before fb_r).
+# counterpress moment); T-103 seeds all six zones on all six formations.
+# flank_corridor split into left/right (T-101, migration 0006, doc 06
+# section 3.1); left before right matches the repo's own slot-naming
+# convention (formations.json lists every '_l' slot before its '_r'
+# counterpart, e.g. fb_l before fb_r).
+#
+# The last key is `counterpress_ring`, doc 06 section 2.3's name for it.
+# It read `counterpress` until T-112, the pre-0007 zone key, which no seed
+# has written since T-103. That stale entry sorted the ring to the end by
+# ACCIDENT (an unknown key falls to len(order)) rather than by intent, and
+# would have silently mis-sorted the moment a seventh zone existed.
 ZONE_ORDER = (
     "first_line",
     "midfield_box",
     "flank_corridor_left",
     "flank_corridor_right",
     "last_line",
-    "counterpress",
+    "counterpress_ring",
 )
 
 
@@ -79,6 +84,7 @@ def list_formations(
                     FormationPositionOut(
                         slot=p["slot"],
                         position_code=p["position_code"],
+                        slot_family=p["slot_family"],
                         x=p["x"],
                         y=p["y"],
                     )
@@ -95,6 +101,15 @@ def list_formations(
                         teaches=z.teaches,
                         polygon=z.polygon_json,
                         trains_pattern_codes=z.trains_pattern_codes,
+                        # doc 06 section 2.3 (T-112). canonical_rondo is the
+                        # no-opposition fallback label; zone_kind and radius
+                        # are what tell the Rondo Map that the counterpress
+                        # ring is a circle around the ball rather than the
+                        # polygon seeded alongside it, which only bounds the
+                        # half of the pitch the ring is coached in.
+                        canonical_rondo=z.canonical_rondo,
+                        zone_kind=z.zone_kind,
+                        radius=z.radius,
                     )
                     for z in zones
                 ],

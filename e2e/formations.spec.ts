@@ -74,16 +74,23 @@ test.describe("formations: board-first shape, keystone keycards, details, rondo 
     await expect(page.getByTestId("formations-details-panel")).toHaveCount(0);
 
     // --- Rondo Map: toggle, six tappable zones, each shows its rondo and
-    // linked patterns (Brief step 18 DoD; seeds/rondo_zones.json, 433 only;
-    // six not five since T-101/migration 0006 split flank_corridor into
-    // flank_corridor_left and flank_corridor_right) ---
+    // linked patterns (Brief step 18 DoD; seeds/rondo_zones.json).
+    // Six zones drawn as five polygons plus one circle: T-112 restored the
+    // counterpress ring, which doc 06 section 2.3 defines as a circle
+    // around the ball with an unconditional no-ball fallback centre. Its
+    // seeded polygon only BOUNDS where that circle may sit (half the
+    // pitch), so it is still never drawn as a zone.
+    // The zone TITLE is the name alone: T-106 moved the ratio out of it so
+    // a seeded ratio can never be read as a computed one. ---
     await page.getByTestId("formations-rondo-toggle").click();
     await expect(page.getByTestId("formations-rondo-active-toggle")).toBeVisible();
-    await expect(page.getByTestId("rondo-zone")).toHaveCount(6);
+    await expect(page.getByTestId("rondo-zone")).toHaveCount(5);
+    await expect(page.getByTestId("formations-rondo-ring")).toHaveCount(1);
+    await expect(page.locator('[data-zone-key="counterpress_ring"]')).toHaveCount(0);
 
     await page.locator('[data-zone-key="midfield_box"]').click();
     await expect(page.getByTestId("formations-zone-card")).toBeVisible();
-    await expect(page.getByTestId("formations-zone-title")).toHaveText("5v3 (the midfield box)");
+    await expect(page.getByTestId("formations-zone-title")).toHaveText("The midfield box");
     await expect(page.getByTestId("formations-zone-teaches")).toContainText("split-pass and pause logic");
     const linkedPatterns = page.getByTestId("formations-linked-pattern");
     await expect(linkedPatterns).toHaveCount(2);
@@ -93,7 +100,7 @@ test.describe("formations: board-first shape, keystone keycards, details, rondo 
     // Switching zones swaps the card, not stacks it.
     await page.locator('[data-zone-key="last_line"]').click();
     await expect(page.getByTestId("formations-zone-card")).toHaveCount(1);
-    await expect(page.getByTestId("formations-zone-title")).toHaveText("2v2 (+1 keeper) (the last line)");
+    await expect(page.getByTestId("formations-zone-title")).toHaveText("The last line");
 
     // Exiting rondo mode restores the normal meta bar (Details/Rondo map).
     await page.getByTestId("formations-rondo-active-toggle").click();
@@ -109,9 +116,23 @@ test.describe("formations: board-first shape, keystone keycards, details, rondo 
     await expect(page.getByTestId("formations-sheet-body")).toHaveCount(0);
     await expect(page.getByTestId("formations-meta-bar")).toContainText("3-4-3");
 
-    // 3-4-3 has no seeded rondo map: the toggle stays present but disabled
-    // (do not invent a rondo map beyond what seeds/rondo_zones.json carries).
-    await expect(page.getByTestId("formations-rondo-toggle")).toBeDisabled();
+    // T-103 seeded the rondo map on all six formations (doc 06 section 2.3),
+    // so the 3-4-3 now carries its own zones with its own polygons rather
+    // than leaving the toggle disabled.
+    await expect(page.getByTestId("formations-rondo-toggle")).toBeEnabled();
+    await page.getByTestId("formations-rondo-toggle").click();
+    await expect(page.getByTestId("rondo-zone")).toHaveCount(5);
+    // Six zones on every formation, not only the 4-3-3 (doc 06 section 0).
+    await expect(page.getByTestId("formations-rondo-ring")).toHaveCount(1);
+    // The 3-4-3's own polygon, not the 4-3-3's: a back three's zones are
+    // geometrically different from a back four's (doc 06 section 2.3).
+    await page.locator('[data-zone-key="midfield_box"]').click();
+    await expect(page.getByTestId("formations-zone-title")).toHaveText("The midfield box");
+    await expect(page.getByTestId("formations-zone-teaches")).toContainText(
+      "Two central midfielders holding the middle",
+    );
+    await page.getByTestId("formations-rondo-active-toggle").click();
+    await expect(page.getByTestId("rondo-zone")).toHaveCount(0);
 
     // Its own keystones still tap to their own keycards.
     await page.locator('[data-token-id="cm_l"]').click();
@@ -121,7 +142,7 @@ test.describe("formations: board-first shape, keystone keycards, details, rondo 
   });
 });
 
-test.describe("formations: matches across all three themes, gold-only interactive, red never a CTA", () => {
+test.describe("formations: matches across all three themes, brand red interactive, gold for status", () => {
   test("keystone pulse, details, and rondo controls are theme-driven, never red", async ({ page, issues }) => {
     await registerCoach(page);
     await page.getByTestId("nav-formations").click();

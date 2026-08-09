@@ -3,13 +3,14 @@
    this file only adds what the full shell needs on top of that. Colors are
    theme tokens only. */
 
-/* The lone gold dot beside the wordmark (PNG 01-05 topbar). */
-.app-brand-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 6px var(--glow);
+/* Shield mark beside the wordmark (T-070, replaces the gold dot placeholder
+   PNG 01-05 topbar shipped with). Transparent-background PNG so it reads on
+   any theme's chrome; sized by height, width follows the art's own aspect
+   ratio rather than a fixed box. */
+.app-brand-mark {
+  display: block;
+  height: 28px;
+  width: auto;
 }
 
 .app-topbar-end {

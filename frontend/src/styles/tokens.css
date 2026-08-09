@@ -1,10 +1,59 @@
 /* Design tokens: three themes as CSS custom properties on html[data-theme].
-   Source of truth: docs/source/design-handoff/README.md "Design tokens"
-   table plus the reference values baked into pop-mvp-mockups.html, which is
-   the interactive source the README table summarizes.
+   Source of truth: the founder palette directive of 2026-08-07 (T-071),
+   summarised in docs/source/design-handoff/README.md "Design tokens".
+   That directive SUPERSEDES the original gold-accent token table in the
+   design README and the values baked into pop-mvp-mockups.html. The rest
+   of the design README (layout, interactions, permissions) still wins.
 
    Rule: components consume these variables only. No component ships a
-   hardcoded color. */
+   hardcoded color. If you add a token, add it to all three themes.
+
+   TWO LAYERS, AND THEY MUST NOT BE MIXED
+   --------------------------------------
+   1. CHROME tokens describe the application shell: backgrounds, surfaces,
+      text, and the brand red that marks every interactive affordance.
+   2. BOARD tokens (--pitch-*, --token-face, --team-*, --ball, --lane-*,
+      --intercept, --mark, --zone, --keystone, --route-badge*) describe a
+      football pitch. They are defined independently in every theme.
+
+   Nothing under frontend/src/board/, and no board surface anywhere else
+   (mini thumbnails, keystone rings, the positional grid overlay), may read
+   a chrome token for a football meaning. Before T-071 the board had no
+   colours of its own: it borrowed --bg-stripe for turf and --accent/--red
+   for home/away and for confirmed/blocked lanes, so a red brand accent
+   would have turned the pitch red and made "this pass is on" and "this
+   pass is blocked" the same colour. Changing --accent must not be able to
+   change what the pitch or a lane looks like. e2e/palette.spec.ts proves
+   it at runtime and scripts/check_palette.py proves it statically (it runs
+   inside `make check-copy`, so `make verify` covers it); both fail if the
+   two layers are recoupled.
+
+   CHROME COLOUR RULES
+   -------------------
+   - --accent (brand red) is the only interactive colour and the only red
+     FILL: buttons, active tabs and tools, nav selection, focus rings,
+     hover borders, range thumbs.
+   - --warn (shield gold) carries every non-interactive emphasis and coach
+     advisory: fit warnings, unit-balance clashes, verdict and status
+     pills, author stamps, category labels. Nothing gold is clickable.
+   - --red carries failure only, as text (--text-red), a 1px outline, or a
+     faint --bg-red tint. It never fills a control. It is held at a
+     distinctly cooler, crimson value from the scarlet --accent so the two
+     reds never read as one colour.
+
+   BOARD COLOUR RULES (design README "Visual language on the board")
+   ----------------------------------------------------------------
+   Green turf, gold "the pass is on" (suggested and confirmed lanes, ball,
+   zones, keystones), red "blocked / opposition / marking ring", in all
+   three themes. The chrome goes red for the brand; the pitch does not.
+
+   Contrast: every text pair clears WCAG AA 4.5:1 and every graphical pair
+   that carries meaning clears 3:1. Ratios are asserted in
+   scripts/check_palette.py, so a future edit that dims a token fails the
+   suite rather than shipping.
+   --token-face is the one deliberate exception: it is the disc behind a
+   token, and a token is identified by its ring and its number, both of
+   which clear 3:1 against the turf and 4.5:1 against the face. */
 
 :root {
   --display-font: "Oswald", sans-serif;
@@ -12,62 +61,127 @@
   --radius: 10px;
 }
 
-/* Pitch (default) */
+/* Pitch (default): the brand theme. Shield navy chrome, brand red accent,
+   shield gold advisories, football green pitch. */
 html[data-theme="pitch"] {
-  --bg: #0f3c2c;
-  --bg-stripe: #3b7a57;
-  --bg-stripe-alt: #336a4b;
-  --sidebar-bg: #0b2f22;
-  --surface: #1b4b39;
+  /* chrome */
+  --bg: #081422;
+  --sidebar-bg: #0a1a2b;
+  --surface: #0f2338;
   --text-primary: #f5f3e9;
-  --text-secondary: #a9c4b3;
-  --border: rgba(245, 243, 233, 0.12);
-  --line: rgba(245, 243, 233, 0.28);
-  --accent: #e8b923;
-  --accent-ink: #3a2b00;
-  --glow: #ffd65a;
-  --red: #e23d42;
-  --on-red: #fff;
-  --bg-red: rgba(226, 61, 66, 0.18);
-  --text-red: #ff8a8d;
+  --text-secondary: #a6bcd4;
+  --border: rgba(245, 243, 233, 0.14);
+  --line: rgba(245, 243, 233, 0.26);
+  --accent: #ef5350;
+  --accent-ink: #2a0605;
+  --glow: #ff8079;
+  --warn: #c9a227;
+  --on-warn: #241a00;
+  --bg-warn: rgba(201, 162, 39, 0.16);
+  --text-warn: #e9c651;
+  --red: #cf3560;
+  --bg-red: rgba(207, 53, 96, 0.16);
+  --text-red: #ff8fa8;
+  /* board */
+  --pitch-turf: #2d6434;
+  --pitch-stripe: #28592e;
+  --pitch-line: #dceade;
+  --token-face: #0b1c11;
+  --team-home: #efc63f;
+  --team-away: #ff8a8c;
+  --ball: #ffe27a;
+  --lane-suggested: #e8b923;
+  --lane-confirmed: #ffd65a;
+  --lane-glow: #ffe9a0;
+  --lane-blocked: #ff8a8c;
+  --intercept: #ff8a8c;
+  --mark: #ff8a8c;
+  --zone: #e8b923;
+  --keystone: #ffd65a;
+  --route-badge: #ffd65a;
+  --route-badge-ink: #33280a;
 }
 
-/* Dark */
+/* Dark: neutral graphite chrome, same brand red one step brighter, same
+   pitch language on a night-green turf. */
 html[data-theme="dark"] {
-  --bg: #14161a;
-  --bg-stripe: #1a1d22;
-  --bg-stripe-alt: #1a1d22;
-  --sidebar-bg: #191c21;
+  /* chrome */
+  --bg: #121417;
+  --sidebar-bg: #17191d;
   --surface: #1d2025;
   --text-primary: #ecedee;
-  --text-secondary: #888e97;
-  --border: rgba(255, 255, 255, 0.08);
-  --line: rgba(255, 255, 255, 0.14);
-  --accent: #4fa8ff;
-  --accent-ink: #052240;
-  --glow: #7cc1ff;
-  --red: #e5484d;
-  --on-red: #fff;
-  --bg-red: rgba(229, 72, 77, 0.16);
-  --text-red: #ff9298;
+  --text-secondary: #9aa1aa;
+  --border: rgba(255, 255, 255, 0.09);
+  --line: rgba(255, 255, 255, 0.15);
+  --accent: #f4635a;
+  --accent-ink: #2a0605;
+  --glow: #ff8b80;
+  --warn: #d2ab2e;
+  --on-warn: #201700;
+  --bg-warn: rgba(210, 171, 46, 0.16);
+  --text-warn: #e6c24c;
+  --red: #de3f63;
+  --bg-red: rgba(222, 63, 99, 0.16);
+  --text-red: #ff8da4;
+  /* board */
+  --pitch-turf: #1f4a28;
+  --pitch-stripe: #1b4223;
+  --pitch-line: #c6dcca;
+  --token-face: #071009;
+  --team-home: #e9bf46;
+  --team-away: #fa8285;
+  --ball: #f8dd7b;
+  --lane-suggested: #ddb02a;
+  --lane-confirmed: #f6cf5e;
+  --lane-glow: #fae5a2;
+  --lane-blocked: #fa8285;
+  --intercept: #fa8285;
+  --mark: #fa8285;
+  --zone: #ddb02a;
+  --keystone: #f6cf5e;
+  --route-badge: #f6cf5e;
+  --route-badge-ink: #2e2409;
 }
 
-/* Board (light) */
+/* Board (light): paper chrome, the logo's own deep brand red, and a chalk
+   pitch. On a pale turf every mark on the pitch is dark: light lanes and
+   light tokens cannot hold 3:1 there, so the gold and red go deep instead
+   of bright. The football language is unchanged, only its value is. */
 html[data-theme="board"] {
+  /* chrome */
   --bg: #fafaf6;
-  --bg-stripe: #f1f2ec;
-  --bg-stripe-alt: #f1f2ec;
-  --sidebar-bg: #f1f2ec;
-  --surface: #fff;
+  --sidebar-bg: #f0f1eb;
+  --surface: #ffffff;
   --text-primary: #1b2420;
-  --text-secondary: #657064;
-  --border: rgba(27, 36, 32, 0.12);
+  --text-secondary: #58635b;
+  --border: rgba(27, 36, 32, 0.14);
   --line: rgba(27, 36, 32, 0.22);
-  --accent: #2d6a4f;
-  --accent-ink: #eaf3ee;
-  --glow: #2d6a4f;
-  --red: #c81e2c;
-  --on-red: #fff;
-  --bg-red: #fbe7e7;
-  --text-red: #b01f26;
+  --accent: #c81c1c;
+  --accent-ink: #ffffff;
+  --glow: #e24a44;
+  --warn: #8a6a08;
+  --on-warn: #ffffff;
+  --bg-warn: #faf2da;
+  --text-warn: #7a5d06;
+  --red: #a11331;
+  --bg-red: #fbe9ee;
+  --text-red: #8f1130;
+  /* board */
+  --pitch-turf: #d7e6d4;
+  --pitch-stripe: #cddeca;
+  --pitch-line: #56785c;
+  --token-face: #ffffff;
+  --team-home: #7a5d06;
+  --team-away: #a5151c;
+  --ball: #8f6f0a;
+  --lane-suggested: #8f6f0a;
+  --lane-confirmed: #6f5405;
+  --lane-glow: #b8951f;
+  --lane-blocked: #a5151c;
+  --intercept: #a5151c;
+  --mark: #a5151c;
+  --zone: #7a5d06;
+  --keystone: #6f5405;
+  --route-badge: #6f5405;
+  --route-badge-ink: #ffffff;
 }

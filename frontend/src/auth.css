@@ -21,6 +21,16 @@
   font-family: var(--body-font);
 }
 
+/* Full lockup (T-070), shield + stars + wordmark, above the form. Only
+   .auth-forms uses it (AuthForms.tsx), not .team-onboarding: see the T-070
+   report for why the create-team/join-code screens stay text-only. */
+.auth-lockup {
+  align-self: center;
+  width: 176px;
+  max-width: 55%;
+  height: auto;
+}
+
 .auth-form,
 .team-form {
   display: flex;

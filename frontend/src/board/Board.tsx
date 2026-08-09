@@ -41,7 +41,7 @@ import {
 } from "./coords";
 import { PitchMarkings } from "./PitchMarkings";
 import { FrameScheduler } from "./time";
-import { defaultBoardTokens, TOKEN_FILL, type Token } from "./tokens";
+import { defaultBoardTokens, TOKEN_FACE, TOKEN_FILL, type Token } from "./tokens";
 import {
   computeLanes,
   computeMarks,
@@ -799,7 +799,10 @@ export default function Board({
                 <circle
                   className="token-face"
                   r={r}
-                  style={{ stroke: TOKEN_FILL[token.side], fill: token.side === "ball" ? TOKEN_FILL.ball : "var(--surface)" }}
+                  style={{
+                    stroke: TOKEN_FILL[token.side],
+                    fill: token.side === "ball" ? TOKEN_FILL.ball : TOKEN_FACE,
+                  }}
                 />
                 {token.label && (
                   <text

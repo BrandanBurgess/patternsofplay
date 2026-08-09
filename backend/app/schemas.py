@@ -460,10 +460,24 @@ class SuggestionOut(BaseModel):
 class FormationPositionOut(BaseModel):
     """One slot from Formation.positions_json (doc 03 section 5): a
     landscape model coordinate plus the position_code the keystone lookup
-    and the board's on-token labels both key off of."""
+    and the board's on-token labels both key off of.
+
+    `slot_family` (doc 06 section 2.6, T-110 seed) is additive as of
+    T-107: it is the key the personnel panel needs to call
+    GET /api/archetypes and GET /api/archetypes/suggest for this slot.
+    T-110 seeded it on seeds/formations.json (validator-enforced there)
+    but never on seeds/formation_phases.json, whose positions_json rows
+    carry only slot/position_code/x/y (scripts/validate_seeds.py does not
+    require it there). Optional rather than required so
+    GET /formations/{code}/phases, which parses FormationPhaseOut.positions
+    straight off that column via validation_alias, keeps validating: it
+    comes back None on a phase variant, and app/routers/formations.py
+    below is the only place that ever populates it (from the base
+    formation, where it is always present)."""
 
     slot: str
     position_code: str
+    slot_family: str | None = None
     x: float
     y: float
 
@@ -480,13 +494,36 @@ class FormationKeystoneOut(BaseModel):
 
 class RondoZoneOut(BaseModel):
     """One rondo_zones row (Bible 3G.2): a tappable zone on the Rondo Map,
-    naming which rondo lives there and which library patterns it trains."""
+    naming which rondo lives there and which library patterns it trains.
+
+    The last three fields are doc 06 section 2.3's. T-101 added them to the
+    model (migration 0006) and T-103 seeded them, but they were never put on
+    the wire, so the Formations page could neither draw the counterpress
+    ring (it needs zone_kind and radius to know the zone is a ball-relative
+    circle rather than its seeded bounding polygon) nor show a
+    no-opposition fallback chip without splitting the ratio back out of
+    rondo_name. T-112 closes that.
+    """
 
     zone_key: str
     rondo_name: str
     teaches: str
     polygon: list[ModelPoint]
     trains_pattern_codes: list[str]
+    # The label shown when NO opposition is placed, e.g. '4v2'. Nullable on
+    # the model (T-101 added the column before T-103 had content for every
+    # row), so nullable here: a client that gets null renders no fallback
+    # chip rather than an empty one. With opposition on the board this field
+    # is not read at all, because the ratio is computed from the two shapes
+    # actually on the pitch.
+    canonical_rondo: str | None = None
+    # polygon | ball_relative_circle. Defaulted rather than required so a
+    # row written before migration 0006 still serializes as the polygon it
+    # is.
+    zone_kind: str = "polygon"
+    # Model units, and only meaningful when zone_kind is
+    # ball_relative_circle. Null on every polygon zone.
+    radius: int | None = None
 
 
 class FormationOut(BaseModel):
@@ -632,3 +669,256 @@ class CoachSessionOut(SessionOut):
     receipts: list[SessionReceiptOut]
     viewed_count: int
     recipient_count: int
+
+
+# ---------------------------------------------------------------------------
+# Tactics Lab (Epic T-100, doc 06 section 3; T-108). Two worlds, same split
+# as the rest of this file:
+#   - library world (formation_phases, rotation_systems, position_archetypes,
+#     formation_matchups): read-only, seeded, visible to both roles, same
+#     from_attributes + validation_alias convention as IdentityOut /
+#     LibraryItemOut above (their *_json columns become plain-named fields).
+#   - team world (team_formations, team_formation_slots): doc 06 section 3.2,
+#     the TeamFormation*In/Out split follows PlayerWriteRequest/PlayerOut:
+#     no team_id/created_by_user_id field in any request body (CLAUDE.md
+#     rule 4), both stamped server-side from the caller's own scope/
+#     membership (app/routers/tactics.py).
+# ---------------------------------------------------------------------------
+
+
+class FormationPhaseOut(BaseModel):
+    """One formation_phases row (doc 06 section 3.1): a named shape a base
+    formation morphs into in one phase of play. `positions` reuses
+    FormationPositionOut since positions_json is the same {slot,
+    position_code, x, y} shape as Formation.positions_json, "same slot ids
+    as the base formation, all eleven" (doc 06 section 3.1)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    formation_code: str
+    variant_code: str
+    phase: Literal["in_possession", "out_of_possession", "rest_defence", "transition"]
+    name: str
+    shape_label: str
+    blurb: str
+    positions: list[FormationPositionOut] = Field(validation_alias="positions_json")
+    trigger: str
+    rest_shape: str | None
+    reference_code: str | None
+    uses_rotations: list[str]
+
+
+class FormationMatchupOut(BaseModel):
+    """One formation_matchups row (doc 06 section 3.1): "the how the ball
+    finds it" card for one unordered pair of formations. Read exactly as
+    authored (ours_code/theirs_code/edges/route are the seeded row's own
+    fields, not swapped for query order); see
+    GET /api/formations/matchup for how a query's ours/theirs resolve to
+    this row regardless of which order they were asked in."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    ours_code: str
+    theirs_code: str
+    our_edges: list[str] = Field(validation_alias="our_edges_json")
+    their_edges: list[str] = Field(validation_alias="their_edges_json")
+    route: str
+    route_kind: Literal["through", "around", "over"]
+
+
+class FormationMatchupResponse(BaseModel):
+    """GET /api/formations/matchup always returns 200 (BoardStateOut's
+    null-not-404 pattern): `matchup` is null when the two (valid) formation
+    codes have no seeded card yet, which doc 06 section 2's engine
+    discussion treats as a normal, expected state ("say plainly that this
+    pair has no coached read yet. Do not invent one."), not an error."""
+
+    ours_code: str
+    theirs_code: str
+    matchup: FormationMatchupOut | None
+
+
+class RotationSystemOut(BaseModel):
+    """One rotation_systems row (doc 06 section 3.1)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    code: str
+    name: str
+    family: Literal["first_line", "pivot", "wide", "front_line"]
+    applies_to_formations: list[str]
+    produces_shape: str
+    trigger: str
+    what_moves: list = Field(validation_alias="what_moves_json")
+    coaching_points: list[str] = Field(validation_alias="coaching_points_json")
+    risk: str
+    requires_profile: dict | None = Field(default=None, validation_alias="requires_profile_json")
+    animation_spec: AnimationSpec | None = Field(default=None, validation_alias="animation_spec_json")
+    exemplar_note: str | None
+
+
+class PositionArchetypeOut(BaseModel):
+    """One position_archetypes row (doc 06 section 3.1). `slot_family`
+    reuses the position_codes vocabulary (GK, CB, FB, WB, DM, CM, AM, W,
+    ST, SS; app/models/roster.py PositionCode), the ten families T-102
+    seeds one or more archetypes for."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    code: str
+    slot_family: str
+    name: str
+    definition: str
+    key_attribute_keys: list[AttributeKey]
+    foot_hint: Literal["same_side", "opposite_side", "either"] | None
+    awr_default: WorkRate
+    dwr_default: WorkRate
+    duties: list[str] = Field(validation_alias="duties_json")
+    enables_pattern_codes: list[str]
+    enables_rotation_codes: list[str]
+    needs_around_it: str
+    exemplar_note: str | None
+
+
+class ArchetypeSuggestionOut(BaseModel):
+    """One ranked candidate (doc 06 section 5.3): "Show the top three with
+    a one-line why for each. The why must cite the actual reason..., not a
+    score." `why` is built server-side from the player's actual attribute
+    values, footedness, and work rates, never a numeric score
+    (app/routers/tactics.py _build_why)."""
+
+    archetype_code: str
+    archetype_name: str
+    slot_family: str
+    why: str
+
+
+class ArchetypeSuggestResponse(BaseModel):
+    """GET /api/archetypes/suggest, coach-only. Empty roster is a first
+    class state (doc 06 section 5.3: "the panel still works with
+    archetypes alone and no players assigned"): when no player_id is
+    given, `suggestions` still lists candidate archetypes for the slot
+    family, just without an attribute-fit why."""
+
+    slot_family: str
+    player_id: int | None
+    suggestions: list[ArchetypeSuggestionOut]
+
+
+class TeamFormationSlotIn(BaseModel):
+    """One slot entry inside a team formation write request (doc 06
+    section 3.2). No team_formation_id (comes from the parent row this is
+    nested under, stamped server-side, CLAUDE.md rule 4)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    slot: str = Field(min_length=1, max_length=30)
+    player_id: int | None = None
+    archetype_code: str | None = None
+    qualitative_edge: bool = False
+
+
+class TeamFormationWriteRequest(BaseModel):
+    """Shared body shape for POST (create) and PUT (full update) of a
+    saved team formation, same "no team_id/author field, full slot-set
+    replace" convention as PlayerWriteRequest / SessionCreateRequest.
+    `slots` replaces the whole slot set on every write (doc 06 section
+    5.3's personnel panel saves all eleven slots as one unit, not a
+    field-by-field API)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=120)
+    base_formation_code: str
+    active_phase_variant: str = Field(min_length=1, max_length=30)
+    opponent_formation_code: str | None = None
+    opponent_phase_variant: str | None = None
+    slots: list[TeamFormationSlotIn] = Field(default_factory=list)
+
+
+class TeamFormationSlotOut(BaseModel):
+    slot: str
+    player_id: int | None
+    # Resolved server-side (PlayerOut.role_name / SavedPatternOut.author_label
+    # precedent) so the frontend never re-derives it from a second round trip.
+    player_name: str | None
+    archetype_code: str | None
+    archetype_name: str | None
+    qualitative_edge: bool
+
+
+class TeamFormationOut(BaseModel):
+    id: int
+    name: str
+    base_formation_code: str
+    active_phase_variant: str
+    opponent_formation_code: str | None
+    opponent_phase_variant: str | None
+    created_by_user_id: int
+    created_at: datetime
+    slots: list[TeamFormationSlotOut]
+
+
+# ---------------------------------------------------------------------------
+# Unit balance evaluation (T-110, doc 06 sections 2.6 / 3.1 / 5.3).
+# Coach-only, exactly like FitWarningOut above: doc 06 section 5.3 says
+# unit balance is "coach-only, both in the UI and at the API", so no
+# player-role payload has a field for any of these (CLAUDE.md rule 5).
+# ---------------------------------------------------------------------------
+
+
+class UnitBalanceSlotIn(BaseModel):
+    """One slot's current archetype pick. `archetype_code` is nullable
+    because doc 06 section 5.3 makes an unassigned slot a first-class
+    state, not an error."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    slot: str = Field(min_length=1, max_length=30)
+    archetype_code: str | None = None
+
+
+class UnitBalanceRequest(BaseModel):
+    """Body of the live balance evaluation. Carries only the archetype
+    picks: no team_id (CLAUDE.md rule 4) and no player ids, because unit
+    balance is evaluated on archetypes alone, which is what lets the panel
+    work against an empty roster."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    slots: list[UnitBalanceSlotIn] = Field(default_factory=list)
+
+
+class UnitBalanceNoteOut(BaseModel):
+    """One fired unit_balance_rules row. Same shape as FitWarningOut
+    carries a fired role_clashes row (doc 06 section 3.1: "reuse its
+    evaluation shape so the two engines read alike"). `message` is the
+    seeded warning_copy verbatim, never composed here."""
+
+    code: str
+    unit: str
+    flank: Flank | None
+    severity: Literal["note", "warning"]
+    message: str
+    slots: list[str]
+
+
+class UnitBalanceUnitOut(BaseModel):
+    unit: str
+    # Set only for wide_unit, which occurs once per touchline.
+    flank: Flank | None
+    slots: list[str]
+    assigned_slots: list[str]
+    is_complete: bool
+    notes: list[UnitBalanceNoteOut]
+
+
+class UnitBalanceResponse(BaseModel):
+    """`units_not_evaluated` is part of the contract, not debug output: a
+    unit the formation does not contain must be visibly absent rather than
+    silently scored empty, so the panel can say why a 4-3-3 shows no
+    double-pivot section."""
+
+    formation_code: str
+    units: list[UnitBalanceUnitOut]
+    units_not_evaluated: list[str]

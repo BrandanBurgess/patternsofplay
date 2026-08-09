@@ -50,13 +50,9 @@ export function toDeclarativeSpec(spec: AnimationSpecWire): DeclarativeSpec {
   };
 }
 
-/** Every token a library item's spec names (its slots, plus the ball at
- * the initial holder's spot), in landscape model coordinates. Empty when
- * the item has no animation spec (should not happen for real content, but
- * the field is nullable at the API boundary). */
-function libraryItemTokens(item: LibraryItemOutWire): PreviewToken[] {
-  const spec = item.animation_spec;
-  if (!spec) return [];
+/** Every token a declarative spec names (its slots, plus the ball at the
+ * initial holder's spot), in landscape model coordinates. */
+function specTokens(spec: AnimationSpecWire): PreviewToken[] {
   const tokens: PreviewToken[] = spec.slots.map((s) => ({
     id: s.slot,
     side: s.side === "opponent" ? "away" : "home",
@@ -69,23 +65,38 @@ function libraryItemTokens(item: LibraryItemOutWire): PreviewToken[] {
   return tokens;
 }
 
-export function libraryItemPreview(
-  item: LibraryItemOutWire
-): { tokens: PreviewToken[]; playback: Playback | null } {
-  const tokens = libraryItemTokens(item);
-  const spec = item.animation_spec;
-  if (tokens.length === 0 || !spec) return { tokens: [], playback: null };
-
+/**
+ * A scene and a Playback for any doc 03 4.1 declarative spec, whoever owns
+ * it. Extracted from libraryItemPreview (which is now a thin wrapper) so
+ * the Formations page's Rotations control can play a rotation_systems row's
+ * animation_spec_json on the same renderer: it is the identical wire shape
+ * (schemas.py uses one AnimationSpec model for library items, identities
+ * and rotation systems alike), so the alternative was a duplicate of this
+ * function that could drift.
+ */
+export function animationSpecPreview(
+  spec: AnimationSpecWire
+): { tokens: PreviewToken[]; playback: Playback } {
+  const tokens = specTokens(spec);
   // Identity binding: the preview's own token ids ARE the spec's slot
   // names (no shared default-board token set to map onto here).
   const binding: Record<string, string> = {};
   for (const s of spec.slots) binding[s.slot] = s.slot;
-
   return { tokens, playback: buildDeclarativePlayback(toDeclarativeSpec(spec), binding, "ball") };
 }
 
+export function libraryItemPreview(
+  item: LibraryItemOutWire
+): { tokens: PreviewToken[]; playback: Playback | null } {
+  const spec = item.animation_spec;
+  // Empty when the item has no animation spec (should not happen for real
+  // content, but the field is nullable at the API boundary).
+  if (!spec) return { tokens: [], playback: null };
+  return animationSpecPreview(spec);
+}
+
 export function libraryItemBoardSnapshot(item: LibraryItemOutWire): BoardSnapshot | null {
-  const tokens = libraryItemTokens(item);
+  const tokens = item.animation_spec ? specTokens(item.animation_spec) : [];
   if (tokens.length === 0) return null;
   return {
     tokens: tokens.map((t) => ({ id: t.id, side: t.side, label: t.label, x: t.pos.x, y: t.pos.y })),

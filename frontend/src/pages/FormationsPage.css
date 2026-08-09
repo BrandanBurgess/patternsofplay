@@ -1,8 +1,12 @@
 /* Formations page (Brief step 18, PNG 11, 19, 37-39, 43). Colors come only
-   from the theme token variables; gold (var(--accent)/var(--glow)) is the
-   only interactive/active color, red never appears here as a call to
-   action (the on-board tokens are all "home" side, gold, since a formation
-   shows one team's own shape, not an opponent). */
+   from the theme token variables (T-071 founder directive): var(--accent)
+   is the brand red and the only interactive/active colour, var(--warn) is
+   shield gold for verdicts, kickers and other non-interactive emphasis, and
+   everything drawn ON the pitch (keystone rings, the counterpress ring, the
+   positional grid, the mini shape thumbnails) reads the BOARD token layer,
+   so no chrome colour can repaint the pitch. The on-board tokens are all
+   "home" side, gold, since a formation shows one team's own shape, not an
+   opponent. */
 
 .formations-page {
   max-width: 1100px;
@@ -15,8 +19,14 @@
   color: var(--text-secondary);
   margin: 0 0 8px;
 }
+/* Failure status: red text in a tinted, outlined block, never a red fill
+   (T-071: --accent owns the red fills now). */
 .formations-error {
-  color: var(--text-red, var(--red));
+  padding: 6px 10px;
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  background: var(--bg-red);
+  color: var(--text-red);
 }
 
 .formations-stage {
@@ -57,18 +67,31 @@
 .formations-meta-bar > * {
   pointer-events: auto;
 }
-.formations-meta-title {
+/* The title is the one child of the bar that is pure label. It stays
+   click-through so a token underneath it (portrait puts a high model-x
+   slot near the top edge) is still tappable, which is the same reasoning
+   the bar's own pointer-events rule above is written for. */
+/* The title is the one child of the bar that is pure label. It stays
+   click-through so a token underneath it (portrait puts a high model-x
+   slot near the top edge) is still tappable, which is the same reasoning
+   the bar's own pointer-events rule above is written for. It is also
+   capped: five controls plus an untruncated formation-and-identity line
+   wrap the bar onto a second row, and a two-row bar floating over a
+   landscape board covers the whole top lane of the pitch. */
+.formations-meta-bar .formations-meta-title {
   font-family: var(--display-font);
   font-size: 14px;
+  max-width: 250px;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  pointer-events: none;
 }
 .formations-details-btn {
   font: inherit;
-  font-size: 13px;
-  padding: 6px 14px;
+  font-size: 12px;
+  padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--accent);
   background: var(--accent);
@@ -80,13 +103,283 @@
    single gold instruction pill while zones are tappable. */
 .formations-rondo-pill {
   font: inherit;
-  font-size: 13px;
-  padding: 6px 14px;
+  font-size: 12px;
+  padding: 6px 12px;
   border-radius: 999px;
   border: 1px solid var(--accent);
   background: var(--accent);
   color: var(--accent-ink, #1b1b1b);
   cursor: pointer;
+}
+
+/* Meta bar controls (doc 06 sections 5.1 and 5.4). Desktop shows words,
+   phone shows the icon row; both read the same theme tokens. */
+.formations-ctl-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.formations-ctl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  padding: 6px 12px;
+}
+.formations-ctl[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.formations-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: block;
+}
+.formations-details-btn .formations-icon {
+  stroke: var(--accent-ink, #1b1b1b);
+}
+
+/* Phase segment (doc 06 section 5.1 control 1). Gold marks the selected
+   segment; an unseeded phase is disabled, never hidden, so the coach can
+   see that the formation simply has no variant for it yet. */
+.formations-segment {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.formations-segment-stacked {
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  width: 100%;
+}
+.formations-segment-btn {
+  font: inherit;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.formations-segment-stacked .formations-segment-btn {
+  border-radius: 8px;
+  text-align: left;
+}
+.formations-segment-btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink, #1b1b1b);
+}
+.formations-segment-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.formations-variant-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-basis: 100%;
+}
+.formations-variant-chip {
+  font: inherit;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.formations-variant-chip[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Caption strip (doc 06 section 5.1): names the resulting shape and its
+   trigger, under the board, and stays there after the 600ms morph has
+   finished telling its story. */
+.formations-caption {
+  margin: 6px 0 0;
+  font-family: var(--body-font);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* Board overlays (live count chips, positional grid). Absolutely
+   positioned over PatternPreviewBoard's own svg rather than inside it: the
+   renderer is shared and must not grow a page's styling. The 1px inset is
+   Board.css's .board-wrap border, so the overlay box lines up with the
+   pitch box exactly; the aspect ratios are PatternPreviewBoard's own
+   viewBoxes. */
+.formations-board-frame {
+  position: relative;
+}
+.formations-board-overlay {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  right: 1px;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 10px;
+}
+.formations-board-overlay[data-orientation="landscape"] {
+  aspect-ratio: 1050 / 680;
+}
+.formations-board-overlay[data-orientation="portrait"] {
+  aspect-ratio: 700 / 1000;
+}
+
+/* The counterpress ring (doc 06 section 2.3). A circle around the ball,
+   drawn into the same normalized 0-100 space the chips are positioned in
+   (viewBox 0 0 100 100, preserveAspectRatio none), so what the browser
+   paints is exactly the locus pointInCircle counts inside once the board's
+   aspect ratio is applied. It comes out as an ELLIPSE on screen in both
+   orientations, and that is the correct way round: a screen-perfect circle
+   would disagree with the counting, because the model's 0-100 square is
+   stretched to 1050x680 landscape and 700x1000 portrait.
+
+   Same dashed gold language as a polygon zone (.rondo-zone-poly), with no
+   fill: a fill this size would read as a region to play into rather than a
+   radius that follows the ball. */
+.formations-ring-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* The counterpress ring is zone language drawn on the pitch, so it reads the
+   board's --zone token, not the chrome accent (T-071). Its focus ring below
+   is chrome and correctly stays on --accent. */
+.formations-ring {
+  fill: none;
+  stroke: var(--zone);
+  stroke-width: 2;
+  stroke-dasharray: 7 6;
+  pointer-events: none;
+}
+.formations-ring[data-active="true"] {
+  stroke-width: 3;
+  stroke-dasharray: none;
+}
+/* The tap target is the LINE, not the disc. pointer-events: stroke leaves
+   the ring's interior out of hit testing entirely, so every tap inside it
+   lands on whichever polygon zone is underneath. The ring overlaps by
+   design (it is a ball-relative reading, not a partition of the pitch), and
+   this is what stops that overlap swallowing the zones it crosses.
+   Non-scaling stroke makes the band an even width in device pixels despite
+   the non-uniform scale, so the target is the same size on both axes. */
+.formations-ring-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 22;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+.formations-ring-hit:focus-visible {
+  stroke: var(--accent);
+  stroke-opacity: 0.35;
+  outline: none;
+}
+/* The ring's own note in its zone card: it is the one zone that is not a
+   place on the pitch, and the card leads with that. */
+.formations-zone-note {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* Live count chip (doc 06 section 5.1 control 3). THE distinction that
+   matters on this page: data-source="seeded" is the muted no-opposition
+   fallback, data-source="computed" is a ratio the engine derived from the
+   two shapes on the pitch and is coloured by verdict. They must never be
+   mistakable for each other. */
+.formations-zone-chip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-family: var(--display-font);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.formations-zone-chip[data-source="seeded"] {
+  color: var(--text-secondary);
+  border-style: dashed;
+  opacity: 0.75;
+}
+.formations-zone-chip[data-source="computed"] {
+  font-weight: 600;
+}
+.formations-zone-chip[data-verdict="superiority"] {
+  color: var(--text-warn);
+  border-color: var(--warn);
+}
+.formations-zone-chip[data-verdict="parity"] {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+.formations-zone-chip[data-verdict="inferiority"] {
+  color: var(--text-red);
+  border-color: var(--text-red);
+}
+.formations-zone-chip-kind {
+  font-family: var(--body-font);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* Positional grid overlay (doc 06 section 5.2). A breached band is TINTED,
+   not flagged: the copy in the panel asks a question, so the board must not
+   answer it with an error colour. */
+.formations-grid-line {
+  position: absolute;
+  background: var(--pitch-line);
+  opacity: 0.5;
+}
+.formations-grid-line-v {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+.formations-grid-line-h {
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+.formations-grid-band {
+  position: absolute;
+  background: var(--zone);
+  opacity: 0.18;
+}
+.formations-grid-band-v {
+  top: 0;
+  bottom: 0;
+}
+.formations-grid-band-h {
+  left: 0;
+  right: 0;
 }
 
 /* Keystone keycard / Rondo zone card (PNG 11/37 "6 -- keystone..."; PNG 32
@@ -166,18 +459,20 @@
   color: var(--text-primary);
 }
 
-/* Details panel (PNG 39): a right-hand rail on desktop, same shape as the
-   Patterns page's, listing strengths, danger areas conceded, and every
-   keystone blurb (design README: "Details (strengths, danger areas, every
-   keystone blurb)"). */
+/* Reading surfaces (PNG 39, doc 06 section 5.4): a right-hand rail on
+   desktop, a bottom sheet on phone. Details is the original (strengths,
+   danger areas conceded, every keystone blurb, design README); Phase,
+   Opposition, Rotations and Grid are the Tactics Lab controls' own panels
+   and share the box exactly so the page reads as one surface. */
+.formations-panel,
 .formations-details-panel {
   position: absolute;
   top: 54px;
   right: 10px;
   bottom: 10px;
-  width: 300px;
+  width: 320px;
   max-width: calc(100% - 20px);
-  z-index: 4;
+  z-index: 7;
   display: flex;
   flex-direction: column;
   background: var(--surface);
@@ -186,6 +481,161 @@
   padding: 12px;
   overflow-y: auto;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+.formations-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: var(--body-font);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+.formations-panel-body p {
+  margin: 0;
+}
+.formations-panel-body ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.formations-panel-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.formations-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.formations-select {
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-primary);
+  width: 100%;
+}
+
+/* The computed read (doc 06 sections 2.8 and 4). The unseeded note is not
+   an error state: it is the honest one, so it reads as an ordinary aside
+   and never in the status colour. */
+.formations-read {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+.formations-read-unseeded {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.formations-check-list {
+  margin: 0;
+  padding-left: 18px;
+}
+.formations-check-list li {
+  margin-bottom: 6px;
+}
+
+/* Rotations (doc 06 section 5.1 control 4). */
+/* The list scrolls inside its own box so the selected rotation's card, and
+   in particular its Gain/Risk pair, sits near the top of the panel instead
+   of below ten list rows. */
+.formations-rotation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 190px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.formations-rotation-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--bg);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.formations-rotation-item[aria-pressed="true"] {
+  border-color: var(--accent);
+}
+.formations-rotation-item-shape {
+  font-family: var(--display-font);
+  font-size: 11px;
+  color: var(--text-warn);
+  white-space: nowrap;
+}
+.formations-rotation-card h3 {
+  margin: 8px 0 4px;
+  font-family: var(--display-font);
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.formations-rotation-card > p,
+.formations-rotation-card > ul {
+  margin: 0 0 6px;
+}
+.formations-rotation-card ul {
+  padding-left: 18px;
+}
+
+/* EQUAL VISUAL WEIGHT (doc 06 section 5.1: "the risk line is not a
+   footnote"). Two equal grid tracks, identical padding, identical type
+   scale, identical colour weight on both halves. The only difference
+   between Gain and Risk is the word at the top. Anything that shrinks,
+   mutes or re-orders one of these halves breaks the rule the ticket is
+   about, so they are declared together and never separately. */
+.formations-balance {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 8px 0;
+}
+.formations-balance-half {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.formations-balance-kicker {
+  margin: 0 0 4px;
+  font-family: var(--display-font);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-warn);
+}
+.formations-balance-body {
+  margin: 0;
+  font-family: var(--body-font);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+/* Zone card read lines. Verdict colours are status, never a call to
+   action: nothing here is clickable. */
+.formations-zone-read[data-verdict="superiority"] {
+  color: var(--text-warn);
+}
+.formations-zone-read[data-verdict="inferiority"] {
+  color: var(--text-red);
+}
+.formations-zone-fallback {
+  color: var(--text-secondary);
 }
 .formations-details-head {
   display: flex;
@@ -228,15 +678,19 @@
   margin: 0 0 4px;
   font-family: var(--display-font);
   font-size: 12px;
-  color: var(--accent);
+  color: var(--text-warn);
 }
 
 /* Bottom sheet (Brief step 18: "swipe-up sheet with shape thumbnails and
    search"), same shape as the Patterns page's own sheet. */
+/* The handle used to overlap the board's bottom edge by 34px. It no longer
+   can: T-106 put a caption strip (and, on phone, the meta bar) between the
+   board and the sheet, and pulling the handle up over a line of text is
+   both ugly and a tap target sitting on top of another one. */
 .formations-sheet {
   position: relative;
   z-index: 5;
-  margin-top: -34px;
+  margin-top: 8px;
 }
 .formations-sheet-handle {
   display: flex;
@@ -351,7 +805,7 @@
   font-size: 10px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--text-warn);
 }
 .formations-tile-name {
   font-size: 13px;
@@ -369,23 +823,225 @@
   border-radius: 4px;
   display: block;
 }
+/* Shape thumbnails are miniature pitches: BOARD tokens only (T-071). */
 .formations-tile-thumb-bg {
-  fill: var(--bg-stripe);
+  fill: var(--pitch-turf);
 }
 .formations-tile-thumb-token {
-  fill: var(--accent);
+  fill: var(--team-home);
   stroke: none;
 }
 
+/* Sheet segment (T-107, doc 06 section 5.3): "Browse formations" next to
+   "Personnel", same pill-segment look the meta bar's Phase control uses. */
+.formations-sheet-segment {
+  align-self: flex-start;
+}
+
+/* ---------------------------------------------------------------------
+   Personnel panel (T-107, doc 06 sections 2.6, 2.7, 5.3, 5.4).
+   --------------------------------------------------------------------- */
+.personnel-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.personnel-empty-roster {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  font-family: var(--body-font);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Phone pager (doc 06 section 5.4: "one unit at a time"). Prev/Next are
+   plain neutral controls, not gold: they page a READ, they do not commit
+   to anything, and gold stays reserved for the archetype/suggestion picks
+   below that actually change the shape's personnel. */
+.personnel-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.personnel-pager-label {
+  font-family: var(--display-font);
+  font-size: 12px;
+  color: var(--text-primary);
+  text-align: center;
+  flex: 1;
+}
+
+.personnel-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.personnel-group-title {
+  margin: 4px 0 0;
+  font-family: var(--display-font);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-warn);
+}
+
+.personnel-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+.personnel-slot-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.personnel-slot-name {
+  font-family: var(--display-font);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+.personnel-slot-family {
+  font-family: var(--body-font);
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: capitalize;
+}
+.personnel-archetype-definition {
+  margin: 0;
+  font-family: var(--body-font);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+/* Suggestions (doc 06 section 5.3): the archetype name is the one
+   clickable, gold-on-select element in this row; its cited "why" sits
+   beside it in the neutral body colour, never re-stated as a score. */
+.personnel-suggestion-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.personnel-suggestion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+.personnel-suggestion-pick {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.personnel-suggestion-pick[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.personnel-suggestion-why {
+  font-family: var(--body-font);
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Footedness note (doc 06 section 2.7): one line, coach-facing, never an
+   error colour, exactly the same "informational aside" treatment as
+   .formations-panel-note elsewhere on this page. */
+.personnel-foot-note {
+  margin: 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  font-family: var(--body-font);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* Unit balance (doc 06 sections 2.6, 3.1, 5.3). Reads as a CHECK, never an
+   error: no red anywhere in this block, matching the positional grid's own
+   breach styling. A "warning" severity gets a touch more emphasis than a
+   "note" (a slightly stronger accent-toned rule), never a status colour
+   swap, so the coach's eye still lands there first without the app
+   claiming something is broken. */
+.personnel-balance {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+.personnel-balance-unit {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.personnel-balance-unit-title {
+  margin: 0;
+  font-family: var(--display-font);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+.personnel-balance-note {
+  margin: 0;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: var(--bg);
+  border-left: 2px solid var(--border);
+  font-family: var(--body-font);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+/* A clash warning is an advisory, so it takes the shield gold --warn family
+   (T-071): warnings must never wear the interactive brand red. */
+.personnel-balance-note[data-severity="warning"] {
+  border-left-color: var(--warn);
+}
+.personnel-balance-note[data-severity="none"] {
+  color: var(--text-secondary);
+  border-left-color: transparent;
+  background: transparent;
+  padding-left: 0;
+}
+
 @media (max-width: 700px) {
+  /* Doc 06 section 5.4: on phone every meta bar control opens a BOTTOM
+     SHEET rather than a popover, so the panel leaves the board visible
+     above it instead of covering the shape the coach is reading. Same
+     markup as the desktop rail, different box. */
+  .formations-panel,
   .formations-details-panel {
-    top: 54px;
-    left: 12px;
-    right: 12px;
-    bottom: auto;
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
     width: auto;
     max-width: none;
-    max-height: 60vh;
+    max-height: 62vh;
+    z-index: 22;
+    border: none;
+    border-top: 1px solid var(--accent);
+    border-radius: 16px 16px 0 0;
+    padding: 12px 16px 20px;
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.4);
   }
   .formations-card {
     left: 12px;
@@ -396,11 +1052,55 @@
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
     max-height: 260px;
   }
+  /* The bar STOPS FLOATING on phone. Six controls make an icon row about
+     70px tall, and a 7:10 portrait board puts the striker roughly 60px
+     from the top edge: a floating bar would sit on top of the one token a
+     coach most wants to tap. Doc 06 section 5.4 asks for an icon row and
+     bottom sheets on phone, and says nothing about keeping the bar over
+     the pitch, so the row moves directly under the board where it covers
+     nothing. Desktop keeps the floating bar of PNG 37-39 unchanged. */
   .formations-meta-bar {
-    max-width: calc(100% - 20px);
+    position: static;
+    max-width: none;
+    margin: 8px 0 0;
     padding: 6px 8px;
+    box-shadow: none;
+    background: var(--sidebar-bg);
   }
-  .formations-meta-title {
+  .formations-meta-bar .formations-meta-title {
     font-size: 12px;
+    flex-basis: 100%;
+    max-width: none;
+  }
+  /* Icon row: square tap targets, one row, no words (doc 06 section 5.4).
+     The accessible name lives on aria-label, so nothing is lost. */
+  .formations-ctl,
+  .formations-details-btn,
+  .formations-rondo-pill {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* The chip carries the ratio alone on phone; the read moves into the
+     tapped zone card (doc 06 section 5.4). */
+  .formations-zone-chip {
+    font-size: 11px;
+    padding: 2px 7px;
+  }
+  /* Two halves of equal weight stay two halves of equal weight. Stacking
+     them is a layout change, not a hierarchy change: same padding, same
+     type, same colour, neither one a footnote. */
+  .formations-balance {
+    grid-template-columns: 1fr;
+  }
+  /* Doc 06 section 5.4: "the personnel panel is a full-height sheet".
+     Browse formations keeps the existing 74vh drawer height; the
+     Personnel segment claims the screen instead, since paging one unit
+     at a time through eleven slots needs the room. */
+  .formations-sheet-open[data-sheet-tab="personnel"] {
+    max-height: 94vh;
   }
 }

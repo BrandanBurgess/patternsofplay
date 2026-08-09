@@ -42,15 +42,47 @@ Dispatch rule for this epic: give a subagent its ticket row plus **only** the do
 |---|---|---|---|---|---|---|---|
 | T-100 | Scope amendment: move 4 rows to IN in Brief §1, add doc 06 to the CLAUDE.md source table, no code | 0 | platform | sonnet | none | none (solo, first) | done |
 | T-101 | Schema + Alembic: formation_phases, rotation_systems, position_archetypes, archetype_combinations, unit_balance_rules, formation_matchups, rondo_zones new columns + L/R corridor data migration, team_formations, team_formation_slots; scoped layer for both team-world tables + cross-team read test | 3 | platform | sonnet | T-100 | T-104 | done |
-| T-102 | Seeds: position_archetypes (all 10 slot families), archetype_combinations, unit_balance_rules; validator extensions (duty vocabulary closed, key_attribute_keys subset of the six, cost line required) | 2.6, 3.1 | content-seeder | opus | T-101 | T-103, T-104 | todo |
-| T-103 | Seeds: formation_phases (6 formations x 3-5 variants), rotation_systems (14 incl. animation specs), rondo_zones for all 6 formations at 6 zones, formation_matchups (15 pairs), 10 reference systems as identities kind=reference_system; validator: phase slot-set equality, risk line required | 2.3, 2.4, 2.5, 2.8, 3.1 | content-seeder | opus | T-101 | T-102, T-104 | todo |
+| T-102 | Seeds: position_archetypes (all 10 slot families), archetype_combinations, unit_balance_rules; validator extensions (duty vocabulary closed, key_attribute_keys subset of the six, cost line required) | 2.6, 3.1 | content-seeder | opus | T-101 | T-103, T-104 | done |
+| T-103 | Seeds: formation_phases (6 formations x 3-5 variants), rotation_systems (14 incl. animation specs), rondo_zones for all 6 formations at 6 zones, formation_matchups (15 pairs), 10 reference systems as identities kind=reference_system; validator: phase slot-set equality, risk line required | 2.3, 2.4, 2.5, 2.8, 3.1 | content-seeder | opus | T-101 | T-102, T-104 | done |
+| T-111 | Alembic 0007: delete the orphan rondo_zones row zone_key='counterpress' left behind by T-103's rename to counterpress_ring. Upsert-only seeder never removes it, so a persistent-disk deploy would render seven zones on the 4-3-3 | 2.3 | platform | sonnet | T-103 | T-105 | done |
 | T-104 | Superiority engine: mirrorOpponent (involutive round-trip test FIRST), pointInPolygon/Circle, countZone, findFreeMen, gridOccupancy, classifyRestDefence, buildRead + route inference; recompute benchmark under 2ms at 22 tokens | 2.2, 4 | board-engineer | opus | T-100 | T-101, T-102, T-103 | done |
-| T-105 | Phase morph playback (bind by slot, 600ms) + opponent token layer mirrored into our frame, both reusing the existing animation player and PatternPreviewBoard, no parallel renderer | 4, 5.1 | board-engineer | opus | T-104, T-103 | T-108 | todo |
-| T-106 | Formations page rebuild: phase segment, opposition toggle + opponent pickers, live rondo counts, rotation player with equal-weight risk line, positional grid overlay, portrait pass | 5.1, 5.2, 5.4 | screens | opus | T-105 | T-107 | todo |
-| T-107 | Personnel panel: slot assignment from roster, archetype picker, ranked suggestions with cited reasons, live unit balance, footedness notes (all coach-only), empty-roster state | 2.6, 2.7, 5.3 | screens | sonnet | T-105, T-102 | T-106 | todo |
-| T-108 | API: /formations/{code}/phases, /formations/matchup, /rotations, /archetypes, /archetypes/suggest, team formation persistence; 403 for player tokens on every coach-only route, test per route | 3.2, 5.3, 6 | collab | sonnet | T-101 | T-105 | todo |
-| T-109 | Epic hardening: em-dash sweep over new seeds, permission suite additions in CI, tactics-lab Playwright journey at both viewports, extend the demo path | 6 | verifier | sonnet | T-106, T-107, T-108 | none | todo |
+| T-105 | Phase morph playback (bind by slot, 600ms) + opponent token layer mirrored into our frame, both reusing the existing animation player and PatternPreviewBoard, no parallel renderer | 4, 5.1 | board-engineer | opus | T-104, T-103 | T-108 | done |
+| T-106 | Formations page rebuild: phase segment, opposition toggle + opponent pickers, live rondo counts, rotation player with equal-weight risk line, positional grid overlay, portrait pass | 5.1, 5.2, 5.4 | screens | opus | T-105 | T-107 | done (renders 5 of 6 zones, see T-112) |
+| T-112 | Counterpress ring, currently unrendered so the Rondo Map ships 5 of the 6 zones doc 06 section 0 approved. Doc 06 section 2.3 already specifies the no-ball fallback (centroid of our three most advanced), which T-106 never saw because its row named only 5.1/5.2/5.4. Add canonical_rondo/zone_kind/radius to RondoZoneOut and the formations.py mapping, draw the ring as a circle, delete the splitRondoName ratio workaround | 0, 2.3, 5.1 | screens | opus | T-106 | T-107 | done |
+| T-107 | Personnel panel: slot assignment from roster, archetype picker, ranked suggestions with cited reasons, live unit balance, footedness notes (all coach-only), empty-roster state | 2.6, 2.7, 5.3 | screens | sonnet | T-105, T-102 | T-106 | done |
+| T-113 | Persist the personnel panel to team_formations and team_formation_slots. Doc 06 section 3.2 designed those tables and T-108 shipped the API, but no ticket ever wired the UI, so a coach's slot and archetype picks vanish on navigation. Coach-only writes, reads open to players per the founder decision 2026-08-07 | 3.2, 5.3 | screens | sonnet | T-107 | none | todo |
+| T-108 | API: /formations/{code}/phases, /formations/matchup, /rotations, /archetypes, /archetypes/suggest, team formation persistence; 403 for player tokens on every coach-only route, test per route | 3.2, 5.3, 6 | collab | sonnet | T-101 | T-105 | done (unit balance deferred, see T-110) |
+| T-109 | Epic hardening: em-dash sweep over new seeds, permission suite additions in CI, tactics-lab Playwright journey at both viewports, extend the demo path, wire POP_WEB_PORT/POP_API_PORT into make verify so parallel worktrees stop colliding, fix the stale `counterpress` value in RondoZone.zone_key's inline comment (models/formations.py) | 6 | verifier | sonnet | T-106, T-107, T-108, T-110 | none | done (audit found 3 unmet DoD points, see T-114/T-115) |
+| T-114 | Reference systems have no UI surface. Ten seeded rows are unreachable: IdentityPage SEGMENTS omits kind=reference_system, and FormationsPage fetches phase `reference_code` but never renders the identity. Also scripts/seed.py loads only `items`, so the file-level disclaimer note in identities_reference_systems.json never reaches the DB, leaving doc 06 section 6 point 6 unfalsifiable | 2.5, 6 | screens | opus | T-109 | T-115 | todo |
+| T-115 | DoD cleanup from the T-109 audit: zone-count fixture per formation PAIR (15, doc 06 section 6 point 5 currently has one per formation, 6); a scoped.py helper for parent-scoped bulk delete so update_team_formation's raw delete stops bypassing the layer; validate that position_archetypes exemplar_note ends with the standing disclaimer, as rotation_systems already does; update the hardcoded 5173/8000 in README, verify-ui SKILL.md and seed_demo.py now that ports derive per worktree | 6 | verifier | sonnet | T-109 | T-114 | todo |
+| T-110 | Slot-to-unit crosswalk (spec gap found in T-108): map each formation's eleven slots to a slot_family, and slot_families to the seven unit_balance_rules units, so unit balance can be evaluated per formation. Then the coach-only balance evaluation on the API with its 403 test | 2.6, 3.1, 5.3 | content-seeder | opus | T-102, T-103 | none | done (5-4-1 evaluates back line only, founder call open) |
 
 Sequencing: T-100 solo → T-101 ∥ T-104 → (T-102 ∥ T-103 ∥ T-108) → T-105 → (T-106 ∥ T-107) → T-109.
 T-104 is this epic's critical path and its hardest work, same reasoning as T-020: coordinate math, unit tests first, keep it isolated from the seed tickets.
 T-102 and T-103 are marked opus despite being seed work: the football judgement in the archetype duty assignments and the rotation risk lines is the product, not transcription.
+
+---
+
+## Epic T-070: Brand refresh (founder commission 2026-08-07)
+
+Source of truth: the founder directive of 2026-08-07 plus the logo asset. **The directive supersedes the
+design-handoff token table**, which still specifies a gold accent on the default theme and is now stale;
+amending it is part of T-071. Everything else in the design README (layout, interactions, permissions)
+still wins. Land this epic before any remaining T-100 ticket: it rewrites `tokens.css`, `AppShell`, and
+`frontend/src/board/` styling, which T-113 and T-114 also touch.
+
+Brand constants sampled from the asset: brand red `#C81C1C`, shield navy `#16304F`, shield gold `#C9A227`,
+grass green `#3B7A44`.
+
+| ID | Title | Source | Agent | Model | Deps | Parallel-safe with | Status |
+|---|---|---|---|---|---|---|---|
+| T-070 | Logo integration: derivative assets in `frontend/public/` (transparent-background shield mark, full lockup, favicon set), sign-in lockup, nav-rail shield mark replacing `app-brand-dot`, favicon + tab title. Keeps the App.test.tsx "Patterns of Play" heading assertion passing | founder | screens | sonnet | none | T-071 | done |
+| T-071 | Palette: `pitch` default becomes the red brand theme; `dark` and `board` restyled to the brand. Board decoupled from chrome tokens (real `--pitch-*`, `--team-*`, `--lane-*` tokens) so a red accent cannot turn the pitch red or collapse home/away. AA contrast. Amends the design README token table and the `tokens.css` header comment | founder | screens | opus | none | T-070 | done |
+| T-072 | QA sweep: every main screen x both viewports x all three themes. Fixes styling and sizing regressions including ones that predate this epic. Screenshot review, not a green test run | founder | verifier | opus | T-070, T-071 | none | todo |
+| T-074 | README refresh: lead with the logo, recapture `docs/screenshots/` against the rebranded UI, show off the design | founder | screens | sonnet | T-072 | none | todo |
+
+Sequencing: (T-070 ∥ T-071) → T-072 → T-074 → ship.
+T-070 and T-071 are parallel-safe on a strict file split: T-070 owns `frontend/public/`, `index.html`,
+`AuthForms.tsx`, `auth.css`, `AppShell.tsx`, `AppShell.css`; T-071 owns `styles/tokens.css`,
+`frontend/src/board/`, `pages/*.css`, and the design-handoff README. Neither crosses into the other's set.
+T-071 is opus: the token architecture and the contrast work are the hard part of this epic, not the asset work.

@@ -247,7 +247,7 @@ test.describe("roster: fit warning and CRUD controls are coach-only, absent from
 });
 
 test.describe("roster: matches across all three themes", () => {
-  test("fit warning is red-status-only and the active row uses the theme's gold accent", async ({
+  test("fit warning is advisory gold and the active row uses the brand accent", async ({
     page,
     issues,
   }) => {
@@ -292,12 +292,12 @@ test.describe("roster: matches across all three themes", () => {
 
       seenWarningBorder.add(warningBorder);
       seenActiveRowBorder.add(rowBorder);
-      // Gold is the only interactive color, red never a call to action:
-      // the selected row's border (interactive state) never matches the
-      // fit warning's red border in any theme.
+      // T-071: the fit warning is an advisory, so it wears shield gold, and
+      // the selected row's border (an interactive state) wears the brand red.
+      // They never match in any theme, which is the whole point of the split.
       expect(rowBorder).not.toBe(warningBorder);
-      // The Add player button (an interactive call to action) uses gold,
-      // matching the selected row's border color, never the warning's red.
+      // The Add player button (an interactive call to action) uses the brand
+      // accent, matching the selected row's border, never the warning's gold.
       expect(saveBg).not.toBe("rgba(0, 0, 0, 0)");
       expect(saveBg).not.toBe(warningBorder);
     }
